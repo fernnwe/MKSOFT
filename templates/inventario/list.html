@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">monitoring</span>Inventario</h2>
+    <div>
+        <a href="{% url 'inventario:ingrediente_crear' %}" class="md3-btn md3-btn-outlined md3-btn-success" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>Nuevo Ingrediente
+        </a>
+        <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined md3-btn-primary" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">shopping_cart</span>Compras
+        </a>
+        <a href="?alertas=1" class="md3-btn md3-btn-outlined md3-btn-error" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">warning</span>Alertas Stock
+        </a>
+        <a href="{% url 'inventario:crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">inventory_2</span>Registrar Stock
+        </a>
+    </div>
+</div>
+
+<div class="md3-card-outlined">
+    <div class="md3-card-body" style="padding: 0;">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead style="background-color: var(--md-sys-color-surface-container-low);">
+                    <tr>
+                        <th>Ingrediente</th>
+                        <th>Categoria</th>
+                        <th>Stock Actual</th>
+                        <th>Stock Minimo</th>
+                        <th>Unidad</th>
+                        <th>Costo Unit.</th>
+                        <th>Valor Total</th>
+                        <th>Estado</th>
+                        <th style="text-align: end;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in inventario %}
+                    <tr style="{% if inv.bajo_stock %}background-color: var(--md-sys-color-error-container);{% endif %}">
+                        <td><strong>{{ inv.ingrediente.nombre }}</strong></td>
+                        <td><span class="md3-badge md3-badge-secondary">{{ inv.ingrediente.categoria|default:"-" }}</span></td>
+                        <td style="font-weight: bold;">{{ inv.cantidad_actual }}</td>
+                        <td>{{ inv.ingrediente.stock_minimo }}</td>
+                        <td>{{ inv.get_unidad_display }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ inv.costo_unitario|floatformat:2 }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ inv.valor_total|floatformat:2 }}</td>
+                        <td>
+                            {% if inv.bajo_stock %}
+                            <span class="md3-badge md3-badge-error">Bajo Stock</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-success">OK</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: end;">
+                            <button class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-success" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='flex'">
+                                <span class="material-symbols-outlined">swap_horiz</span>
+                            </button>
+                            <a href="{% url 'inventario:editar' inv.pk %}" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-primary">
+                                <span class="material-symbols-outlined">edit</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 1.5rem 1rem; color: var(--md-sys-color-on-surface-variant);">
+                            <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">inventory_2</span>
+                            No hay ingredientes en inventario.<br>
+                            <a href="{% url 'inventario:ingrediente_crear' %}" class="md3-btn md3-btn-sm md3-btn-success" style="margin-top: 0.5rem;">
+                                <span class="material-symbols-outlined">add</span> Crear primer ingrediente
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% for inv in inventario %}
+<div id="movModal{{ inv.pk }}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="md3-card-elevated" style="max-width: 500px; width: 90%; padding: 0;">
+        <form method="post" action="{% url 'inventario:movimiento' inv.pk %}">
+            {% csrf_token %}
+            <div class="md3-card-header" style="background-color: transparent; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <h5 style="font-weight: 600; margin: 0;">Movimiento - {{ inv.ingrediente.nombre }}</h5>
+                <button type="button" class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='none'" style="margin-left: auto;">&times;</button>
+            </div>
+            <div class="md3-card-body">
+                <div style="margin-bottom: 1rem;">
+                    <label class="md3-label" style="font-weight: 600;">Tipo de Movimiento</label>
+                    <select name="tipo" class="md3-input" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="salida">Salida</option>
+                        <option value="ajuste">Ajuste</option>
+                        <option value="merma">Merma</option>
+                        <option value="devolucion">Devolucion</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="md3-label" style="font-weight: 600;">Cantidad</label>
+                    <input type="number" name="cantidad" class="md3-input" step="0.001" min="0" required>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="md3-label" style="font-weight: 600;">Costo Unitario</label>
+                    <input type="number" name="costo" class="md3-input" step="0.01" min="0" value="{{ inv.costo_unitario|floatformat:2 }}">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label class="md3-label" style="font-weight: 600;">Motivo</label>
+                    <input type="text" name="motivo" class="md3-input" placeholder="Opcional">
+                </div>
+            </div>
+            <div class="md3-card-footer" style="background-color: transparent; border-top: 1px solid var(--md-sys-color-outline-variant); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button type="button" class="md3-btn md3-btn-outlined" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='none'">Cancelar</button>
+                <button type="submit" class="md3-btn md3-btn-filled">Registrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

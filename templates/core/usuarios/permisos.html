@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load perm_tags %}
+
+{% block title %}Permisos de Usuario - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="perm-page">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+            <span class="material-symbols-outlined" style="font-size: 2rem; color: var(--md-sys-color-primary);">admin_panel_settings</span>
+            <div>
+                <h1 class="md3-page-title">Gestion de Permisos</h1>
+                <p class="md3-page-subtitle">Controla el acceso de cada usuario al sistema</p>
+            </div>
+        </div>
+        <a href="{% url 'core:usuarios' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">arrow_back</span>
+            Volver a Usuarios
+        </a>
+    </div>
+
+    {% if usuarios %}
+    <div class="md3-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 1.5rem;">
+        <div class="md3-card-elevated">
+            <div class="md3-card-body" style="text-align: center;">
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{{ usuarios|length }}</div>
+                <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Usuarios Totales</div>
+            </div>
+        </div>
+        <div class="md3-card-elevated">
+            <div class="md3-card-body" style="text-align: center;">
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'admin' %}1{% endif %}{% endfor %}</div>
+                <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Administradores</div>
+            </div>
+        </div>
+        <div class="md3-card-elevated">
+            <div class="md3-card-body" style="text-align: center;">
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'waiter' %}1{% endif %}{% endfor %}</div>
+                <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Meseros</div>
+            </div>
+        </div>
+        <div class="md3-card-elevated">
+            <div class="md3-card-body" style="text-align: center;">
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'cashier' %}1{% endif %}{% endfor %}</div>
+                <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Cajeros</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="md3-grid" style="grid-template-columns: 1fr; gap: 1rem;">
+        {% for usuario in usuarios %}
+        <div class="md3-card-outlined {% if usuario.role == 'admin' %}" style="background: var(--md-sys-color-warning-container); border-color: var(--md-sys-color-warning);{% else %}"{% endif %} data-usuario-id="{{ usuario.pk }}">
+            <div class="md3-card-body" style="padding: 0.75rem; cursor: pointer;" onclick="togglePermCard(this)">
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+                    <div class="md3-flex" style="gap: 0.75rem; align-items: center;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-primary) 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                            <span style="font-size: 1.1rem; font-weight: 700; color: var(--md-sys-color-on-primary);">{{ usuario.get_full_name|default:usuario.username|slice:":1"|upper }}</span>
+                            <span style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--md-sys-color-surface); {% if usuario.is_active %}background: var(--md-sys-color-success);{% else %}background: var(--md-sys-color-error);{% endif %}"></span>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1rem; font-weight: 600; color: var(--md-sys-color-on-surface); margin: 0;">{{ usuario.get_full_name|default:usuario.username }}</h3>
+                            <div class="md3-flex" style="gap: 0.5rem; align-items: center; margin-top: 0.25rem; flex-wrap: wrap;">
+                                <span class="md3-badge {% if usuario.role == 'admin' %}md3-badge-warning{% elif usuario.role == 'manager' %}md3-badge-primary{% elif usuario.role == 'waiter' %}md3-badge-success{% elif usuario.role == 'cashier' %}md3-badge-primary{% else %}md3-badge-secondary{% endif %}" style="font-size: 0.7rem;">
+                                    <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.8rem;">
+                                        {% if usuario.role == 'admin' %}admin_panel_settings{% elif usuario.role == 'manager' %}manage_accounts{% elif usuario.role == 'waiter' %}restaurant{% elif usuario.role == 'cashier' %}payments{% else %}stove{% endif %}
+                                    </span>
+                                    {{ usuario.get_role_display }}
+                                </span>
+                                <span style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">@{{ usuario.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--md-sys-color-outline); transition: transform 0.3s ease;">expand_more</span>
+                        <span style="font-size: 0.65rem; color: var(--md-sys-color-on-surface-variant);">Permisos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="max-height: 0; overflow: hidden; transition: max-height 0.4s ease;">
+                {% if usuario.role == 'admin' %}
+                <div class="md3-card-body" style="padding: 2rem; text-align: center;">
+                    <span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-warning); display: block; margin-bottom: 0.75rem;">lock</span>
+                    <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; margin: 0; max-width: 350px; margin-left: auto; margin-right: auto;">
+                        Los permisos del <strong>Administrador</strong> no pueden ser modificados. Tiene acceso completo al sistema por defecto.
+                    </p>
+                </div>
+                {% else %}
+                <form method="post" action="{% url 'core:actualizar_permisos' usuario.pk %}">
+                    {% csrf_token %}
+                    {% for group_label, perms in all_perms %}
+                    <div style="padding: 0 1.5rem;">
+                        <div class="md3-flex" style="gap: 0.5rem; align-items: center; justify-content: space-between; padding: 1rem 0 0.75rem;">
+                            <div class="md3-flex" style="gap: 0.5rem; align-items: center;">
+                                <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 1rem;">{% if group_label == 'General' %}apartment{% else %}settings{% endif %}</span>
+                                <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--md-sys-color-on-surface); margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">{{ group_label }}</h4>
+                            </div>
+                            <button type="button" class="md3-btn md3-btn-text md3-btn-sm" onclick="toggleAllInSection(this)" style="font-size: 0.75rem;">
+                                Seleccionar todos
+                            </button>
+                        </div>
+                        <div class="md3-grid" style="grid-template-columns: 1fr 1fr; gap: 0.5rem; padding-bottom: 1rem;">
+                            {% for perm_key, label in perms %}
+                            <label class="md3-flex md3-flex-justify-between md3-flex-align-center" style="gap: 0.5rem; padding: 0.5rem; background: var(--md-sys-color-surface-container-low); border-radius: 10px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='var(--md-sys-color-surface-container)'" onmouseout="this.style.background='var(--md-sys-color-surface-container-low)'">
+                                <div style="flex: 1; min-width: 0;">
+                                    <span style="font-size: 0.85rem; font-weight: 500; color: var(--md-sys-color-on-surface); display: block;">{{ label }}</span>
+                                    <span style="font-size: 0.7rem; color: var(--md-sys-color-outline); font-family: 'SF Mono', 'Fira Code', monospace;">{{ perm_key }}</span>
+                                </div>
+                                <input type="checkbox" name="{{ perm_key }}" value="on" {% if usuario|attr:perm_key %}checked{% endif %} onchange="updateCount(this)" style="accent-color: var(--md-sys-color-primary); width: 18px; height: 18px;">
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding: 1rem 1.5rem; background: var(--md-sys-color-surface-container-low); border-top: 1px solid var(--md-sys-color-outline-variant); margin-top: 0.75rem;">
+                        <button type="button" class="md3-btn md3-btn-outlined md3-btn-sm" onclick="resetPerms(this)">
+                            <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">restart_alt</span>
+                            Restablecer
+                        </button>
+                        <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                            <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">check</span>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="md3-empty-state">
+        <span class="material-symbols-outlined" style="font-size: 3rem;">people</span>
+        <h3>No hay usuarios registrados</h3>
+        <p style="color: var(--md-sys-color-on-surface-variant);">Crea usuarios para poder gestionar sus permisos</p>
+        <a href="{% url 'core:usuario_crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>
+            Crear Usuario
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.perm-page { padding-bottom: 1rem; }
+
+.md3-grid-perm-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 767.98px) {
+    .md3-grid-perm-stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.md3-card-outlined[data-usuario-id]').forEach(function(card) {
+        const count = card.querySelectorAll('input[type="checkbox"]:checked').length;
+        const num = card.querySelector('.perm-active-num');
+        if (num) num.textContent = count;
+    });
+});
+
+function togglePermCard(header) {
+    const card = header.closest('.md3-card-outlined');
+    const body = card.querySelector('div[style*="max-height"]');
+    const icon = card.querySelector('.material-symbols-outlined');
+    if (body.style.maxHeight === '0px' || body.style.maxHeight === '') {
+        body.style.maxHeight = '2000px';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        body.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function updateCount(checkbox) {
+    const card = checkbox.closest('.md3-card-outlined');
+    const count = card.querySelectorAll('input[type="checkbox"]:checked').length;
+    const num = card.querySelector('.perm-active-num');
+    if (num) num.textContent = count;
+}
+
+function toggleAllInSection(btn) {
+    const section = btn.closest('div[style*="padding: 0 1.5rem"]');
+    const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(function(cb) {
+        cb.checked = !allChecked;
+        updateCount(cb);
+    });
+}
+
+function resetPerms(btn) {
+    const form = btn.closest('form');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) {
+        cb.checked = false;
+        updateCount(cb);
+    });
+}
+</script>
+{% endblock %}

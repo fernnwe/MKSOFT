@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Compras - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+        <div style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);">
+            <span class="material-symbols-outlined">shopping_cart</span>
+        </div>
+        <div>
+            <h1 class="md3-page-title">Registro de Compras</h1>
+            <p class="md3-page-subtitle">Gestiona las compras a proveedores</p>
+        </div>
+    </div>
+    <div class="md3-flex" style="gap: 0.5rem;">
+        <a href="{% url 'inventario:movimientos' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">list</span>
+            Movimientos
+        </a>
+        <a href="{% url 'inventario:compra_crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined">add</span>
+            Nueva Compra
+        </a>
+    </div>
+</div>
+
+{% if compras %}
+<div class="md3-grid md3-grid-3" style="grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+    <div class="md3-card-outlined" style="text-align: center;">
+        <div class="md3-card-body">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--md-sys-color-success);">{{ compras|length }}</div>
+            <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Total Compras</div>
+        </div>
+    </div>
+    <div class="md3-card-outlined" style="text-align: center;">
+        <div class="md3-card-body">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--md-sys-color-warning);">
+                {% for c in compras %}{% if c.estado == 'pendiente' %}1{% endif %}{% endfor %}
+            </div>
+            <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Pendientes</div>
+        </div>
+    </div>
+    <div class="md3-card-outlined" style="text-align: center;">
+        <div class="md3-card-body">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--md-sys-color-success);">
+                {% for c in compras %}{% if c.estado == 'recibida' %}1{% endif %}{% endfor %}
+            </div>
+            <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Recibidas</div>
+        </div>
+    </div>
+</div>
+
+<div class="md3-flex" style="flex-direction: column; gap: 1rem;">
+    {% for compra in compras %}
+    <div class="md3-card-outlined">
+        <div class="md3-card-body">
+            <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <div class="md3-flex md3-flex-align-center" style="gap: 0.5rem; margin-bottom: 0.25rem;">
+                        <span class="material-symbols-outlined">tag</span>
+                        <span style="font-weight: bold;">{{ compra.folio }}</span>
+                    </div>
+                    <h3 style="font-size: 1rem; margin-bottom: 0;">{{ compra.proveedor }}</h3>
+                </div>
+                <div class="md3-flex md3-flex-align-center" style="gap: 0.5rem;">
+                    <span class="md3-badge {% if compra.estado == 'pendiente' %}md3-badge-warning{% elif compra.estado == 'recibida' %}md3-badge-success{% else %}md3-badge-error{% endif %}">
+                        {{ compra.get_estado_display }}
+                    </span>
+                    <span style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">{{ compra.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <div class="md3-flex" style="flex-wrap: wrap; gap: 0.25rem; margin-bottom: 1rem;">
+                    {% for item in compra.items.all|slice:":5" %}
+                    <span class="md3-chip">{{ item.cantidad }}x {{ item.ingrediente.nombre }}</span>
+                    {% endfor %}
+                    {% if compra.items.count > 5 %}
+                    <span class="md3-chip md3-chip-outlined">+{{ compra.items.count|add:"-5" }} mas</span>
+                    {% endif %}
+                </div>
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+                    <span style="font-weight: bold; font-size: 1.25rem;">{{ CURRENCY_SYMBOL }}{{ compra.total|floatformat:2 }}</span>
+                    <div class="md3-flex" style="gap: 0.5rem;">
+                        <a href="{% url 'inventario:compra_detalle' compra.pk %}" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-primary">
+                            <span class="material-symbols-outlined">visibility</span> Ver
+                        </a>
+                        {% if compra.estado == 'pendiente' %}
+                        <a href="{% url 'inventario:compra_detalle' compra.pk %}" class="md3-btn md3-btn-sm md3-btn-success">
+                            <span class="material-symbols-outlined">check</span> Recibir
+                        </a>
+                        {% endif %}
+                        <form method="post" action="{% url 'inventario:compra_eliminar' compra.pk %}" style="display: inline;" onsubmit="return confirm('¿Eliminar permanentemente la compra {{ compra.folio }}?')">
+                            {% csrf_token %}
+                            <button type="submit" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-error">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+<div class="md3-flex" style="justify-content: center; margin-top: 1.5rem;">
+    <div class="md3-flex" style="gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="md3-btn md3-btn-outlined md3-btn-sm">&laquo;&laquo;</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">&laquo;</a>
+        {% endif %}
+        <span class="md3-btn md3-btn-sm md3-btn-filled">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">&raquo;</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="md3-btn md3-btn-outlined md3-btn-sm">&raquo;&raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="md3-empty-state">
+    <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--md-sys-color-on-surface-variant);">shopping_cart_off</span>
+    <h3>No hay compras registradas</h3>
+    <p>Registra tu primera compra para llevar control de inventario</p>
+    <a href="{% url 'inventario:compra_crear' %}" class="md3-btn md3-btn-filled">
+        <span class="material-symbols-outlined">add</span> Registrar Compra
+    </a>
+</div>
+{% endif %}
+{% endblock %}

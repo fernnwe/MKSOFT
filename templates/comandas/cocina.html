@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}Cocina{% endblock %}
+{% block content %}
+<style>
+    .cocina-card { position: relative; overflow: hidden; }
+    .cocina-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+    }
+    .cocina-card.estado-urgente { border-color: var(--md-sys-color-error); }
+    .cocina-card.estado-urgente::before { background: var(--md-sys-color-error); }
+    .cocina-card.estado-urgente .cocina-header { background: var(--md-sys-color-error-container); }
+    .cocina-card.estado-urgente .cocina-header .cocina-pulse { animation: pulse-error 2s infinite; }
+
+    .cocina-card.estado-vip { border-color: var(--md-sys-color-warning); }
+    .cocina-card.estado-vip::before { background: var(--md-sys-color-warning); }
+    .cocina-card.estado-vip .cocina-header { background: var(--md-sys-color-warning-container); }
+    .cocina-card.estado-vip .cocina-pulse { animation: pulse-warning 2s infinite; }
+
+    .cocina-card.estado-normal { border-color: var(--md-sys-color-outline-variant); }
+    .cocina-card.estado-normal::before { background: var(--md-sys-color-primary); }
+    .cocina-card.estado-normal .cocina-header { background: var(--md-sys-color-surface-container); }
+
+    .cocina-card.estado-lista { border-color: var(--md-sys-color-success); }
+    .cocina-card.estado-lista::before { background: var(--md-sys-color-success); }
+    .cocina-card.estado-lista .cocina-header { background: var(--md-sys-color-success-container); }
+
+    @keyframes pulse-error {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    @keyframes pulse-warning {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .cocina-header { padding: 12px 16px; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+    .cocina-codigo { font-size: 16px; font-weight: 700; }
+    .cocina-mesa { font-weight: 500; }
+    .cocina-tiempo { font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+    .cocina-tiempo.tiempo-alto { color: var(--md-sys-color-error); font-weight: 600; }
+
+    .cocina-item { padding: 12px 16px; border-bottom: 1px solid var(--md-sys-color-outline-variant); display: flex; justify-content: space-between; align-items: center; }
+    .cocina-item:last-child { border-bottom: none; }
+    .cocina-item.listo { background: var(--md-sys-color-success-container); opacity: 0.8; }
+    .cocina-cantidad { font-weight: 700; font-size: 20px; margin-right: 6px; }
+    .cocina-nota { color: var(--md-sys-color-error); font-style: italic; font-size: 13px; }
+
+    .cocina-footer { padding: 8px 16px 12px; }
+    .cocina-footer.lista { background: var(--md-sys-color-success-container); padding: 12px 16px; text-align: center; }
+</style>
+
+<div class="md3-page-header">
+    <div>
+        <h1 class="md3-page-title">Cocina</h1>
+        <p class="md3-page-subtitle">
+            {% if comandas %}
+            <span style="color:var(--md-sys-color-error); font-weight:600;">{{ urgentes }} urgente{{ urgentes|pluralize:"s" }}</span> &middot;
+            <span style="color:var(--md-sys-color-warning); font-weight:600;">{{ vips }} VIP</span> &middot;
+            {{ normales }} normal{{ normales|pluralize:"es" }}
+            {% else %}
+            Sin comandas pendientes
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+{% if comandas %}
+<div class="px-3 px-md-4">
+    <div class="md3-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px;" id="cocina-container">
+        {% for comanda in comandas %}
+        <div class="md3-grid-item" id="cocina-comanda-{{ comanda.pk }}">
+            <div class="md3-card-outlined cocina-card
+                {% if comanda.prioridad == 'urgente' %}estado-urgente
+                {% elif comanda.prioridad == 'vip' %}estado-vip
+                {% elif comanda.estado == 'lista' %}estado-lista
+                {% else %}estado-normal{% endif %}">
+
+                <!-- Cabecera -->
+                <div class="cocina-header">
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+                        <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                            <span class="cocina-codigo">{{ comanda.codigo }}</span>
+                            {% if comanda.prioridad == 'urgente' %}
+                            <span class="md3-badge md3-badge-error cocina-pulse">
+                                <span class="material-symbols-outlined" style="font-size:14px;">priority_high</span>
+                                URGENTE
+                            </span>
+                            {% elif comanda.prioridad == 'vip' %}
+                            <span class="md3-badge md3-badge-warning cocina-pulse">
+                                <span class="material-symbols-outlined" style="font-size:14px;">workspace_premium</span>
+                                VIP
+                            </span>
+                            {% endif %}
+                        </div>
+                        <span class="cocina-mesa">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</span>
+                    </div>
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-top:4px;">
+                        <span class="cocina-tiempo {% if comanda.prioridad == 'urgente' %}tiempo-alto{% endif %}">
+                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">schedule</span>
+                            Hace {{ comanda.fecha_creacion|timesince }}
+                        </span>
+                        {% if comanda.estado == 'lista' %}
+                        <span class="md3-badge md3-badge-success" style="font-size:11px;">
+                            <span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> Lista
+                        </span>
+                        {% elif comanda.estado == 'en_cocina' %}
+                        <span class="md3-badge" style="font-size:11px;">
+                            <span class="material-symbols-outlined" style="font-size:14px;">local_fire_department</span> En preparacion
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div>
+                    {% for item in comanda.items.all %}
+                    {% if not item.cancelado %}
+                    <div class="cocina-item {% if item.listo %}listo{% endif %}">
+                        <div style="flex:1;">
+                            <span class="cocina-cantidad">{{ item.cantidad }}x</span>
+                            <span style="font-weight:500;">{{ item.producto.nombre }}</span>
+                            {% if item.notas %}
+                            <div class="cocina-nota">
+                                <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">edit_note</span>
+                                {{ item.notas }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if item.listo %}
+                        <span class="md3-badge md3-badge-success">
+                            <span class="material-symbols-outlined" style="font-size:16px;">check</span>
+                        </span>
+                        {% else %}
+                        <form method="post" action="{% url 'comandas:item_listo' item.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="md3-btn md3-btn-tonal md3-btn-sm" title="Marcar como listo">
+                                <span class="material-symbols-outlined" style="font-size:18px;">check</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Notas generales -->
+                {% if comanda.notas %}
+                <div style="padding:10px 16px; background:var(--md-sys-color-surface-container-low); border-top:1px solid var(--md-sys-color-outline-variant);">
+                    <small style="color:var(--md-sys-color-on-surface-variant);">
+                        <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">chat_bubble</span>
+                        {{ comanda.notas }}
+                    </small>
+                </div>
+                {% endif %}
+
+                <!-- Accion final -->
+                {% if comanda.estado == 'lista' %}
+                <div class="cocina-footer lista">
+                    <span class="material-symbols-outlined" style="font-size:18px; vertical-align:middle;">check_circle</span>
+                    <span style="font-weight:500;">Todos los items listos para servir</span>
+                </div>
+                {% else %}
+                <div class="cocina-footer">
+                    <form method="post" action="{% url 'comandas:marcar_lista' comanda.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="md3-btn md3-btn-filled" style="width:100%;">
+                            <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>
+                            Marcar como Lista
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="md3-empty-state">
+    <span class="material-symbols-outlined" style="font-size:64px; color:var(--md-sys-color-success);">check_circle</span>
+    <h3 style="color:var(--md-sys-color-success); margin-top:8px;">Todo al dia!</h3>
+    <p style="color:var(--md-sys-color-on-surface-variant);">No hay comandas pendientes en cocina</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const cocinaSocket = new WebSocket(`${wsBase}/ws/cocina/`);
+    cocinaSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.comanda_id) {
+            setTimeout(function() { location.reload(); }, 500);
+        }
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Acceso Bloqueado{% endblock %}
+
+{% block content %}
+<div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="min-height: 60vh; justify-content: center;">
+    <div style="text-align: center;">
+        <div style="margin-bottom: 1.5rem;">
+            <span class="material-symbols-outlined" style="font-size: 5rem; color: var(--md-sys-color-error);">gpp_bad</span>
+        </div>
+        <h1 style="font-weight: bold; color: var(--md-sys-color-error); margin-bottom: 1rem;">Acceso Bloqueado</h1>
+        <p style="color: var(--md-sys-color-on-surface-variant); font-size: 1.25rem; margin-bottom: 1.5rem;">No tienes los permisos necesarios para acceder a esta seccion.</p>
+        <div class="md3-card-elevated" style="max-width: 450px; margin: 0 auto;">
+            <div class="md3-card-body" style="padding: 1.5rem;">
+                <p style="margin-bottom: 1rem; font-weight: 600;">Comunicate con el administrador del sistema para solicitar acceso.</p>
+                <a href="{% url 'core:dashboard' %}" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">arrow_back</span> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

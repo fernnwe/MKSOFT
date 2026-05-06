@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Comanda{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+        <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title">Nueva Comanda</h1>
+            <p class="md3-page-subtitle">Crear una orden para una mesa</p>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <form method="post" class="md3-card-outlined" style="max-width:600px;">
+        {% csrf_token %}
+        <div style="padding:8px 16px;">
+            <div class="md3-field">
+                <select name="mesa" id="id_mesa" class="md3-input" required>
+                    <option value="">Seleccionar mesa...</option>
+                    {% for mesa in mesas_libres %}
+                    <option value="{{ mesa.pk }}" {% if request.GET.mesa == mesa.pk|stringformat:"s" %}selected{% endif %}>
+                        Mesa {{ mesa.numero }} - {{ mesa.get_zona_display }} ({{ mesa.capacidad }} pers.)
+                        {% if mesa.estado == 'ocupada' %}[Reabierta]{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <label class="md3-label" for="id_mesa">Mesa</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Elige la mesa donde se realizo el pedido.</small>
+            </div>
+
+            <div class="md3-field">
+                <select name="mesero" id="id_mesero" class="md3-input" required>
+                    <option value="">Seleccionar mesero...</option>
+                    {% for mesero in meseros %}
+                    <option value="{{ mesero.pk }}">{{ mesero.first_name }} {{ mesero.last_name }} ({{ mesero.username }})</option>
+                    {% endfor %}
+                </select>
+                <label class="md3-label" for="id_mesero">Mesero</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Mesero responsable de atender esta mesa.</small>
+            </div>
+
+            <div class="md3-field">
+                <select name="prioridad" id="id_prioridad" class="md3-input">
+                    <option value="normal">Normal</option>
+                    <option value="urgente">Urgente</option>
+                    <option value="vip">VIP</option>
+                </select>
+                <label class="md3-label" for="id_prioridad">Prioridad</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Marca como urgente o VIP si requiere atencion especial.</small>
+            </div>
+
+            <div class="md3-field">
+                <textarea name="notas" id="id_notas" class="md3-input md3-textarea" placeholder=" " rows="2"></textarea>
+                <label class="md3-label" for="id_notas">Notas</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Observaciones adicionales para cocina o mesero.</small>
+            </div>
+        </div>
+
+        <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
+            <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+            <button type="submit" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>
+                Crear Comanda
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

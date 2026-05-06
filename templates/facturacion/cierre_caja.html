@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% block title %}Cierre de Caja - {{ fecha_seleccionada|date:"d/m/Y" }}{% endblock %}
+{% block content %}
+<div class="md3-page-header no-print">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Cierre de Caja</h1>
+            <p class="md3-page-subtitle">{{ fecha_seleccionada|date:"l, d \d\e F \d\e Y" }}</p>
+        </div>
+        <div class="md3-flex md3-flex-align-center" style="gap:16px; flex-wrap:wrap;">
+            <form method="get">
+                <div class="md3-field" style="margin-bottom:0; min-width:200px;">
+                    <input type="date" name="fecha" value="{{ fecha_seleccionada|date:'Y-m-d' }}" class="md3-input" style="padding-top:24px;" onchange="this.form.submit()">
+                    <label class="md3-label">Fecha de Cierre</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </form>
+            <button onclick="window.print()" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">print</span>
+                <span style="display:none;">Imprimir Ticket</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="px-3 px-md-4 no-print" style="margin-bottom:16px;">
+    <div class="md3-grid md3-grid-4">
+        <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--md-sys-color-success);"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="font-size:32px; color:var(--md-sys-color-success);">description</span>
+                <div>
+                    <div style="font-size:24px; font-weight:500;">{{ facturas_pagadas_count }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Facturas Pagadas</div>
+                </div>
+            </div>
+            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</div>
+        </div>
+
+        <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--md-sys-color-error);"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="font-size:32px; color:var(--md-sys-color-error);">cancel</span>
+                <div>
+                    <div style="font-size:24px; font-weight:500;">{{ facturas_canceladas_count }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Facturas Canceladas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:var(--md-sys-color-primary);"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="font-size:32px; color:var(--md-sys-color-primary);">shopping_cart</span>
+                <div>
+                    <div style="font-size:24px; font-weight:500;">{{ compras_recibidas_count }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Compras Recibidas</div>
+                </div>
+            </div>
+            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</div>
+        </div>
+
+        <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};"></div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="font-size:32px; {% if balance_color == 'success' %}color:var(--md-sys-color-success){% else %}color:var(--md-sys-color-error){% endif %};">account_balance_wallet</span>
+                <div>
+                    <div style="font-size:24px; font-weight:500; color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Balance Neto</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 Columnas: Metodos, Distribucion, Resumen -->
+<div class="px-3 px-md-4 no-print" style="margin-bottom:16px;">
+    <div class="md3-grid md3-grid-3">
+        <!-- Metodos de Pago -->
+        <div class="md3-card-outlined">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
+                    <strong>Metodos de Pago</strong>
+                </div>
+            </div>
+            <div style="padding:8px 16px;">
+                {% for item in ventas_por_metodo %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                    <div>
+                        <div style="font-weight:500;">{{ item.metodo }}</div>
+                        <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ item.count }} transaccion{{ item.count|pluralize:"es" }}</div>
+                    </div>
+                    <div style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</div>
+                </div>
+                {% endfor %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; font-weight:700; border-top:2px solid var(--md-sys-color-outline); margin-top:8px;">
+                    <span>Total Cobrado</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribucion de Ventas -->
+        <div class="md3-card-outlined">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">bar_chart</span>
+                    <strong>Distribucion de Ventas</strong>
+                </div>
+            </div>
+            <div style="padding:16px;">
+                {% for item in ventas_por_metodo %}
+                <div style="margin-bottom:16px;">
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom:6px;">
+                        <span style="font-size:14px; font-weight:500;">{{ item.metodo }}</span>
+                        <span style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ item.percent }}%</span>
+                    </div>
+                    <div style="height:8px; background:var(--md-sys-color-surface-container-highest); border-radius:4px; overflow:hidden;">
+                        <div style="width:{{ item.percent }}%; height:100%; border-radius:4px; background:{% if forloop.counter0 == 0 %}var(--md-sys-color-primary){% elif forloop.counter0 == 1 %}var(--md-sys-color-success){% elif forloop.counter0 == 2 %}var(--md-sys-color-warning){% else %}var(--md-sys-color-tertiary){% endif %}; transition:width 1s ease;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Resumen del Dia -->
+        <div class="md3-card-outlined">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">calculate</span>
+                    <strong>Resumen del Dia</strong>
+                </div>
+            </div>
+            <div style="padding:8px 16px;">
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-success);">north_east</span>
+                        <span>Ventas</span>
+                    </div>
+                    <span style="font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span>
+                </div>
+                {% if total_servicio > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
+                    <span>Servicio 10%</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if total_descuentos > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
+                    <span>Descuentos</span>
+                    <span style="color:var(--md-sys-color-error);">-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-error);">south_west</span>
+                        <span>Compras</span>
+                    </div>
+                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span>
+                </div>
+                <div style="height:1px; background:var(--md-sys-color-outline); margin:8px 0;"></div>
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; font-weight:700; font-size:18px;">
+                    <span>Balance Neto</span>
+                    <span style="color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket para impresion -->
+<div id="cierre-box" class="ticket-container">
+    <div class="ticket">
+        <div class="ticket-header">
+            <h2 class="ticket-title">{{ RESTAURANT_NAME }}</h2>
+            <p class="ticket-info">{{ RESTAURANT_ADDRESS }}</p>
+            <p class="ticket-info">Tel: {{ RESTAURANT_PHONE }} | RFC: {{ RESTAURANT_RFC }}</p>
+            <div class="ticket-divider"></div>
+            <h3 class="ticket-section">Cierre de Caja</h3>
+            <p class="ticket-info">{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
+            <p class="ticket-info">Usuario: {{ user.get_full_name|default:user.username }}</p>
+            <div class="ticket-divider"></div>
+        </div>
+
+        <div class="ticket-section-title">RESUMEN DE VENTAS</div>
+        <div class="ticket-row"><span>Facturas pagadas:</span><span>{{ facturas_pagadas_count }}</span></div>
+        <div class="ticket-row"><span>Facturas canceladas:</span><span>{{ facturas_canceladas_count }}</span></div>
+        <div class="ticket-row"><span>Comandas cerradas:</span><span>{{ comandas_cerradas_count }}</span></div>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-section-title">TIPOS DE PAGO</div>
+        {% for item in ventas_por_metodo %}
+        <div class="ticket-row"><span>{{ item.metodo }} ({{ item.count }})</span><span>{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</span></div>
+        {% endfor %}
+        <div class="ticket-row ticket-total"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span></div>
+        <div class="ticket-divider"></div>
+
+        {% if total_servicio > 0 %}
+        <div class="ticket-section-title">DESGLOSE</div>
+        <div class="ticket-row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_descuentos > 0 %}
+        <div class="ticket-row ticket-error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span></div>
+        {% endif %}
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-section-title">COMPRAS DEL DIA</div>
+        <div class="ticket-row"><span>Compras recibidas:</span><span>{{ compras_recibidas_count }}</span></div>
+        <div class="ticket-row"><span>Compras pendientes:</span><span>{{ compras_pendientes_count }}</span></div>
+        <div class="ticket-row"><span>Compras canceladas:</span><span>{{ compras_canceladas_count }}</span></div>
+        <div class="ticket-row ticket-total"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span></div>
+        <div class="ticket-divider"></div>
+
+        {% if compras_detalladas %}
+        <div class="ticket-section-title">DETALLE DE COMPRAS</div>
+        {% for compra in compras_detalladas %}
+        <div class="ticket-subsection">{{ compra.folio }} - {{ compra.proveedor }}</div>
+        {% for item in compra.items.all %}
+        <div class="ticket-row ticket-indent"><span>{{ item.ingrediente.nombre }} x{{ item.cantidad }}</span><span>{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</span></div>
+        {% endfor %}
+        {% endfor %}
+        <div class="ticket-divider"></div>
+        {% endif %}
+
+        {% if facturas_detalladas %}
+        <div class="ticket-section-title">DETALLE DE FACTURAS</div>
+        {% for factura in facturas_detalladas %}
+        <div class="ticket-subsection">{{ factura.folio }} - {{ factura.comanda.codigo }}</div>
+        <div class="ticket-row ticket-indent"><span>{{ factura.get_metodo_pago_display }} | {{ factura.usuario.get_full_name|default:factura.usuario.username }}</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</span></div>
+        {% if factura.cliente_nombre %}
+        <div class="ticket-row ticket-indent"><span>Cliente: {{ factura.cliente_nombre }}</span></div>
+        {% endif %}
+        {% endfor %}
+        <div class="ticket-divider"></div>
+        {% endif %}
+
+        <div class="ticket-row ticket-grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span></div>
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-footer">
+            <p class="ticket-footer-text">Gracias por su preferencia</p>
+            <p class="ticket-footer-small">{{ RESTAURANT_NAME }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.ticket-container { display: none; }
+@media print {
+    body * { visibility: hidden !important; }
+    .no-print { display: none !important; }
+    .ticket-container, .ticket-container * { visibility: visible !important; }
+    .ticket-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 80mm; margin: 0 auto; }
+    @page { size: 80mm auto; margin: 0; }
+    .ticket { padding: 4px; font-size: 10px; }
+}
+@media print and (max-width: 58mm) {
+    @page { size: 58mm auto; margin: 0; }
+    .ticket-container { max-width: 58mm; }
+    .ticket { font-size: 9px; padding: 3px; }
+}
+
+.ticket { font-family: 'Courier New', monospace; font-size: 11px; color: #000; line-height: 1.4; padding: 8px; }
+.ticket-header { text-align: center; }
+.ticket-title { font-size: 16px; font-weight: bold; margin: 0 0 4px; }
+.ticket-info { margin: 0; font-size: 10px; color: #333; }
+.ticket-divider { border-top: 1px dashed #000; margin: 6px 0; }
+.ticket-section { font-size: 13px; font-weight: bold; text-align: center; margin: 4px 0; }
+.ticket-section-title { font-weight: bold; text-transform: uppercase; margin: 6px 0 4px; font-size: 11px; }
+.ticket-subsection { font-weight: bold; margin: 4px 0 2px; font-size: 10px; }
+.ticket-row { display: flex; justify-content: space-between; margin: 2px 0; }
+.ticket-indent { padding-left: 10px; }
+.ticket-total { font-weight: bold; border-top: 1px dashed #000; padding-top: 4px; }
+.ticket-grand-total { font-size: 13px; font-weight: bold; border-top: 1px double #000; padding-top: 4px; margin-top: 4px; }
+.ticket-error { color: #B3261E; }
+.ticket-footer { text-align: center; margin-top: 10px; }
+.ticket-footer-text { margin: 0; font-size: 12px; }
+.ticket-footer-small { margin: 0; font-size: 9px; color: #666; }
+</style>
+{% endblock %}

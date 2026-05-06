@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}{{ object.pk|yesno:"Editar,Nuevo" }} Mesero{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <h1 class="md3-page-title">{{ object.pk|yesno:"Editar,Nuevo" }} Mesero</h1>
+    <p class="md3-page-subtitle">Informacion del mesero</p>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined" style="max-width:640px;">
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div style="padding:12px 16px; margin:0 16px 16px; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container); font-size:14px;">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            <div style="padding:0 16px;">{{ form|crispy }}</div>
+            {% if not object.pk %}
+            <div style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined">info</span>
+                Se generara un codigo PIN automaticamente para el mesero.
+            </div>
+            {% endif %}
+            <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
+                <a href="{% url 'meseros:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="font-size:18px;">check</span>
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

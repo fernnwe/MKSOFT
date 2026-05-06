@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Imprimir Factura {{ factura.folio }}{% endblock %}
+{% block content %}
+<div id="factura-print" style="max-width:80mm; margin:0 auto; font-family:'Courier New', monospace; font-size:12px;">
+    <div style="text-align:center; margin-bottom:16px;">
+        <h4 style="font-weight:700; margin:0;">{{ RESTAURANT_NAME }}</h4>
+        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0; font-size:11px;">{{ RESTAURANT_ADDRESS }}</p>
+        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0; font-size:11px;">Tel: {{ RESTAURANT_PHONE }}</p>
+        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0 0; font-size:11px;">RFC: {{ RESTAURANT_RFC }}</p>
+    </div>
+
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+
+    <p style="font-size:11px; margin:4px 0;"><strong>Folio:</strong> {{ factura.folio }}</p>
+    <p style="font-size:11px; margin:4px 0;"><strong>Comanda:</strong> {{ factura.comanda.codigo }}</p>
+    <p style="font-size:11px; margin:4px 0;"><strong>Fecha:</strong> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
+
+    {% if factura.cliente_nombre %}
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <p style="font-size:11px; margin:4px 0;"><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
+    {% if factura.cliente_rfc %}<p style="font-size:11px; margin:4px 0;"><strong>RFC:</strong> {{ factura.cliente_rfc }}</p>{% endif %}
+    {% endif %}
+
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+
+    <table class="md3-table" style="font-size:11px;">
+        <thead><tr><th>Cant</th><th>Concepto</th><th style="text-align:right;">Total</th></tr></thead>
+        <tbody>
+            {% for item in factura.comanda.items.all %}
+            {% if not item.cancelado %}
+            <tr>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.producto.nombre }}</td>
+                <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+
+    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0;">
+        <span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span>
+    </div>
+    {% if factura.descuento > 0 %}
+    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0; color:var(--md-sys-color-error);">
+        <span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+    {% if factura.propina > 0 %}
+    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0; color:var(--md-sys-color-success);">
+        <span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:14px;">
+        <span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
+    </div>
+
+    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <p style="text-align:center; font-size:11px; margin:0;">Gracias por su preferencia!</p>
+</div>
+
+<script>
+    window.onload = function() { window.print(); };
+</script>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Compra{% endblock %}
+{% block content %}
+<style>
+    .compra-table input, .compra-table select {
+        width: 100%;
+        height: 40px;
+        padding: 4px 8px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--md-sys-color-on-surface);
+        background: var(--md-sys-color-surface-container-highest);
+        border: none;
+        border-radius: var(--md-sys-shape-corner-extra-small);
+        outline: none;
+        box-sizing: border-box;
+    }
+    .compra-table input:focus, .compra-table select:focus {
+        background: var(--md-sys-color-surface-container-high);
+    }
+    .compra-table select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%2349454F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 16px;
+        cursor: pointer;
+    }
+    .compra-table input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--md-sys-color-primary);
+        cursor: pointer;
+    }
+    .compra-table tr.deletrd { opacity: 0.4; text-decoration: line-through; }
+</style>
+
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+        <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title">Nueva Compra</h1>
+            <p class="md3-page-subtitle">Registra ingredientes comprados a un proveedor</p>
+        </div>
+    </div>
+</div>
+
+<form method="post" id="compraForm">
+    {% csrf_token %}
+
+    {% if is_post and formset.non_form_errors %}
+    <div class="px-3 px-md-4">
+        <div style="padding:12px 16px; margin-bottom:16px; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined">error</span>
+            {% for error in formset.non_form_errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="px-3 px-md-4">
+        <!-- Proveedor -->
+        <div class="md3-card-outlined" style="margin-bottom:16px;">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">badge</span>
+                    </div>
+                    <strong>Proveedor</strong>
+                </div>
+            </div>
+            <div style="padding:12px 16px;">
+                {% for field in form %}
+                <div class="md3-field">
+                    {{ field.as_widget }}
+                    <label class="md3-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="md3-input-line"></div>
+                    {% if is_post and field.errors %}
+                    <div style="font-size:12px; color:var(--md-sys-color-error); margin-top:4px;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:8px;">
+                    <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">info</span>
+                    Nombre del proveedor que vendio los ingredientes.
+                </small>
+            </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="md3-card-outlined" style="margin-bottom:16px;">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">inventory_2</span>
+                    </div>
+                    <strong>Ingredientes</strong>
+                </div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Agrega al menos uno</small>
+            </div>
+
+            <div class="md3-table-wrapper">
+                <table class="md3-table compra-table">
+                    <thead>
+                        <tr>
+                            <th style="width:35%;">Ingrediente</th>
+                            <th style="width:15%;">Cantidad</th>
+                            <th style="width:20%;">Costo Unit.</th>
+                            <th style="width:15%;">Subtotal</th>
+                            <th style="width:15%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                        <tr class="compra-item-row">
+                            <td>{{ form.ingrediente }}</td>
+                            <td>{{ form.cantidad }}</td>
+                            <td>{{ form.costo_unitario }}</td>
+                            <td><strong class="subtotal-value" style="color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}0.00</strong></td>
+                            <td>
+                                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                                    {{ form.DELETE }}
+                                    <button type="button" class="md3-btn md3-btn-icon md3-btn-text" style="color:var(--md-sys-color-error);" onclick="deleteRow(this)">
+                                        <span class="material-symbols-outlined" style="font-size:20px;">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="padding:16px; background:var(--md-sys-color-primary-container); display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:500; color:var(--md-sys-color-on-primary-container);">Total de la Compra</span>
+                <span style="font-weight:700; font-size:24px; color:var(--md-sys-color-on-primary-container);" id="compraTotal">{{ CURRENCY_SYMBOL }}0.00</span>
+            </div>
+        </div>
+
+        <div class="md3-flex md3-flex-justify-end" style="margin-top:16px; gap:8px;">
+            <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+            <button type="submit" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined" style="font-size:18px;">shopping_cart</span>
+                Registrar Compra
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.compra-item-row').forEach(function(row) {
+        row.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select').forEach(function(inp) {
+            inp.addEventListener('input', function() { calcSubtotal(row); });
+            inp.addEventListener('change', function() { calcSubtotal(row); });
+        });
+        const del = row.querySelector('input[type="checkbox"]');
+        if (del) {
+            del.addEventListener('change', function() {
+                calcTotal();
+                row.classList.toggle('deletrd', del.checked);
+            });
+            if (del.checked) row.classList.add('deletrd');
+        }
+        calcSubtotal(row);
+    });
+    calcTotal();
+});
+
+function calcSubtotal(row) {
+    const cant = row.querySelector('input[name*="cantidad"]');
+    const costo = row.querySelector('input[name*="costo_unitario"]');
+    const sub = row.querySelector('.subtotal-value');
+    if (cant && costo && sub) {
+        const c = parseFloat(cant.value) || 0;
+        const p = parseFloat(costo.value) || 0;
+        sub.textContent = '{{ CURRENCY_SYMBOL }}' + (c * p).toFixed(2);
+    }
+    calcTotal();
+}
+
+function calcTotal() {
+    let total = 0;
+    document.querySelectorAll('.subtotal-value').forEach(function(sub) {
+        const row = sub.closest('.compra-item-row');
+        if (row) {
+            const del = row.querySelector('input[type="checkbox"]');
+            if (del && del.checked) return;
+        }
+        total += parseFloat(sub.textContent.replace('{{ CURRENCY_SYMBOL }}', '')) || 0;
+    });
+    document.getElementById('compraTotal').textContent = '{{ CURRENCY_SYMBOL }}' + total.toFixed(2);
+}
+
+function deleteRow(btn) {
+    const row = btn.closest('.compra-item-row');
+    const cb = row.querySelector('input[type="checkbox"]');
+    if (cb) {
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event('change'));
+    }
+}
+</script>
+{% endblock %}

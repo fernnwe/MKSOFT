@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Cuentas por Pagar - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">receipt_long</span>Cuentas por Pagar</h2>
+    <div>
+        <a href="?estado=vencida" class="md3-btn md3-btn-outlined md3-btn-error" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">warning</span>Vencidas
+        </a>
+        <a href="?estado=pendiente" class="md3-btn md3-btn-outlined md3-btn-warning" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">schedule</span>Pendientes
+        </a>
+        <a href="{% url 'inventario:cuenta_crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>Nueva Cuenta
+        </a>
+    </div>
+</div>
+
+<div class="md3-grid md3-grid-3" style="gap: 1rem; margin-bottom: 1.5rem;">
+    <div class="md3-card-elevated" style="background-color: var(--md-sys-color-error-container);">
+        <div class="md3-card-body">
+            <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+                <span class="material-symbols-outlined" style="color: var(--md-sys-color-error); font-size: 2rem;">error</span>
+                <div>
+                    <small style="color: var(--md-sys-color-on-surface-variant);">Total Pendiente</small>
+                    <h4 style="margin-bottom: 0; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ total_pendiente|floatformat:2 }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="md3-card-elevated" style="background-color: var(--md-sys-color-warning-container);">
+        <div class="md3-card-body">
+            <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+                <span class="material-symbols-outlined" style="color: var(--md-sys-color-warning); font-size: 2rem;">history</span>
+                <div>
+                    <small style="color: var(--md-sys-color-on-surface-variant);">Cuentas Vencidas</small>
+                    <h4 style="margin-bottom: 0; font-weight: bold;">{{ cuentas_vencidas }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="md3-card-elevated" style="background-color: var(--md-sys-color-success-container);">
+        <div class="md3-card-body">
+            <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+                <span class="material-symbols-outlined" style="color: var(--md-sys-color-success); font-size: 2rem;">check_circle</span>
+                <div>
+                    <small style="color: var(--md-sys-color-on-surface-variant);">Total Cuentas</small>
+                    <h4 style="margin-bottom: 0; font-weight: bold;">{{ page_obj.paginator.count }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="md3-card-outlined">
+    <div class="md3-card-body" style="padding: 0;">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead style="background-color: var(--md-sys-color-surface-container-low);">
+                    <tr>
+                        <th>Folio</th>
+                        <th>Proveedor</th>
+                        <th>Monto Total</th>
+                        <th>Pagado</th>
+                        <th>Pendiente</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                        <th style="text-align: end;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in cuentas %}
+                    <tr style="{% if cuenta.vencida %}background-color: var(--md-sys-color-error-container);{% endif %}">
+                        <td><strong>{{ cuenta.folio }}</strong></td>
+                        <td>{{ cuenta.proveedor }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|floatformat:2 }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|floatformat:2 }}</td>
+                        <td style="font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</td>
+                        <td>{{ cuenta.fecha_vencimiento|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if cuenta.estado == "pagada" %}
+                            <span class="md3-badge md3-badge-success">Pagada</span>
+                            {% elif cuenta.estado == "vencida" %}
+                            <span class="md3-badge md3-badge-error">Vencida</span>
+                            {% elif cuenta.estado == "parcial" %}
+                            <span class="md3-badge md3-badge-warning">Parcial</span>
+                            {% elif cuenta.estado == "cancelada" %}
+                            <span class="md3-badge md3-badge-secondary">Cancelada</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-primary">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: end;">
+                            <a href="{% url 'inventario:cuenta_detalle' cuenta.pk %}" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-primary">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </a>
+                            <form method="post" action="{% url 'inventario:cuenta_eliminar' cuenta.pk %}" style="display: inline;" onsubmit="return confirm('¿Eliminar permanentemente la cuenta {{ cuenta.folio }}?')">
+                                {% csrf_token %}
+                                <button type="submit" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-error">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 1.5rem 1rem; color: var(--md-sys-color-on-surface-variant);">
+                            <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">receipt_long</span>
+                            No hay cuentas por pagar.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="md3-flex" style="justify-content: center; margin-top: 1rem;">
+    <div class="md3-flex" style="gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        <a href="?page={{ num }}" class="md3-btn md3-btn-sm {% if page_obj.number == num %}md3-btn-filled{% else %}md3-btn-outlined{% endif %}">{{ num }}</a>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Meseros{% endblock %}
+
+{% block content %}
+<div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem;">
+    <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">people</span>Meseros</h2>
+    <a href="{% url 'meseros:crear' %}" class="md3-btn md3-btn-filled">
+        <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>Nuevo Mesero
+    </a>
+</div>
+
+<div class="md3-grid md3-grid-4">
+    {% for mesero in meseros %}
+    <div style="min-width: 0;">
+        <div class="md3-card-elevated" style="height: 100%;">
+            <div class="md3-card-body" style="text-align: center; padding: 1rem;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                    <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 1.5rem;">person</span>
+                </div>
+                <h5 style="font-weight: 600; margin-bottom: 0.25rem;">{{ mesero.usuario.get_full_name|default:mesero.usuario.username }}</h5>
+                <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; margin-bottom: 0.5rem;">PIN: {{ mesero.codigo_pin }}</p>
+                {% if mesero.activo %}
+                <span class="md3-badge md3-badge-success">Activo</span>
+                {% else %}
+                <span class="md3-badge md3-badge-error">Inactivo</span>
+                {% endif %}
+                <div style="margin-top: 1rem; font-size: 0.875rem;">
+                    <p style="margin-bottom: 0.25rem;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">description</span>{{ mesero.comandas_atendidas }} comandas</p>
+                    <p style="margin-bottom: 0;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">payments</span>{{ CURRENCY_SYMBOL }}{{ mesero.propinas_total|floatformat:2 }} propinas</p>
+                </div>
+            </div>
+            <div class="md3-card-body" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding: 0.75rem;">
+                <div class="md3-flex" style="gap: 0.5rem; width: 100%;">
+                    <a href="{% url 'meseros:editar' mesero.pk %}" class="md3-btn md3-btn-outlined md3-btn-sm" style="flex-grow: 1;">
+                        <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">edit</span> Editar
+                    </a>
+                    <a href="{% url 'meseros:eliminar' mesero.pk %}" class="md3-btn md3-btn-error md3-btn-sm" onclick="return confirm('¿Eliminar este mesero?')">
+                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="md3-grid" style="grid-template-columns: 1fr;">
+        <div class="md3-empty-state">
+            <span class="material-symbols-outlined" style="font-size: 3rem;">people</span>
+            <h3>No hay meseros registrados</h3>
+            <p style="color: var(--md-sys-color-on-surface-variant);">No hay meseros registrados</p>
+            <a href="{% url 'meseros:crear' %}" class="md3-btn md3-btn-filled">Registrar Mesero</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

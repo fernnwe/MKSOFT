@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Categorias{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Categorias</h1>
+            <p class="md3-page-subtitle">Organiza tus productos por categoria</p>
+        </div>
+        <a href="{% url 'productos:categoria_crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined">add</span>
+            <span style="display:none;">Nueva Categoria</span>
+        </a>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-grid md3-grid-4">
+        {% for cat in categorias %}
+        <a href="{% url 'productos:list' %}?categoria={{ cat.id }}" style="text-decoration:none; color:inherit;">
+            <div class="md3-card-elevated" style="padding:20px; text-align:center; display:block; transition:transform 0.2s; cursor:pointer;">
+                {% if cat.icono %}
+                <div style="font-size:40px; margin-bottom:8px;">{{ cat.icono }}</div>
+                {% else %}
+                <div style="width:48px; height:48px; border-radius:12px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary-container); font-size:24px;">sell</span>
+                </div>
+                {% endif %}
+                <div style="font-size:16px; font-weight:500; margin-bottom:4px;">{{ cat.nombre }}</div>
+                {% if cat.descripcion %}
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-bottom:8px;">{{ cat.descripcion|truncatechars:60 }}</div>
+                {% endif %}
+                <span class="md3-badge md3-badge-secondary">{{ cat.productos.count }} producto{{ cat.productos.count|pluralize:"s" }}</span>
+            </div>
+        </a>
+        {% empty %}
+        <div style="grid-column:1/-1;">
+            <div class="md3-empty-state">
+                <span class="material-symbols-outlined">sell</span>
+                <div class="md3-empty-state-title">No hay categorias</div>
+                <div class="md3-empty-state-text">Crea categorias para organizar tus productos</div>
+                <a href="{% url 'productos:categoria_crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">
+                    <span class="material-symbols-outlined">add</span>
+                    Crear Categoria
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

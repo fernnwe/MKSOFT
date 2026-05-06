@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Facturacion{% endblock %}
+{% block content %}
+<style>
+    .md3-dialog-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+        z-index: 1050; display: none; align-items: center; justify-content: center;
+        animation: fadeIn 0.15s ease;
+    }
+    .md3-dialog-overlay.active { display: flex; }
+    .md3-dialog {
+        background: var(--md-sys-color-surface-container-high);
+        border-radius: 28px;
+        max-width: 400px;
+        width: 90%;
+        overflow: hidden;
+        animation: dialogIn 0.25s ease;
+    }
+    .md3-dialog-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 24px 24px 0 24px;
+    }
+    .md3-dialog-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: var(--md-sys-color-error-container);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .md3-dialog-icon .material-symbols-outlined { color: var(--md-sys-color-on-error-container); font-size: 24px; }
+    .md3-dialog-title { font-size: 22px; font-weight: 400; color: var(--md-sys-color-on-surface); }
+    .md3-dialog-body { padding: 16px 24px 24px; }
+    .md3-dialog-body p { margin: 0 0 8px; color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.5; }
+    .md3-dialog-body .md3-folio { font-family: monospace; background: var(--md-sys-color-surface-container-highest); padding: 2px 8px; border-radius: 4px; font-size: 13px; }
+    .md3-dialog-body strong { color: var(--md-sys-color-on-surface); }
+    .md3-dialog-actions {
+        display: flex; justify-content: flex-end; gap: 8px;
+        padding: 12px 24px 24px;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes dialogIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+</style>
+
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right:8px;">payments</span>Facturacion</h1>
+            <p class="md3-page-subtitle">Historial de facturas y cobros</p>
+        </div>
+        <a href="{% url 'facturacion:crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span>Nueva Factura
+        </a>
+    </div>
+</div>
+
+<div class="px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-grid md3-grid-3">
+        <div class="md3-card-filled" style="background:var(--md-sys-color-primary-container);">
+            <div style="padding:16px;">
+                <div class="md3-flex md3-flex-align-center" style="gap:12px; margin-bottom:8px;">
+                    <div style="width:40px; height:40px; border-radius:12px; background:var(--md-sys-color-primary); display:flex; align-items:center; justify-content:center;">
+                        <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary); font-size:20px;">payments</span>
+                    </div>
+                    <span style="font-size:14px; color:var(--md-sys-color-on-primary-container);">Total Ventas</span>
+                </div>
+                <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-primary-container);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Comanda</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Pago</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th style="text-align:right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in facturas %}
+                    <tr>
+                        <td><code style="font-size:12px; background:var(--md-sys-color-surface-container); padding:2px 8px; border-radius:8px;">{{ factura.folio }}</code></td>
+                        <td>{{ factura.comanda.codigo }}</td>
+                        <td>{{ factura.cliente_nombre|default:"—" }}</td>
+                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                        <td>{{ factura.get_metodo_pago_display|default:"—" }}</td>
+                        <td>
+                            {% if factura.estado == 'pagada' %}
+                            <span class="md3-badge md3-badge-success">Pagada</span>
+                            {% elif factura.estado == 'pendiente' %}
+                            <span class="md3-badge md3-badge-warning">Pendiente</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-error">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:13px;">{{ factura.fecha_emision|date:"d/m/Y H:i" }}</td>
+                        <td style="text-align:right;">
+                            <div class="md3-flex" style="justify-content:flex-end; gap:4px;">
+                                <a href="{% url 'facturacion:detalle' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </a>
+                                <a href="{% url 'facturacion:imprimir' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" target="_blank">
+                                    <span class="material-symbols-outlined">print</span>
+                                </a>
+                                {% if user.can_cancel_facturas %}
+                                <button type="button" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="openDeleteModal({{ factura.pk }}, '{{ factura.folio }}')">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:48px 16px;">
+                            <span class="material-symbols-outlined" style="font-size:48px; color:var(--md-sys-color-outline);">description</span>
+                            <p style="color:var(--md-sys-color-on-surface-variant); margin-top:8px;">No hay facturas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <div class="md3-flex" style="justify-content:center; margin-top:16px; gap:8px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<div id="deleteDialog" class="md3-dialog-overlay">
+    <div class="md3-dialog" onclick="event.stopPropagation()">
+        <form id="deleteForm" method="post" action="">
+            {% csrf_token %}
+            <div class="md3-dialog-header">
+                <div class="md3-dialog-icon">
+                    <span class="material-symbols-outlined">delete</span>
+                </div>
+                <div class="md3-dialog-title">Eliminar Factura</div>
+            </div>
+            <div class="md3-dialog-body">
+                <p>¿Deseas eliminar la factura <span class="md3-folio" id="deleteFolio"></span>?</p>
+                <p style="color:var(--md-sys-color-error); margin-bottom:0;"><strong>Esta accion no se puede deshacer.</strong></p>
+            </div>
+            <div class="md3-dialog-actions">
+                <button type="button" class="md3-btn md3-btn-outlined" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="submit" class="md3-btn md3-btn-filled" style="color:var(--md-sys-color-on-error); background:var(--md-sys-color-error);">Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(pk, folio) {
+    document.getElementById('deleteForm').action = "/facturacion/" + pk + "/eliminar/";
+    document.getElementById('deleteFolio').textContent = folio;
+    document.getElementById('deleteDialog').classList.add('active');
+}
+function closeDeleteModal() {
+    document.getElementById('deleteDialog').classList.remove('active');
+}
+document.getElementById('deleteDialog').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
+</script>
+{% endblock %}

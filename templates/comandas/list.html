@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Comandas{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Comandas</h1>
+            <p class="md3-page-subtitle">Gestion de ordenes</p>
+        </div>
+        <div class="md3-flex">
+            <a href="{% url 'comandas:cocina' %}" class="md3-btn md3-btn-tonal" style="display:none;">
+                <span class="material-symbols-outlined">stove</span>
+                Cocina
+            </a>
+            <a href="{% url 'comandas:crear' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">add</span>
+                <span style="display:none;">Nueva Comanda</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4" style="margin-bottom:12px;">
+    <div class="md3-flex">
+        <a href="?" class="md3-chip {% if not request.GET.estado %}active{% endif %}">Todas</a>
+        {% for valor, nombre in estados %}
+        <a href="?estado={{ valor }}" class="md3-chip {% if request.GET.estado == valor %}active{% endif %}">{{ nombre|title }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Mesa</th>
+                        <th>Mesero</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th style="text-align:right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comanda in comandas %}
+                    <tr>
+                        <td><strong>{{ comanda.codigo }}</strong></td>
+                        <td>{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</td>
+                        <td>{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}—{% endif %}</td>
+                        <td><span class="md3-badge md3-badge-secondary">{{ comanda.items_count }}</span></td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}</td>
+                        <td>
+                            {% if comanda.estado == 'abierta' %}
+                            <span class="md3-badge md3-badge-primary">Abierta</span>
+                            {% elif comanda.estado == 'en_cocina' %}
+                            <span class="md3-badge md3-badge-warning">En Cocina</span>
+                            {% elif comanda.estado == 'lista' %}
+                            <span class="md3-badge md3-badge-success">Lista</span>
+                            {% elif comanda.estado == 'cerrada' %}
+                            <span class="md3-badge md3-badge-secondary">Cerrada</span>
+                            {% elif comanda.estado == 'cancelada' %}
+                            <span class="md3-badge md3-badge-error">Cancelada</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-primary">{{ comanda.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:12px;">{{ comanda.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                        <td style="text-align:right;">
+                            <div class="md3-flex" style="justify-content:flex-end;">
+                                <a href="{% url 'comandas:detalle' comanda.pk %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                    Ver
+                                </a>
+                                {% if user.is_superuser or user.is_admin or user.can_manage_comandas %}
+                                <a href="{% url 'comandas:eliminar' comanda.pk %}" class="md3-btn md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar esta comanda?')">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="md3-empty-state">
+                                <span class="material-symbols-outlined">receipt_long</span>
+                                <div class="md3-empty-state-title">No hay comandas</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <div class="md3-flex" style="justify-content:center; margin-top:16px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

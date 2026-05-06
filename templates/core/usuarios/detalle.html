@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ usuario.get_full_name|default:usuario.username }} - Perfil{% endblock %}
+
+{% block content %}
+<div class="md3-flex md3-flex-align-center" style="margin-bottom: 1rem;">
+    <a href="{% if user.is_manager %}{% url 'core:usuarios' %}{% else %}{% url 'core:dashboard' %}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm" style="margin-right: 0.5rem;">
+        <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h2 class="md3-page-title">Perfil de Usuario</h2>
+</div>
+
+<div class="md3-grid" style="grid-template-columns: 1fr 2fr; gap: 1rem;">
+    <div>
+        <div class="md3-card-elevated">
+            <div class="md3-card-body" style="text-align: center; padding: 1.5rem;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                    <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 2rem;">person</span>
+                </div>
+                <h4 style="font-weight: bold; margin-bottom: 0.25rem;">{{ usuario.get_full_name|default:usuario.username }}</h4>
+                <p style="color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.75rem;">@{{ usuario.username }}</p>
+                <span class="md3-badge {% if usuario.role == 'admin' %}md3-badge-error{% elif usuario.role == 'manager' %}md3-badge-warning{% elif usuario.role == 'waiter' %}md3-badge-success{% elif usuario.role == 'cashier' %}md3-badge-primary{% else %}md3-badge-secondary{% endif %}">
+                    {{ usuario.get_role_display }}
+                </span>
+                {% if usuario.is_active_staff %}
+                <div style="margin-top: 0.5rem;">
+                    <span class="md3-badge md3-badge-success">Activo</span>
+                </div>
+                {% else %}
+                <div style="margin-top: 0.5rem;">
+                    <span class="md3-badge md3-badge-secondary">Inactivo</span>
+                </div>
+                {% endif %}
+                {% if user.is_manager or user == usuario %}
+                <a href="{% url 'core:usuario_editar' usuario.pk %}" class="md3-btn md3-btn-outlined md3-btn-sm" style="margin-top: 0.75rem;">
+                    <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">edit</span>Editar
+                </a>
+                {% endif %}
+                {% if user == usuario %}
+                <a href="{% url 'core:cambiar_password' %}" class="md3-btn md3-btn-tonal md3-btn-sm" style="margin-top: 0.75rem;">
+                    <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">key</span>Cambiar Contraseña
+                </a>
+                {% endif %}
+                {% if user.can_delete_users and usuario.pk != user.pk %}
+                <div class="md3-flex" style="gap: 0.5rem; margin-top: 0.75rem; justify-content: center;">
+                    <a href="{% url 'core:usuario_reset_password' usuario.pk %}" class="md3-btn md3-btn-tonal md3-btn-sm">
+                        <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">key</span>Restablecer Contraseña
+                    </a>
+                    <button type="button" class="md3-btn md3-btn-error md3-btn-sm" onclick="document.getElementById('deleteModal').style.display='flex'">
+                        <span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">delete</span>Eliminar
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="md3-card-elevated" style="margin-bottom: 1rem;">
+            <div class="md3-card-body">
+                <h6 style="font-weight: bold; margin-bottom: 1rem;"><span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1rem;">info</span>Informacion</h6>
+                <div class="md3-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Email</small>
+                        <span style="font-weight: 600;">{{ usuario.email|default:"-" }}</span>
+                    </div>
+                    <div>
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Telefono</small>
+                        <span style="font-weight: 600;">{{ usuario.phone|default:"-" }}</span>
+                    </div>
+                    {% if user.can_manage_users %}
+                    <div style="grid-column: 1 / -1;">
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Contraseña</small>
+                        {% if usuario.visible_password %}
+                        <span style="font-weight: 600; color: var(--md-sys-color-primary);" id="userPassword">{{ usuario.visible_password }}</span>
+                        <button type="button" class="md3-btn md3-btn-text md3-btn-sm" style="padding: 0 0 0 0.25rem; font-size: 0.75rem;" onclick="togglePasswordVisibility()" id="togglePassBtn">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">visibility_off</span>
+                        </button>
+                        {% else %}
+                        <span style="color: var(--md-sys-color-warning); font-weight: 600;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">warning</span>Sin contraseña asignada. Restablece la contraseña para asignar una.</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Fecha de creacion</small>
+                        <span style="font-weight: 600;">{{ usuario.date_joined|date:"d/m/Y" }}</span>
+                    </div>
+                    <div>
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Ultimo acceso</small>
+                        <span style="font-weight: 600;">{{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                    </div>
+                    {% if usuario.is_superuser %}
+                    <div style="grid-column: 1 / -1;">
+                        <small style="color: var(--md-sys-color-on-surface-variant); display: block;">Superusuario</small>
+                        <span class="md3-badge md3-badge-error">Si</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if comandas_count %}
+        <div class="md3-card-elevated" style="margin-bottom: 1rem;">
+            <div class="md3-card-body md3-flex md3-flex-justify-between md3-flex-align-center" style="flex-wrap: wrap;">
+                <h6 style="font-weight: bold; margin-bottom: 0;"><span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1rem;">description</span>Comandas ({{ comandas_count }})</h6>
+            </div>
+            <div class="md3-table-wrapper">
+                <table class="md3-table">
+                    <thead>
+                        <tr>
+                            <th>Codigo</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comanda in comandas_recientes %}
+                        <tr>
+                            <td><a href="{% url 'comandas:detalle' comanda.pk %}">{{ comanda.codigo }}</a></td>
+                            <td>
+                                <span class="md3-badge {% if comanda.estado == comanda.Estado.CERRADA %}md3-badge-secondary{% elif comanda.estado == comanda.Estado.ABIERTA %}md3-badge-success{% elif comanda.estado == comanda.Estado.EN_COCINA %}md3-badge-warning{% elif comanda.estado == comanda.Estado.CANCELADA %}md3-badge-error{% else %}md3-badge-primary{% endif %}">
+                                    {{ comanda.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>{{ comanda.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if facturas_count %}
+        <div class="md3-card-elevated">
+            <div class="md3-card-body md3-flex md3-flex-justify-between md3-flex-align-center" style="flex-wrap: wrap;">
+                <h6 style="font-weight: bold; margin-bottom: 0;"><span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 1rem;">payments</span>Facturas ({{ facturas_count }})</h6>
+            </div>
+            <div class="md3-table-wrapper">
+                <table class="md3-table">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for factura in facturas_recientes %}
+                        <tr>
+                            <td>{{ factura.folio }}</td>
+                            <td>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                            <td>
+                                <span class="md3-badge {% if factura.estado == factura.Estado.PAGADA %}md3-badge-success{% elif factura.estado == factura.Estado.CANCELADA %}md3-badge-error{% else %}md3-badge-warning{% endif %}">
+                                    {{ factura.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>{{ factura.fecha_emision|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="md3-card-elevated" style="max-width: 500px; width: 90%; padding: 0;">
+        <form method="post" action="{% url 'core:usuario_eliminar' usuario.pk %}">
+            {% csrf_token %}
+            <div class="md3-card-header" style="background-color: transparent; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <h6 style="margin: 0;">Eliminar Usuario</h6>
+                <button type="button" class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('deleteModal').style.display='none'" style="margin-left: auto;">&times;</button>
+            </div>
+            <div class="md3-card-body">
+                <p>Seguro que deseas eliminar a <strong>{{ usuario.get_full_name|default:usuario.username }}</strong>?</p>
+                <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; margin-bottom: 0;">Esta accion no se puede deshacer.</p>
+            </div>
+            <div class="md3-card-footer" style="background-color: transparent; border-top: 1px solid var(--md-sys-color-outline-variant); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button type="button" class="md3-btn md3-btn-outlined md3-btn-sm" onclick="document.getElementById('deleteModal').style.display='none'">Cancelar</button>
+                <button type="submit" class="md3-btn md3-btn-error md3-btn-sm">Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.can_manage_users and usuario.visible_password %}
+<script>
+function togglePasswordVisibility() {
+    var passEl = document.getElementById('userPassword');
+    var btnEl = document.getElementById('togglePassBtn');
+    var icon = btnEl.querySelector('span.material-symbols-outlined');
+    if (passEl.textContent.trim()) {
+        passEl.setAttribute('data-password', passEl.textContent);
+        passEl.textContent = '';
+        icon.textContent = 'visibility';
+    } else {
+        passEl.textContent = passEl.getAttribute('data-password');
+        icon.textContent = 'visibility_off';
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

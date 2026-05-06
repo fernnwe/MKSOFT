@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Configuracion del Restaurante{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <h1 class="md3-page-title">Configuracion del Restaurante</h1>
+    <p class="md3-page-subtitle">Edita la informacion general de tu negocio</p>
+</div>
+
+<div class="px-3 px-md-4">
+    <form method="post" enctype="multipart/form-data" class="md3-card-outlined" style="max-width:720px;">
+        {% csrf_token %}
+
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">apartment</span>
+                <strong>Informacion General</strong>
+            </div>
+
+            <div class="md3-field">
+                <input type="text" name="nombre" id="id_nombre" class="md3-input" placeholder=" " value="{{ object.nombre }}" required>
+                <label class="md3-label" for="id_nombre">Nombre del Restaurante</label>
+                <div class="md3-input-line"></div>
+            </div>
+
+            <div class="md3-grid md3-grid-2">
+                <div class="md3-field">
+                    <input type="text" name="rfc" id="id_rfc" class="md3-input" placeholder=" " value="{{ object.rfc }}" maxlength="13">
+                    <label class="md3-label" for="id_rfc">RFC</label>
+                    <div class="md3-input-line"></div>
+                </div>
+                <div class="md3-field">
+                    <input type="email" name="email" id="id_email" class="md3-input" placeholder=" " value="{{ object.email|default:'' }}">
+                    <label class="md3-label" for="id_email">Email</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+
+            <div class="md3-field">
+                <textarea name="direccion" id="id_direccion" class="md3-input md3-textarea" placeholder=" " rows="2">{{ object.direccion }}</textarea>
+                <label class="md3-label" for="id_direccion">Direccion</label>
+                <div class="md3-input-line"></div>
+            </div>
+
+            <div class="md3-field">
+                <input type="text" name="telefono" id="id_telefono" class="md3-input" placeholder=" " value="{{ object.telefono }}">
+                <label class="md3-label" for="id_telefono">Telefono</label>
+                <div class="md3-input-line"></div>
+            </div>
+        </div>
+
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
+                <strong>Facturacion e Impuestos</strong>
+            </div>
+
+            <div class="md3-grid md3-grid-2">
+                <div class="md3-field">
+                    <input type="text" name="simbolo_moneda" id="id_simbolo_moneda" class="md3-input" placeholder=" " value="{{ object.simbolo_moneda }}" maxlength="5">
+                    <label class="md3-label" for="id_simbolo_moneda">Simbolo de Moneda</label>
+                    <div class="md3-input-line"></div>
+                    <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ej: C$, $, €</small>
+                </div>
+                <div class="md3-field">
+                    <input type="number" name="tasa_impuesto" id="id_tasa_impuesto" class="md3-input" placeholder=" " value="{{ object.tasa_impuesto }}" step="0.01" min="0" max="1">
+                    <label class="md3-label" for="id_tasa_impuesto">Tasa de Impuesto</label>
+                    <div class="md3-input-line"></div>
+                    <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ej: 0.16 para 16%</small>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">local_shipping</span>
+                <strong>Proveedores y Credito</strong>
+            </div>
+
+            <div class="md3-field">
+                <input type="number" name="dias_credito_proveedor" id="id_dias_credito_proveedor" class="md3-input" placeholder=" " value="{{ object.dias_credito_proveedor }}" step="1" min="1">
+                <label class="md3-label" for="id_dias_credito_proveedor">Dias de Credito a Proveedores</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Dias para pagar a proveedores. Ej: 30</small>
+            </div>
+        </div>
+
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">image</span>
+                <strong>Logo del Restaurante</strong>
+            </div>
+
+            <div class="md3-flex md3-flex-align-center" style="gap:16px; flex-wrap:wrap;">
+                {% if object.logo %}
+                <div style="width:80px; height:80px; border-radius:16px; overflow:hidden;">
+                    <img src="{{ object.logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                {% else %}
+                <div style="width:80px; height:80px; border-radius:16px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:32px; color:var(--md-sys-color-on-primary-container);">restaurant</span>
+                </div>
+                {% endif %}
+                <div>
+                    <label for="id_logo" class="md3-btn md3-btn-outlined" style="cursor:pointer;">
+                        <span class="material-symbols-outlined" style="font-size:18px;">cloud_upload</span>
+                        Cambiar Logo
+                    </label>
+                    <input type="file" name="logo" id="id_logo" accept="image/*" style="display:none;" onchange="previewLogo(this)">
+                </div>
+            </div>
+        </div>
+
+        <div class="md3-flex md3-flex-justify-end" style="padding:12px 16px;">
+            <button type="submit" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined" style="font-size:18px;">check</span>
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media (max-width:767px) {
+    .md3-grid-2 { grid-template-columns:1fr !important; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const area = input.closest('.md3-flex');
+            const existing = area.querySelector('div[style*="width:80px"], div[style*="width: 80px"]');
+            if (existing) existing.remove();
+            const div = document.createElement('div');
+            div.style.cssText = 'width:80px; height:80px; border-radius:16px; overflow:hidden;';
+            div.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="width:100%; height:100%; object-fit:cover;">';
+            area.insertBefore(div, area.querySelector('div'));
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos de Inventario{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem;">
+    <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">swap_horiz</span>Movimientos</h2>
+    <a href="{% url 'inventario:list' %}" class="md3-btn md3-btn-secondary">Volver al Inventario</a>
+</div>
+
+<div class="md3-card-outlined">
+    <div class="md3-card-body" style="padding: 0;">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead style="background-color: var(--md-sys-color-surface-container-low);">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Usuario</th>
+                        <th>Motivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimientos %}
+                    <tr>
+                        <td style="font-size: 0.875rem;">{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>{{ mov.inventario.ingrediente.nombre }}</td>
+                        <td>
+                            {% if mov.tipo == 'entrada' %}
+                            <span class="md3-badge md3-badge-success">{{ mov.get_tipo_display }}</span>
+                            {% elif mov.tipo == 'salida' %}
+                            <span class="md3-badge md3-badge-error">{{ mov.get_tipo_display }}</span>
+                            {% elif mov.tipo == 'merma' %}
+                            <span class="md3-badge md3-badge-warning">{{ mov.get_tipo_display }}</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-primary">{{ mov.get_tipo_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: bold;">{{ mov.cantidad }}</td>
+                        <td>{{ mov.usuario.get_full_name|default:"Sistema" }}</td>
+                        <td style="font-size: 0.875rem;">{{ mov.motivo|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 1.5rem 1rem; color: var(--md-sys-color-on-surface-variant);">No hay movimientos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<div class="md3-flex" style="justify-content: center; margin-top: 1.5rem;">
+    <div class="md3-flex" style="gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

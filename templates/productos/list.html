@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Productos</h1>
+            <p class="md3-page-subtitle">
+                {% if request.GET.categoria %}
+                <a href="{% url 'productos:list' %}" style="color:var(--md-sys-color-primary); text-decoration:none;">Todos</a>
+                <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; margin:0 4px;">chevron_right</span>
+                <strong>{{ categoria_actual }}</strong>
+                {% else %}
+                Menu y platillos del restaurante
+                {% endif %}
+            </p>
+        </div>
+        <div class="md3-flex">
+            <a href="{% url 'productos:categorias' %}" class="md3-btn md3-btn-tonal" style="display:none;">
+                <span class="material-symbols-outlined">sell</span>
+                Categorias
+            </a>
+            <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">add</span>
+                <span style="display:none;">Nuevo Producto</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Busqueda y filtros -->
+<div class="px-3 px-md-4" style="margin-bottom:12px;">
+    <div class="md3-grid md3-grid-2" style="margin-bottom:12px;">
+        <div>
+            <form method="get" class="md3-flex" style="gap:8px;">
+                <div class="md3-field" style="flex:1; margin-bottom:0;">
+                    <input type="text" name="search" class="md3-input" placeholder=" " value="{{ request.GET.search|default:'' }}" style="height:44px; font-size:14px; padding-top:16px;">
+                    <label class="md3-label" for="search">Buscar producto...</label>
+                    <div class="md3-input-line"></div>
+                </div>
+                {% if request.GET.categoria %}<input type="hidden" name="categoria" value="{{ request.GET.categoria }}">{% endif %}
+                {% if request.GET.tipo %}<input type="hidden" name="tipo" value="{{ request.GET.tipo }}">{% endif %}
+                <button type="submit" class="md3-btn md3-btn-tonal md3-btn-icon" style="min-width:44px; width:44px; height:44px; margin-top:8px;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">search</span>
+                </button>
+            </form>
+        </div>
+        <div>
+            <div class="md3-flex" style="flex-wrap:wrap; gap:8px;">
+                <a href="{% url 'productos:list' %}" class="md3-chip {% if not request.GET.tipo %}active{% endif %}">Todos</a>
+                {% for valor, nombre in tipos %}
+                <a href="?tipo={{ valor }}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="md3-chip {% if request.GET.tipo == valor %}active{% endif %}">{{ nombre }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de productos -->
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr style="{% if not producto.disponible %}opacity:0.5;{% endif %}">
+                        <td><code style="font-size:12px; background:var(--md-sys-color-surface-container); padding:2px 8px; border-radius:8px;">{{ producto.codigo }}</code></td>
+                        <td>
+                            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                                {% if producto.imagen %}
+                                <img src="{{ producto.imagen.url }}" alt="" style="width:32px; height:32px; object-fit:cover; border-radius:8px;">
+                                {% endif %}
+                                <strong>{{ producto.nombre }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ producto.categoria.nombre|default:"—" }}</td>
+                        <td>
+                            {% if producto.tipo == 'plato' %}
+                            <span class="md3-badge md3-badge-primary">Plato</span>
+                            {% elif producto.tipo == 'bebida' %}
+                            <span class="md3-badge md3-badge-tertiary">Bebida</span>
+                            {% elif producto.tipo == 'postre' %}
+                            <span class="md3-badge md3-badge-success">Postre</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-secondary">{{ producto.get_tipo_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight:500;">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</td>
+                        <td>
+                            {% if producto.disponible %}
+                            <span class="md3-badge md3-badge-success">Disponible</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-error">No disponible</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div class="md3-flex" style="justify-content:flex-end; gap:4px;">
+                                <a href="{% url 'productos:editar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+                                <a href="{% url 'productos:eliminar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar {{ producto.nombre }}?')">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="md3-empty-state">
+                                <span class="material-symbols-outlined">inventory_2</span>
+                                <div class="md3-empty-state-title">No hay productos</div>
+                                <div class="md3-empty-state-text">
+                                    {% if request.GET.categoria %}No hay productos en esta categoria.{% else %}Comienza agregando tu primer producto.{% endif %}
+                                </div>
+                                <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Nuevo Producto
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <div class="md3-flex md3-flex-justify-center" style="margin-top:16px; gap:8px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+            <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>
+            Anterior
+        </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+            Siguiente
+            <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

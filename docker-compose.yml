@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=restaurante_db
+      - DB_USER=restaurante
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RESTAURANT_NAME=${RESTAURANT_NAME}
+      - RESTAURANT_RFC=${RESTAURANT_RFC}
+      - RESTAURANT_ADDRESS=${RESTAURANT_ADDRESS}
+      - RESTAURANT_PHONE=${RESTAURANT_PHONE}
+      - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
+      - TAX_RATE=${TAX_RATE}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    restart: unless-stopped
+
+  daphne:
+    build: .
+    command: daphne config.asgi:application --bind 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=restaurante_db
+      - DB_USER=restaurante
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RESTAURANT_NAME=${RESTAURANT_NAME}
+      - RESTAURANT_RFC=${RESTAURANT_RFC}
+      - RESTAURANT_ADDRESS=${RESTAURANT_ADDRESS}
+      - RESTAURANT_PHONE=${RESTAURANT_PHONE}
+      - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
+      - TAX_RATE=${TAX_RATE}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=restaurante_db
+      - POSTGRES_USER=restaurante
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:

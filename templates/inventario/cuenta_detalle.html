@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cuenta.folio }} - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem; margin-bottom: 1.5rem;">
+        <a href="{% url 'inventario:cuentas' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span> Volver
+        </a>
+        <div>
+            <h1 class="md3-page-title" style="margin-bottom: 0;">{{ cuenta.folio }}</h1>
+            <p class="md3-page-subtitle">{{ cuenta.proveedor }}</p>
+        </div>
+    </div>
+
+    <div class="md3-grid md3-grid-2" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="md3-card-elevated" style="border-radius: 16px;">
+            <div class="md3-card-body">
+                <h5 style="font-weight: bold; margin-bottom: 1rem;">Informacion de la Cuenta</h5>
+                <table class="md3-table">
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Estado</td>
+                        <td style="text-align: end;">
+                            {% if cuenta.estado == "pagada" %}
+                            <span class="md3-badge md3-badge-success">Pagada</span>
+                            {% elif cuenta.estado == "vencida" %}
+                            <span class="md3-badge md3-badge-error">Vencida</span>
+                            {% elif cuenta.estado == "parcial" %}
+                            <span class="md3-badge md3-badge-warning">Pago Parcial</span>
+                            {% elif cuenta.estado == "cancelada" %}
+                            <span class="md3-badge md3-badge-secondary">Cancelada</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-primary">Pendiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Monto Total</td>
+                        <td style="text-align: end; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Monto Pagado</td>
+                        <td style="text-align: end; color: var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Pendiente</td>
+                        <td style="text-align: end; font-weight: bold; color: var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Vencimiento</td>
+                        <td style="text-align: end;">{{ cuenta.fecha_vencimiento|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% if cuenta.fecha_pago %}
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Fecha de Pago</td>
+                        <td style="text-align: end;">{{ cuenta.fecha_pago|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if cuenta.compra %}
+                    <tr>
+                        <td style="color: var(--md-sys-color-on-surface-variant);">Compra Relacionada</td>
+                        <td style="text-align: end;"><a href="{% url 'inventario:compra_detalle' cuenta.compra.pk %}">{{ cuenta.compra.folio }}</a></td>
+                    </tr>
+                    {% endif %}
+                </table>
+                {% if cuenta.notas %}
+                <hr style="border-color: var(--md-sys-color-outline-variant);">
+                <p style="color: var(--md-sys-color-on-surface-variant); margin-bottom: 0;"><strong>Notas:</strong> {{ cuenta.notas }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            {% if cuenta.estado not in "pagada,cancelada" %}
+            <div class="md3-card-elevated" style="border-radius: 16px; margin-bottom: 12px;">
+                <div class="md3-card-body">
+                    <h5 style="font-weight: bold; margin-bottom: 1rem;"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">payments</span>Registrar Pago</h5>
+                    <form method="post" action="{% url 'inventario:cuenta_pago' cuenta.pk %}">
+                        {% csrf_token %}
+                        <div style="margin-bottom: 1rem;">
+                            <label class="md3-label" style="font-weight: 600;">Monto a Pagar</label>
+                            <div class="md3-field">
+                                <span class="md3-input-line">{{ CURRENCY_SYMBOL }}</span>
+                                <input type="number" name="monto" class="md3-input" step="0.01" min="0.01" max="{{ cuenta.monto_pendiente }}" value="{{ cuenta.monto_pendiente|floatformat:2 }}" required>
+                            </div>
+                            <small style="color: var(--md-sys-color-on-surface-variant);">Pendiente: {{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</small>
+                        </div>
+                        <button type="submit" class="md3-btn md3-btn-success" style="width: 100%;">
+                            <span class="material-symbols-outlined">check</span> Registrar Pago
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% if cuenta.estado != "cancelada" and cuenta.estado != "pagada" %}
+            <div class="md3-card-elevated" style="border-radius: 16px; margin-bottom: 12px;">
+                <div class="md3-card-body">
+                    <form method="post" action="{% url 'inventario:cuenta_cancelar' cuenta.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="md3-btn md3-btn-outlined md3-btn-error" style="width: 100%;" onclick="return confirm('Esta seguro de cancelar esta cuenta?')">
+                            <span class="material-symbols-outlined">cancel</span> Cancelar Cuenta
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            <div class="md3-card-elevated" style="border-radius: 16px;">
+                <div class="md3-card-body">
+                    <form method="post" action="{% url 'inventario:cuenta_eliminar' cuenta.pk %}" onsubmit="return confirm('¿Eliminar permanentemente la cuenta {{ cuenta.folio }}?')">
+                        {% csrf_token %}
+                        <button type="submit" class="md3-btn md3-btn-outlined md3-btn-error" style="width: 100%;">
+                            <span class="material-symbols-outlined">delete</span> Eliminar Cuenta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}{{ object.pk|yesno:"Editar,Nuevo" }} Producto{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div>
+        <h1 class="md3-page-title">{{ object.pk|yesno:"Editar,Nuevo" }} Producto</h1>
+        <p class="md3-page-subtitle">Completa la informacion del producto para el menu</p>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined" style="max-width:640px;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div style="padding:12px 16px; margin:0 16px 16px; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined">error</span>
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Info section -->
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">restaurant_menu</span>
+                    <strong>Informacion del Producto</strong>
+                </div>
+                {{ form|crispy }}
+            </div>
+
+            <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
+                <a href="{% url 'productos:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="font-size:18px;">save</span>
+                    {{ object.pk|yesno:"Guardar Cambios,Crear Producto" }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .md3-card-outlined .form-group { margin-bottom: 16px; }
+    .md3-card-outlined .help-text, .md3-card-outlined .form-text {
+        font-size: 12px !important;
+        color: var(--md-sys-color-on-surface-variant) !important;
+        display: block !important;
+        margin-top: 4px !important;
+    }
+    .md3-card-outlined .invalid-feedback {
+        font-size: 12px !important;
+        color: var(--md-sys-color-error) !important;
+        display: block !important;
+        margin-top: 4px !important;
+    }
+    .md3-card-outlined label.form-label, .md3-card-outlined .form-group > label {
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        color: var(--md-sys-color-on-surface-variant) !important;
+        margin-bottom: 4px !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - {{ RESTAURANT_NAME }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <h1 class="md3-page-title">Dashboard</h1>
+    <p class="md3-page-subtitle">Resumen del restaurante</p>
+</div>
+
+<div class="md3-grid md3-grid-4 px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-card-elevated">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:32px;">table_restaurant</span>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Mesas</div>
+                <div style="font-size:24px; font-weight:500;">{{ mesas_ocupadas }}/{{ mesas_total }}</div>
+            </div>
+        </div>
+        <div style="height:4px; background:var(--md-sys-color-surface-container-highest); border-radius:2px; margin-top:12px;">
+            {% if mesas_total > 0 %}
+            <div style="height:100%; background:var(--md-sys-color-primary); border-radius:2px; width:{% widthratio mesas_ocupadas mesas_total 100 %}%"></div>
+            {% endif %}
+        </div>
+        <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-top:8px;">{{ mesas_libres }} libres, {{ mesas_reservadas }} reservadas</div>
+    </div>
+
+    <div class="md3-card-elevated">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-success); font-size:32px;">receipt_long</span>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Comandas Hoy</div>
+                <div style="font-size:24px; font-weight:500;">{{ comandas_hoy }}</div>
+            </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+            <span class="md3-badge md3-badge-primary">{{ comandas_abiertas }} Abiertas</span>
+            <span class="md3-badge md3-badge-warning">{{ comandas_en_cocina }} Cocina</span>
+        </div>
+    </div>
+
+    <div class="md3-card-elevated">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-tertiary); font-size:32px;">payments</span>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ventas Total</div>
+                <div style="font-size:24px; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ ventas_total|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-top:12px;">{{ facturas_total }} facturas</div>
+    </div>
+
+    <div class="md3-card-elevated">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-error); font-size:32px;">warning</span>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Stock Bajo</div>
+                <div style="font-size:24px; font-weight:500;">{{ productos_bajo_stock }}</div>
+            </div>
+        </div>
+        <div style="margin-top:12px;">
+            {% if productos_bajo_stock > 0 %}
+            <a href="{% url 'inventario:list' %}?alertas=1" class="md3-btn md3-btn-outlined md3-btn-sm" style="color:var(--md-sys-color-error); border-color:var(--md-sys-color-error);">Ver Alertas</a>
+            {% else %}
+            <div style="font-size:12px; color:var(--md-sys-color-success);">Todo OK</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-card-filled" style="background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);">
+        <div class="md3-grid md3-grid-4">
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ventas Mes</div>
+                <div style="font-size:22px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ CURRENCY_SYMBOL }}{{ ventas_mes|floatformat:2 }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Facturas</div>
+                <div style="font-size:22px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ facturas_total }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Comandas Cerradas</div>
+                <div style="font-size:22px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ comandas_cerradas }}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">En Cocina</div>
+                <div style="font-size:22px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ comandas_en_cocina }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="md3-grid md3-grid-2 px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-card-outlined">
+        <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom:12px;">
+            <h2 style="font-size:16px; font-weight:500;">Ultimas Facturas</h2>
+            <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-text md3-btn-sm">Ver Todas</a>
+        </div>
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Comanda</th>
+                        <th>Mesa</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factura in ventas_recientes %}
+                    <tr>
+                        <td><strong>{{ factura.folio }}</strong></td>
+                        <td>{{ factura.comanda.codigo }}</td>
+                        <td>{% if factura.comanda.mesa %}{{ factura.comanda.mesa.numero }}{% else %}—{% endif %}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--md-sys-color-on-surface-variant);">Sin ventas</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="md3-card-outlined">
+        <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom:12px;">
+            <h2 style="font-size:16px; font-weight:500;">Ultimas Comandas</h2>
+            <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-text md3-btn-sm">Ver Todas</a>
+        </div>
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Mesa</th>
+                        <th>Mesero</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comanda in comandas_recientes %}
+                    <tr>
+                        <td><strong>{{ comanda.codigo }}</strong></td>
+                        <td>{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</td>
+                        <td>{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}—{% endif %}</td>
+                        <td>
+                            {% if comanda.estado == 'abierta' %}
+                            <span class="md3-badge md3-badge-primary">Abierta</span>
+                            {% elif comanda.estado == 'en_cocina' %}
+                            <span class="md3-badge md3-badge-warning">Cocina</span>
+                            {% elif comanda.estado == 'lista' %}
+                            <span class="md3-badge md3-badge-success">Lista</span>
+                            {% elif comanda.estado == 'cerrada' %}
+                            <span class="md3-badge md3-badge-secondary">Cerrada</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-error">Cancelada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--md-sys-color-on-surface-variant);">Sin comandas</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4" style="margin-bottom:16px;">
+    <h2 style="font-size:16px; font-weight:500; margin-bottom:12px;">Accesos Rapidos</h2>
+    <div class="md3-grid md3-grid-4">
+        <a href="{% url 'mesas:plano' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-primary); margin-bottom:8px;">table_restaurant</span>
+            <div style="font-size:14px; font-weight:500;">Mesas</div>
+        </a>
+        <a href="{% url 'comandas:crear' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-success); margin-bottom:8px;">add_circle</span>
+            <div style="font-size:14px; font-weight:500;">Nueva Comanda</div>
+        </a>
+        <a href="{% url 'comandas:cocina' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-warning); margin-bottom:8px;">stove</span>
+            <div style="font-size:14px; font-weight:500;">Cocina</div>
+        </a>
+        <a href="{% url 'facturacion:crear' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-tertiary); margin-bottom:8px;">payments</span>
+            <div style="font-size:14px; font-weight:500;">Facturar</div>
+        </a>
+        <a href="{% url 'productos:list' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-secondary); margin-bottom:8px;">inventory_2</span>
+            <div style="font-size:14px; font-weight:500;">Productos</div>
+        </a>
+        <a href="{% url 'inventario:list' %}" class="md3-card-elevated" style="text-align:center; text-decoration:none; color:inherit; padding:20px;">
+            <span class="material-symbols-outlined" style="font-size:36px; color:var(--md-sys-color-on-surface-variant); margin-bottom:8px;">list_alt</span>
+            <div style="font-size:14px; font-weight:500;">Inventario</div>
+        </a>
+    </div>
+</div>
+{% endblock %}

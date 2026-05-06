@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% block title %}Comanda {{ comanda.codigo }}{% endblock %}
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="flex-wrap:wrap; gap:8px;">
+    <div>
+        <h1 class="md3-page-title">{{ comanda.codigo }}</h1>
+        <p class="md3-page-subtitle">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}Sin mesa{% endif %} | {{ comanda.fecha_creacion|date:"d/m/Y H:i" }}</p>
+    </div>
+    <div class="md3-flex" style="gap:8px; flex-wrap:wrap;">
+        {% if comanda.estado == 'abierta' %}
+        <a href="{% url 'comandas:enviar_cocina' comanda.pk %}" class="md3-btn md3-btn-tonal" onclick="return confirm('¿Enviar esta comanda a cocina?')">
+            <span class="material-symbols-outlined" style="font-size:18px;">send</span>Enviar a Cocina
+        </a>
+        {% endif %}
+        {% if comanda.estado == 'en_cocina' %}
+        <span class="md3-chip"><span class="material-symbols-outlined">hourglass_empty</span>En Cocina</span>
+        {% endif %}
+        {% if comanda.estado == 'lista' %}
+        <span class="md3-chip md3-chip-success"><span class="material-symbols-outlined">check_circle</span>Lista para Servir</span>
+        {% endif %}
+        {% if comanda.estado == 'cerrada' %}
+        <span class="md3-chip">Cerrada</span>
+        {% endif %}
+        {% if comanda.estado != 'cerrada' and comanda.estado != 'cancelada' %}
+        <a href="{% url 'comandas:cerrar' comanda.pk %}" class="md3-btn md3-btn-tonal md3-btn-success" onclick="return confirm('¿Cerrar esta comanda y liberar la mesa?')">
+            <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>Cerrar
+        </a>
+        {% endif %}
+        {% if user.is_superuser or user.is_admin or user.can_manage_comandas %}
+        <a href="{% url 'comandas:eliminar' comanda.pk %}" class="md3-btn md3-btn-tonal md3-btn-error" onclick="return confirm('¿Eliminar esta comanda permanentemente?')">
+            <span class="material-symbols-outlined" style="font-size:18px;">delete</span>Eliminar
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-grid md3-grid-3">
+        <!-- Panel Productos -->
+        <div class="md3-card-outlined" style="grid-column: span 2;">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:space-between; align-items:center;">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">receipt_long</span>
+                    </div>
+                    <strong>Productos</strong>
+                </div>
+                {% if comanda.estado == 'abierta' %}
+                <button class="md3-btn md3-btn-filled" onclick="document.getElementById('addProductPanel').classList.add('open')">
+                    <span class="material-symbols-outlined" style="font-size:18px;">add</span>Agregar
+                </button>
+                {% endif %}
+            </div>
+            <div class="md3-table-wrapper">
+                <table class="md3-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th style="width:80px; text-align:center;">Cant.</th>
+                            <th style="width:120px;">P. Unit.</th>
+                            <th style="width:120px; text-align:right;">Subtotal</th>
+                            <th style="width:120px; text-align:center;">Estado</th>
+                            {% if comanda.estado == 'abierta' %}
+                            <th style="width:80px; text-align:center;">Acciones</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in comanda.items.all %}
+                        <tr {% if item.cancelado %}style="opacity:0.5; text-decoration:line-through;"{% endif %}>
+                            <td>
+                                {{ item.producto.nombre }}
+                                {% if item.notas %}
+                                <br><small style="color:var(--md-sys-color-error); font-style:italic;">Nota: {{ item.notas }}</small>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:center; font-weight:600;">{{ item.cantidad }}</td>
+                            <td>{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|floatformat:2 }}</td>
+                            <td style="text-align:right; font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                            <td style="text-align:center;">
+                                {% if item.cancelado %}
+                                <span class="md3-badge md3-badge-error">Cancelado</span>
+                                {% elif item.listo %}
+                                <span class="md3-badge md3-badge-success">Listo</span>
+                                {% elif comanda.estado == 'en_cocina' or comanda.estado == 'en_preparacion' %}
+                                <span class="md3-badge md3-badge-warning">En Cocina</span>
+                                {% else %}
+                                <span class="md3-badge">Pendiente</span>
+                                {% endif %}
+                            </td>
+                            {% if comanda.estado == 'abierta' %}
+                            <td style="text-align:center;">
+                                {% if not item.cancelado %}
+                                <a href="{% url 'comandas:item_cancelar' item.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-error" onclick="return confirm('¿Cancelar este item?')">
+                                    <span class="material-symbols-outlined">close</span>
+                                </a>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if comanda.estado == 'abierta' %}6{% else %}5{% endif %}" style="text-align:center; padding:48px 16px;">
+                                <span class="material-symbols-outlined" style="font-size:48px; color:var(--md-sys-color-outline);">inbox</span>
+                                <p style="color:var(--md-sys-color-on-surface-variant); margin-top:8px;">No hay productos en esta comanda</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background:var(--md-sys-color-surface-container);">
+                            <td colspan="3" style="font-weight:700; text-align:right;">Total:</td>
+                            <td colspan="{% if comanda.estado == 'abierta' %}2{% else %}1{% endif %}" style="font-weight:700; font-size:20px; text-align:right;">
+                                {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel Lateral -->
+        <div>
+            <!-- Informacion -->
+            <div class="md3-card-outlined" style="margin-bottom:16px;">
+                <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
+                            <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">info</span>
+                        </div>
+                        <strong>Informacion</strong>
+                    </div>
+                </div>
+                <div style="padding:12px 16px;">
+                    <table class="md3-table">
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Mesa:</td><td style="text-align:right; font-weight:500;">{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}Sin mesa{% endif %}</td></tr>
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Zona:</td><td style="text-align:right;">{% if comanda.mesa %}{{ comanda.mesa.get_zona_display }}{% else %}-{% endif %}</td></tr>
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Mesero:</td><td style="text-align:right;">{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}Sin asignar{% endif %}</td></tr>
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Estado:</td><td style="text-align:right;">
+                            {% if comanda.estado == 'abierta' %}<span class="md3-badge md3-badge-primary">Abierta</span>
+                            {% elif comanda.estado == 'en_cocina' %}<span class="md3-badge md3-badge-warning">En Cocina</span>
+                            {% elif comanda.estado == 'lista' %}<span class="md3-badge md3-badge-success">Lista</span>
+                            {% elif comanda.estado == 'cerrada' %}<span class="md3-badge">Cerrada</span>
+                            {% elif comanda.estado == 'cancelada' %}<span class="md3-badge md3-badge-error">Cancelada</span>
+                            {% endif %}
+                        </td></tr>
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Prioridad:</td><td style="text-align:right;">
+                            {% if comanda.prioridad == 'urgente' %}<span class="md3-badge md3-badge-error">Urgente</span>
+                            {% elif comanda.prioridad == 'vip' %}<span class="md3-badge md3-badge-warning">VIP</span>
+                            {% else %}<span class="md3-badge">Normal</span>
+                            {% endif %}
+                        </td></tr>
+                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Productos:</td><td style="text-align:right; font-weight:600;">{{ comanda.items_count }}</td></tr>
+                    </table>
+                    {% if comanda.notas %}
+                    <div style="padding:12px 0 0; border-top:1px solid var(--md-sys-color-outline-variant); margin-top:8px;">
+                        <small style="color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">chat</span>{{ comanda.notas }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resumen -->
+            <div class="md3-card-filled" style="background:var(--md-sys-color-primary-container);">
+                <div style="padding:16px;">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:8px;">
+                        <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary-container);">calculate</span>
+                        <strong style="color:var(--md-sys-color-on-primary-container);">Resumen</strong>
+                    </div>
+                    <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-primary-container); text-align:right;">
+                        {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
+                    </div>
+                    <small style="color:var(--md-sys-color-on-primary-container); opacity:0.8;">Impuestos y servicio se agregan al generar la factura.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Panel Agregar Producto -->
+<div class="md3-drawer-modal" id="addProductPanel" style="display:none;">
+    <div class="md3-drawer" style="width:400px; max-width:90vw; position:fixed; right:0; top:0; height:100vh; background:var(--md-sys-color-surface); box-shadow:-4px 0 12px rgba(0,0,0,0.2); z-index:1050; overflow-y:auto;">
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; font-size:18px;"><span class="material-symbols-outlined" style="font-size:20px; vertical-align:middle;">add_circle</span>Agregar Producto</h2>
+            <button class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('addProductPanel').classList.remove('open')">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div style="padding:12px 16px;">
+            <div class="md3-field">
+                <span class="material-symbols-outlined" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--md-sys-color-on-surface-variant);">search</span>
+                <input type="text" class="md3-input" id="searchProduct" placeholder=" " style="padding-left:44px;">
+                <label class="md3-label" for="searchProduct">Buscar</label>
+                <div class="md3-input-line"></div>
+            </div>
+        </div>
+        <div style="padding:0 16px 16px;" id="productList">
+            {% for cat_id, cat_name, cat_icon in categorias %}
+            <div style="margin-top:16px;">
+                <small style="font-size:12px; font-weight:600; color:var(--md-sys-color-on-surface-variant); text-transform:uppercase; letter-spacing:0.5px;">{{ cat_icon }} {{ cat_name }}</small>
+            </div>
+            {% for producto in productos %}
+            {% if producto.categoria_id == cat_id %}
+            <form method="post" action="{% url 'comandas:agregar_item' comanda.pk %}" class="md3-list-item product-item" data-name="{{ producto.nombre|lower }}" style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                {% csrf_token %}
+                <div style="flex:1;">
+                    <div style="font-weight:500;">{{ producto.nombre }}</div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</small>
+                </div>
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <input type="hidden" name="producto" value="{{ producto.pk }}">
+                    <input type="number" name="cantidad" value="1" min="1" max="99" class="md3-input" style="width:60px; height:40px;">
+                    <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                        <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="md3-drawer-overlay" id="drawerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1040;" onclick="document.getElementById('addProductPanel').classList.remove('open')"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('addProductPanel');
+    const overlay = document.getElementById('drawerOverlay');
+    const observer = new MutationObserver(function() {
+        const isOpen = panel.classList.contains('open');
+        panel.style.display = isOpen ? 'block' : 'none';
+        overlay.style.display = isOpen ? 'block' : 'none';
+    });
+    observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+
+    const searchInput = document.getElementById('searchProduct');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            document.querySelectorAll('.product-item').forEach(function(item) {
+                const name = item.getAttribute('data-name') || '';
+                item.style.display = name.includes(query) ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
+
+<style>
+    .md3-drawer-modal.open ~ .md3-drawer-overlay { display: block !important; }
+</style>
+{% endblock %}

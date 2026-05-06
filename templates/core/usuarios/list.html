@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">people</span>Usuarios</h2>
+    {% if user.can_delete_users %}
+    <a href="{% url 'core:usuario_crear' %}" class="md3-btn md3-btn-filled md3-btn-sm">
+        <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>Nuevo Usuario
+    </a>
+    {% endif %}
+</div>
+
+<div class="md3-grid md3-grid-4">
+    {% for usuario in usuarios %}
+    <div style="min-width: 0;">
+        <div class="md3-card-elevated" style="height: 100%;">
+            <div class="md3-card-body" style="text-align: center; padding: 1rem;">
+                <a href="{% url 'core:usuario_detalle' usuario.pk %}" class="text-decoration-none">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(99, 102, 241, 0.1); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary); font-size: 1.5rem;">person</span>
+                    </div>
+                    <h6 style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">{{ usuario.get_full_name|default:usuario.username }}</h6>
+                </a>
+                <span class="md3-badge {% if usuario.role == 'admin' %}md3-badge-error{% elif usuario.role == 'manager' %}md3-badge-warning{% elif usuario.role == 'waiter' %}md3-badge-success{% elif usuario.role == 'cashier' %}md3-badge-primary{% else %}md3-badge-secondary{% endif %}" style="font-size: 0.6rem;">
+                    {{ usuario.get_role_display }}
+                </span>
+                {% if usuario.is_active_staff %}
+                <div style="margin-top: 0.25rem;">
+                    <span class="md3-badge md3-badge-success" style="font-size: 0.6rem;">Activo</span>
+                </div>
+                {% else %}
+                <div style="margin-top: 0.25rem;">
+                    <span class="md3-badge md3-badge-secondary" style="font-size: 0.6rem;">Inactivo</span>
+                </div>
+                {% endif %}
+                {% if user.can_manage_users %}
+                <div style="font-size: 0.65rem; margin-top: 0.25rem;">
+                    {% if usuario.visible_password %}
+                    <span class="md3-badge" style="background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); border: 1px solid var(--md-sys-color-outline); cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Click para ver contraseña" onclick="togglePass{{ usuario.pk }}()">
+                        <span class="material-symbols-outlined" style="font-size: 0.8rem; margin-right: 0.25rem;">lock</span><span id="pass{{ usuario.pk }}">••••••</span>
+                    </span>
+                    {% else %}
+                    <span class="md3-badge" style="background: var(--md-sys-color-warning-container); color: var(--md-sys-color-on-warning-container); border: 1px solid var(--md-sys-color-warning); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span class="material-symbols-outlined" style="font-size: 0.8rem; margin-right: 0.25rem;">warning</span>Sin contraseña
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if user.can_delete_users and usuario.pk != user.pk %}
+                <div class="md3-flex" style="gap: 0.25rem; margin-top: 0.5rem; justify-content: center;">
+                    <a href="{% url 'core:usuario_reset_password' usuario.pk %}" class="md3-btn md3-btn-sm md3-btn-tonal" title="Restablecer contraseña">
+                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">key</span>
+                    </a>
+                    <button type="button" class="md3-btn md3-btn-sm md3-btn-error" style="padding: 0.25rem 0.5rem;" onclick="document.getElementById('deleteModal{{ usuario.pk }}').style.display='flex'" title="Eliminar">
+                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">delete</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="deleteModal{{ usuario.pk }}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div class="md3-card-elevated" style="max-width: 500px; width: 90%; padding: 0;">
+                <form method="post" action="{% url 'core:usuario_eliminar' usuario.pk %}">
+                    {% csrf_token %}
+                    <div class="md3-card-header" style="background-color: transparent; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                        <h6 style="margin: 0;">Eliminar Usuario</h6>
+                        <button type="button" class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('deleteModal{{ usuario.pk }}').style.display='none'" style="margin-left: auto;">&times;</button>
+                    </div>
+                    <div class="md3-card-body">
+                        <p>Seguro que deseas eliminar a <strong>{{ usuario.get_full_name|default:usuario.username }}</strong>?</p>
+                        <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.875rem; margin-bottom: 0;">Esta accion no se puede deshacer.</p>
+                    </div>
+                    <div class="md3-card-footer" style="background-color: transparent; border-top: 1px solid var(--md-sys-color-outline-variant); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button type="button" class="md3-btn md3-btn-outlined md3-btn-sm" onclick="document.getElementById('deleteModal{{ usuario.pk }}').style.display='none'">Cancelar</button>
+                        <button type="submit" class="md3-btn md3-btn-error md3-btn-sm">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="md3-grid" style="grid-template-columns: 1fr;">
+        <div class="md3-empty-state">
+            <span class="material-symbols-outlined" style="font-size: 3rem;">people</span>
+            <h3>No hay usuarios registrados</h3>
+            <p style="color: var(--md-sys-color-on-surface-variant);">No hay usuarios registrados</p>
+            {% if user.can_delete_users %}
+            <a href="{% url 'core:usuario_crear' %}" class="md3-btn md3-btn-filled">Crear Usuario</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.can_manage_users %}
+{% for usuario in usuarios %}
+{% if usuario.visible_password %}
+<script>
+function togglePass{{ usuario.pk }}() {
+    var el = document.getElementById('pass{{ usuario.pk }}');
+    if (el.textContent === '••••••') {
+        el.textContent = '{{ usuario.visible_password }}';
+    } else {
+        el.textContent = '••••••';
+    }
+}
+</script>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endblock %}

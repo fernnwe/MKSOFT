@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Plano de Mesas - {{ RESTAURANT_NAME }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Plano de Mesas</h1>
+            <p class="md3-page-subtitle">Vista general del restaurante</p>
+        </div>
+        <div class="md3-flex">
+            <a href="{% url 'mesas:list' %}" class="md3-btn md3-btn-outlined" style="display:none;">
+                <span class="material-symbols-outlined">list</span>
+                Lista
+            </a>
+            <a href="{% url 'mesas:crear' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">add</span>
+                <span style="display:none;">Nueva Mesa</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Leyenda de colores -->
+<div class="px-3 px-md-4" style="margin-bottom:8px;">
+    <div style="background:var(--md-sys-color-surface-container); border-radius:16px; padding:16px;">
+        <div style="font-size:12px; font-weight:500; color:var(--md-sys-color-on-surface-variant); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;">
+            <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; margin-right:4px;">palette</span>
+            Estados de las mesas
+        </div>
+        <div class="md3-flex" style="gap:12px; flex-wrap:wrap;">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                <div style="width:24px; height:24px; border-radius:8px; background:var(--md-sys-color-success-container);"></div>
+                <span style="font-size:14px; font-weight:500;">Libre</span>
+                <span style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">- Disponible para asignar</span>
+            </div>
+            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                <div style="width:24px; height:24px; border-radius:8px; background:var(--md-sys-color-error-container);"></div>
+                <span style="font-size:14px; font-weight:500;">Ocupada</span>
+                <span style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">- Con clientes actualmente</span>
+            </div>
+            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                <div style="width:24px; height:24px; border-radius:8px; background:var(--md-sys-color-warning-container);"></div>
+                <span style="font-size:14px; font-weight:500;">Reservada</span>
+                <span style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">- Apartada para un cliente</span>
+            </div>
+            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                <div style="width:24px; height:24px; border-radius:8px; background:var(--md-sys-color-outline-variant);"></div>
+                <span style="font-size:14px; font-weight:500;">Mantenimiento</span>
+                <span style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">- No disponible</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtro de zonas -->
+<div class="px-3 px-md-4" style="margin-bottom:12px;">
+    <div class="md3-flex">
+        <a href="?zona=" class="md3-chip {% if not request.GET.zona %}active{% endif %}">Todas</a>
+        {% for valor, nombre in zonas %}
+        <a href="?zona={{ valor }}" class="md3-chip {% if request.GET.zona == valor %}active{% endif %}">{{ nombre }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Grid de mesas -->
+<div class="px-3 px-md-4">
+    <div class="md3-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:12px;" id="mesas-container">
+        {% for mesa in mesas %}
+        <div id="mesa-{{ mesa.pk }}">
+            <div class="md3-card-elevated" style="padding:16px 12px; text-align:center; position:relative;">
+                <!-- Menu dropdown -->
+                <button class="md3-btn md3-btn-icon md3-btn-text mesa-menu-btn" style="width:32px; height:32px; min-width:32px; padding:0; position:absolute; top:4px; right:4px;" onclick="event.stopPropagation(); this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                    <span class="material-symbols-outlined" style="font-size:20px;">more_vert</span>
+                </button>
+                <div class="mesa-dropdown" style="display:none; position:absolute; right:4px; top:32px; background:var(--md-sys-color-surface-container); border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.15); min-width:140px; z-index:100; overflow:hidden; text-align:left;">
+                    <a href="{% url 'mesas:editar' mesa.pk %}" class="dropdown-item-link" style="display:flex; align-items:center; gap:8px; padding:12px 16px; text-decoration:none; color:var(--md-sys-color-on-surface); font-size:14px;">
+                        <span class="material-symbols-outlined" style="font-size:18px;">edit</span>Editar
+                    </a>
+                    <a href="{% url 'mesas:eliminar' mesa.pk %}" class="dropdown-item-link" style="display:flex; align-items:center; gap:8px; padding:12px 16px; text-decoration:none; color:var(--md-sys-color-error); font-size:14px;" onclick="return confirm('Eliminar mesa {{ mesa.numero }}?')">
+                        <span class="material-symbols-outlined" style="font-size:18px;">delete</span>Eliminar
+                    </a>
+                </div>
+
+                <!-- Estado visual: barra superior de color -->
+                <div style="position:absolute; top:0; left:0; right:0; height:4px; border-radius:12px 12px 0 0;
+                    {% if mesa.estado == 'libre' %}background:var(--md-sys-color-success);
+                    {% elif mesa.estado == 'ocupada' %}background:var(--md-sys-color-error);
+                    {% elif mesa.estado == 'reservada' %}background:var(--md-sys-color-warning);
+                    {% else %}background:var(--md-sys-color-outline);{% endif %}
+                "></div>
+
+                <!-- Numero de mesa -->
+                <div style="font-size:28px; font-weight:700; margin-top:8px; color:var(--md-sys-color-on-surface);">{{ mesa.numero }}</div>
+
+                <!-- Zona -->
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-top:2px;">{{ mesa.get_zona_display }}</div>
+
+                <!-- Capacidad -->
+                <div class="md3-flex md3-flex-align-center md3-flex-justify-center" style="margin-top:8px; gap:4px;">
+                    <span class="material-symbols-outlined" style="font-size:16px; color:var(--md-sys-color-on-surface-variant);">group</span>
+                    <span style="font-size:13px; font-weight:500;">{{ mesa.capacidad }}</span>
+                </div>
+
+                <!-- Badge de estado -->
+                <div style="margin-top:8px;">
+                    {% if mesa.estado == 'libre' %}
+                    <span class="md3-badge md3-badge-success">Libre</span>
+                    {% elif mesa.estado == 'ocupada' %}
+                    <span class="md3-badge md3-badge-error">Ocupada</span>
+                    {% elif mesa.estado == 'reservada' %}
+                    <span class="md3-badge md3-badge-warning">Reservada</span>
+                    {% else %}
+                    <span class="md3-badge md3-badge-secondary">Mantenimiento</span>
+                    {% endif %}
+                </div>
+
+                <!-- Accion -->
+                <div style="margin-top:12px;">
+                    {% if mesa.estado == 'libre' %}
+                    <a href="{% url 'comandas:crear' %}?mesa={{ mesa.pk }}" class="md3-btn md3-btn-tonal md3-btn-sm" style="width:100%;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">person_add</span>
+                        Asignar
+                    </a>
+                    {% elif mesa.estado == 'ocupada' %}
+                    <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-outlined md3-btn-sm" style="width:100%;">
+                        <span class="material-symbols-outlined" style="font-size:16px;">receipt_long</span>
+                        Ver
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1;">
+            <div class="md3-empty-state">
+                <span class="material-symbols-outlined">table_restaurant</span>
+                <div class="md3-empty-state-title">No hay mesas configuradas</div>
+                <div class="md3-empty-state-text">
+                    <a href="{% url 'mesas:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">Crear Mesa</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('click', function(e) {
+        document.querySelectorAll('.mesa-dropdown').forEach(function(menu) {
+            if (!menu.parentElement.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    });
+
+    const mesaSocket = new WebSocket(`${wsBase}/ws/mesas/`);
+    mesaSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.mesa_id) {
+            const mesaEl = document.getElementById(`mesa-${data.mesa_id}`);
+            if (mesaEl) {
+                const card = mesaEl.querySelector('.md3-card-elevated');
+                const badge = card.querySelector('.md3-badge');
+                if (badge) {
+                    badge.className = `md3-badge md3-badge-${data.color === 'success' ? 'success' : data.color === 'danger' ? 'error' : data.color === 'warning' ? 'warning' : 'secondary'}`;
+                }
+            }
+        }
+    };
+</script>
+{% endblock %}

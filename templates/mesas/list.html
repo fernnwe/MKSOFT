@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Mesas - {{ RESTAURANT_NAME }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Gestion de Mesas</h1>
+            <p class="md3-page-subtitle">Lista de todas las mesas</p>
+        </div>
+        <div class="md3-flex">
+            <a href="{% url 'mesas:plano' %}" class="md3-btn md3-btn-outlined md3-btn-sm" style="display:none;">
+                <span class="material-symbols-outlined">grid_view</span>
+                Vista Plano
+            </a>
+            <a href="{% url 'mesas:crear' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">add</span>
+                <span style="display:none;">Nueva Mesa</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined">
+        <div class="md3-table-wrapper">
+            <table class="md3-table">
+                <thead>
+                    <tr>
+                        <th>Numero</th>
+                        <th>Zona</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mesa in mesas %}
+                    <tr>
+                        <td><strong>{{ mesa.numero }}</strong></td>
+                        <td>{{ mesa.get_zona_display }}</td>
+                        <td>{{ mesa.capacidad }} personas</td>
+                        <td>
+                            {% if mesa.estado == 'libre' %}
+                            <span class="md3-badge md3-badge-success">Libre</span>
+                            {% elif mesa.estado == 'ocupada' %}
+                            <span class="md3-badge md3-badge-error">Ocupada</span>
+                            {% elif mesa.estado == 'reservada' %}
+                            <span class="md3-badge md3-badge-warning">Reservada</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-secondary">Fuera de servicio</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;">
+                            <div class="md3-flex" style="justify-content:flex-end;">
+                                <a href="{% url 'mesas:editar' mesa.pk %}" class="md3-btn md3-btn-icon md3-btn-outlined md3-btn-sm">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+                                <a href="{% url 'mesas:eliminar' mesa.pk %}" class="md3-btn md3-btn-icon md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar esta mesa?')">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="md3-empty-state">
+                                <span class="material-symbols-outlined">table_restaurant</span>
+                                <div class="md3-empty-state-title">No hay mesas configuradas</div>
+                                <div class="md3-empty-state-text">
+                                    <a href="{% url 'mesas:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">Crear Mesa</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

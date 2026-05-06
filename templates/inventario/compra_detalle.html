@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Compra {{ compra.folio }} - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div class="md3-flex md3-flex-align-center" style="gap: 0.75rem;">
+        <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </a>
+        <div>
+            <h1 class="md3-page-title">Compra {{ compra.folio }}</h1>
+            <p class="md3-page-subtitle">{{ compra.proveedor }} - {{ compra.fecha|date:"d/m/Y H:i" }}</p>
+        </div>
+    </div>
+    <div class="md3-flex md3-flex-align-center" style="gap: 0.5rem;">
+        <span class="md3-badge {% if compra.estado == 'pendiente' %}md3-badge-warning{% elif compra.estado == 'recibida' %}md3-badge-success{% else %}md3-badge-error{% endif %}">{{ compra.get_estado_display }}</span>
+        {% if compra.estado == 'pendiente' %}
+        <form method="post" action="{% url 'inventario:compra_recibir' compra.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="md3-btn md3-btn-success">
+                <span class="material-symbols-outlined">check</span> Recibir Compra
+            </button>
+        </form>
+        <form method="post" action="{% url 'inventario:compra_cancelar' compra.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="md3-btn md3-btn-outlined md3-btn-error">
+                <span class="material-symbols-outlined">close</span> Cancelar
+            </button>
+        </form>
+        {% endif %}
+        <form method="post" action="{% url 'inventario:compra_eliminar' compra.pk %}" style="display: inline;" onsubmit="return confirm('¿Eliminar permanentemente la compra {{ compra.folio }}?')">
+            {% csrf_token %}
+            <button type="submit" class="md3-btn md3-btn-outlined md3-btn-error">
+                <span class="material-symbols-outlined">delete</span> Eliminar
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="md3-grid md3-grid-2" style="grid-template-columns: 1fr 2fr; gap: 1rem;">
+    <div class="md3-card-outlined">
+        <div class="md3-card-body">
+            <h3 style="font-weight: 600; margin-bottom: 1rem;">Informacion</h3>
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Proveedor</span>
+                <span>{{ compra.proveedor }}</span>
+            </div>
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Folio</span>
+                <span>{{ compra.folio }}</span>
+            </div>
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Fecha</span>
+                <span>{{ compra.fecha|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Estado</span>
+                <span>{{ compra.get_estado_display }}</span>
+            </div>
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Registrado por</span>
+                <span>{{ compra.usuario.get_full_name|default:compra.usuario.username }}</span>
+            </div>
+            {% if compra.notas %}
+            <div class="md3-flex md3-flex-justify-between" style="padding: 0.5rem 0; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                <span style="color: var(--md-sys-color-on-surface-variant);">Notas</span>
+                <span>{{ compra.notas }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="md3-card-outlined">
+        <div class="md3-card-body">
+            <h3 style="font-weight: 600; margin-bottom: 1rem;">Productos ({{ compra.items.count }})</h3>
+            <div class="md3-flex" style="flex-direction: column; gap: 0.5rem;">
+                {% for item in compra.items.all %}
+                <div class="md3-card-filled" style="padding: 0.75rem; border-radius: 10px;">
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+                        <div>
+                            <span style="font-weight: 600;">{{ item.ingrediente.nombre }}</span>
+                            <span style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">{{ item.cantidad }} unidades</span>
+                        </div>
+                        <div style="text-align: end;">
+                            <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">C${{ item.costo_unitario|floatformat:2 }} c/u</div>
+                            <div style="font-weight: 600;">C${{ item.subtotal|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: var(--md-sys-color-on-surface-variant); text-align: center; padding: 1rem 0;">Sin ingredientes</p>
+                {% endfor %}
+            </div>
+            <div class="md3-flex md3-flex-justify-between" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--md-sys-color-outline-variant); font-weight: bold; font-size: 1.25rem;">
+                <span>Total</span>
+                <span>C${{ compra.total|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
