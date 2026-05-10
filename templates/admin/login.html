@@ -1,0 +1,239 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --md-primary: #00e5b0 !important;
+        --md-on-primary: #003828 !important;
+        --md-primary-container: #00513b !important;
+        --md-on-primary-container: #6effc6 !important;
+        --md-secondary: #00d0ea !important;
+        --md-secondary-container: #004e5c !important;
+        --md-surface: #0a0e14 !important;
+        --md-surface-container: #161a21 !important;
+        --md-surface-container-high: #21252c !important;
+        --md-surface-container-highest: #2b2f37 !important;
+        --md-on-surface: #e2e2e9 !important;
+        --md-on-surface-variant: #c2c2c9 !important;
+        --md-outline: #8c8d95 !important;
+        --md-outline-variant: #42434a !important;
+        --md-error: #ffb4ab !important;
+        --md-error-container: #93000a !important;
+    }
+    body {
+        background: #0a0e14;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+    #container {
+        width: 100%;
+        max-width: 420px;
+        margin: 0;
+        padding: 24px;
+        background: transparent;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #header {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 24px;
+        justify-content: center;
+    }
+    #branding h1 a {
+        color: #e2e2e9 !important;
+        gap: 12px;
+    }
+    #branding h1 a .material-symbols-outlined {
+        color: #00e5b0 !important;
+        text-shadow: 0 0 20px rgba(0,229,176,0.3);
+    }
+    #content { padding: 0; width: 100%; }
+    #content-main { float: none; width: 100%; }
+    #login-form {
+        background: #12161c;
+        border: 1px solid #42434a;
+        border-radius: 24px;
+        padding: 32px 28px;
+        box-shadow: 0 16px 64px rgba(0,0,0,0.3);
+        animation: cardAppear 0.5s cubic-bezier(0.2,0,0,1) both;
+    }
+    @keyframes cardAppear {
+        from { opacity:0; transform:translateY(20px) scale(0.98); }
+        to { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .login-title { text-align:center; margin-bottom:24px; }
+    .login-title .icon-wrap {
+        width:56px; height:56px; margin:0 auto 16px;
+        background:rgba(0,229,176,0.12);
+        border-radius:16px;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 0 24px rgba(0,229,176,0.15);
+    }
+    .login-title .icon-wrap .material-symbols-outlined { font-size:28px; color:#00e5b0; }
+    .login-title h2 { font-size:22px; font-weight:600; color:#e2e2e9; margin:0 0 4px; }
+    .login-title p { font-size:13px; color:#c2c2c9; margin:0; }
+    .form-row { padding:0; border:none; margin-bottom:16px; }
+    .form-row label { display:block; font-size:12px; font-weight:500; color:#c2c2c9; margin-bottom:6px; }
+    .form-row input {
+        width:100%; height:48px; padding:0 16px 0 44px;
+        font-size:14px; font-family:'Inter',sans-serif;
+        color:#e2e2e9; background:#21252c;
+        border:1px solid #42434a; border-radius:14px;
+        outline:none; transition:all 0.2s ease; box-sizing:border-box;
+    }
+    .form-row input:focus {
+        border-color:#00e5b0 !important;
+        background:#2b2f37 !important;
+        box-shadow:0 0 0 3px rgba(0,229,176,0.12) !important;
+    }
+    .form-row .input-wrap { position:relative; }
+    .form-row .input-wrap .material-symbols-outlined {
+        position:absolute; left:14px; top:50%; transform:translateY(-50%);
+        font-size:20px; color:#c2c2c9; pointer-events:none;
+    }
+    .errornote {
+        background:rgba(255,180,171,0.1); border:1px solid rgba(255,180,171,0.2);
+        border-radius:14px; color:#ffb4ab;
+        font-size:12px; font-weight:500;
+        padding:12px 16px; margin-bottom:16px;
+        display:flex; align-items:center; gap:8px;
+    }
+    .submit-row { padding:8px 0 0; border:none; background:transparent; }
+    .submit-row input {
+        width:100%; height:48px;
+        background:#00e5b0; color:#003828;
+        border:none; border-radius:14px;
+        font-size:14px; font-weight:600; font-family:'Inter',sans-serif;
+        cursor:pointer; transition:all 0.2s ease;
+        box-shadow:0 4px 16px rgba(0,229,176,0.3);
+        display:flex; align-items:center; justify-content:center;
+        padding:0;
+    }
+    .submit-row input:hover {
+        box-shadow:0 6px 24px rgba(0,229,176,0.4);
+        filter:brightness(1.08);
+    }
+    .submit-row input:active {
+        transform:translateY(0);
+        box-shadow:0 2px 8px rgba(0,229,176,0.2);
+    }
+    .password-reset-link { text-align:center; margin-top:16px; }
+    .password-reset-link a { font-size:12px; color:#c2c2c9; text-decoration:none; }
+    .password-reset-link a:hover { color:#00e5b0; }
+    .footer-links { margin-top:24px; text-align:center; display:flex; flex-direction:column; gap:8px; }
+    .footer-links a { font-size:12px; color:#c2c2c9; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .footer-links a:hover { color:#00e5b0; }
+    .footer-links .material-symbols-outlined { font-size:16px; }
+    .security-note { margin-top:12px; font-size:11px; color:#5a6069; display:flex; align-items:center; justify-content:center; gap:4px; }
+    .security-note .material-symbols-outlined { font-size:14px; }
+</style>
+{% endblock %}
+
+{% block bodyclass %}login{% endblock %}
+
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        MKSOFT
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if form.errors and not form.non_field_errors %}
+<p class="errornote">
+    <span class="material-symbols-outlined" style="font-size:18px;">error</span>
+    {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+</p>
+{% endif %}
+
+{% if form.non_field_errors %}
+{% for error in form.non_field_errors %}
+<p class="errornote">
+    <span class="material-symbols-outlined" style="font-size:18px;">error</span>
+    {{ error }}
+</p>
+{% endfor %}
+{% endif %}
+
+<div id="content-main">
+    {% if user.is_authenticated %}
+    <p class="errornote">
+        <span class="material-symbols-outlined" style="font-size:18px;">info</span>
+        {% blocktranslate trimmed %}
+            You are authenticated as {{ username }}, but are not authorized to
+            access this page. Would you like to login to a different account?
+        {% endblocktranslate %}
+    </p>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="login-title">
+            <div class="icon-wrap">
+                <span class="material-symbols-outlined">lock</span>
+            </div>
+            <h2>Bienvenido, Admin</h2>
+            <p>Ingresa tus credenciales</p>
+        </div>
+
+        <div class="form-row">
+            {{ form.username.errors }}
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+            <div class="input-wrap">
+                <span class="material-symbols-outlined">person</span>
+                {{ form.username }}
+            </div>
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+            <div class="input-wrap">
+                <span class="material-symbols-outlined">key</span>
+                {{ form.password }}
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+        </div>
+
+        {% url 'admin_password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+        <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{% translate 'Forgotten your login credentials?' %}</a>
+        </div>
+        {% endif %}
+
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}">
+        </div>
+
+        <div class="footer-links">
+            <a href="/">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver al inicio
+            </a>
+        </div>
+
+        <div class="security-note">
+            <span class="material-symbols-outlined">verified</span>
+            Acceso restringido a personal autorizado
+        </div>
+    </form>
+</div>
+{% endblock %}

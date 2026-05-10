@@ -1,8 +1,251 @@
 {% extends 'base.html' %}
+{% load perm_tags %}
 
 {% block title %}Inventario - {{ RESTAURANT_NAME }}{% endblock %}
 
 {% block content %}
+<style>
+    .mov-modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .mov-modal.open {
+        display: flex;
+        animation: fadeIn 0.2s var(--md-sys-motion-easing-emphasized);
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .mov-dialog {
+        max-width: 480px;
+        width: 90%;
+        background: var(--md-sys-color-surface-container-low);
+        border-radius: var(--md-sys-shape-corner-extra-large);
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .mov-header {
+        padding: 24px 24px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .mov-header h3 {
+        font-size: 22px;
+        font-weight: 400;
+        margin: 0;
+        color: var(--md-sys-color-on-surface);
+    }
+    .mov-body { padding: 0 24px 8px; }
+    .mov-actions {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .mov-type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .mov-type-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 8px;
+        border: 2px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-sys-shape-corner-medium);
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface);
+    }
+    .mov-type-btn:hover { background: var(--md-sys-color-surface-container); }
+    .mov-type-btn.selected {
+        border-color: var(--md-sys-color-primary);
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+    }
+    .mov-type-btn.selected .mov-icon { color: var(--md-sys-color-primary); }
+    .mov-icon { font-size: 28px; color: var(--md-sys-color-on-surface-variant); }
+    .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: var(--md-sys-color-surface-container);
+        border-radius: var(--md-sys-shape-corner-medium);
+        margin-bottom: 16px;
+    }
+    .stock-info .stock-val {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--md-sys-color-primary);
+    }
+    .stock-info .stock-unit {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+    .md3-field-filled {
+        position: relative;
+        margin-bottom: 12px;
+    }
+    .md3-field-input {
+        width: 100%;
+        padding: 20px 16px 6px;
+        border: none;
+        border-bottom: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px 4px 0 0;
+        background: var(--md-sys-color-surface-container);
+        font-size: 16px;
+        color: var(--md-sys-color-on-surface);
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+    .md3-field-input:focus {
+        border-bottom: 2px solid var(--md-sys-color-primary);
+        background: var(--md-sys-color-surface-container);
+    }
+    .md3-field-label {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: var(--md-sys-color-on-surface-variant);
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+    .md3-field-input:focus ~ .md3-field-label,
+    .md3-field-input:not(:placeholder-shown) ~ .md3-field-label {
+        top: 8px;
+        transform: none;
+        font-size: 12px;
+        color: var(--md-sys-color-primary);
+    }
+
+    .inv-filter-card {
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+    .inv-filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s ease;
+    }
+    .inv-filter-header:hover {
+        background: var(--md-sys-color-surface-container);
+    }
+    .inv-filter-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .inv-filter-header-left .material-symbols-outlined {
+        font-size: 22px;
+        color: var(--md-sys-color-primary);
+    }
+    .inv-filter-header-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface);
+    }
+    .inv-filter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .inv-filter-chevron {
+        font-size: 24px;
+        color: var(--md-sys-color-on-surface-variant);
+        transition: transform 0.2s ease;
+    }
+    .inv-filter-chevron.open {
+        transform: rotate(180deg);
+    }
+    .inv-filter-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .inv-filter-body.open {
+        max-height: 200px;
+    }
+    .inv-filter-body-inner {
+        padding: 0 20px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+    }
+    .inv-filter-field {
+        flex: 1;
+        min-width: 130px;
+        max-width: 180px;
+    }
+    .inv-filter-field .md3-field {
+        margin-bottom: 0;
+    }
+    .inv-filter-field select,
+    .inv-filter-field input {
+        width: 100%;
+    }
+    .inv-filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+    .inv-active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 20px 12px;
+    }
+    .inv-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .inv-filter-chip .material-symbols-outlined {
+        font-size: 16px;
+        cursor: pointer;
+        opacity: 0.6;
+    }
+    .inv-filter-chip .material-symbols-outlined:hover {
+        opacity: 1;
+    }
+</style>
+
 <div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
     <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">monitoring</span>Inventario</h2>
     <div>
@@ -12,19 +255,133 @@
         <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined md3-btn-primary" style="margin-right: 0.5rem;">
             <span class="material-symbols-outlined" style="margin-right: 0.25rem;">shopping_cart</span>Compras
         </a>
-        <a href="?alertas=1" class="md3-btn md3-btn-outlined md3-btn-error" style="margin-right: 0.5rem;">
-            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">warning</span>Alertas Stock
+        <a href="{% url 'inventario:movimientos' %}" class="md3-btn md3-btn-outlined md3-btn-primary" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">swap_horiz</span>Movimientos
         </a>
-        <a href="{% url 'inventario:crear' %}" class="md3-btn md3-btn-filled">
-            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">inventory_2</span>Registrar Stock
+        <a href="{% url 'inventario:inventario_pdf' %}" class="md3-btn md3-btn-outlined" style="margin-right: 0.5rem;">
+            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">picture_as_pdf</span>PDF
         </a>
     </div>
 </div>
 
+<div class="inv-filter-card">
+    <div class="inv-filter-header" onclick="toggleInvFilter()">
+        <div class="inv-filter-header-left">
+            <span class="material-symbols-outlined">tune</span>
+            <span class="inv-filter-header-text">Filtros</span>
+            {% if categoria_actual or estado_actual or search or alertas or orden_actual != 'ingrediente__categoria' %}
+            <div class="inv-filter-badge">
+                {% if categoria_actual %}+{% endif %}{% if estado_actual or alertas %}+{% endif %}{% if search %}+{% endif %}{% if orden_actual != 'ingrediente__categoria' %}+{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <span class="material-symbols-outlined inv-filter-chevron" id="invFilterChevron">expand_more</span>
+    </div>
+    <div class="inv-active-filters" id="invActiveFilters">
+        {% if categoria_actual %}
+        <div class="inv-filter-chip">
+            <span class="material-symbols-outlined">sell</span>
+            {{ categoria_actual }}
+            <a href="{{ request.GET.urlencode|remove:'categoria'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if estado_actual or alertas == "1" %}
+        <div class="inv-filter-chip">
+            <span class="material-symbols-outlined">{% if alertas == "1" or estado_actual == "bajo" %}warning{% else %}check_circle{% endif %}</span>
+            {% if alertas == "1" or estado_actual == "bajo" %}Bajo stock{% else %}Stock OK{% endif %}
+            <a href="{{ request.GET.urlencode|remove:'estado'|remove:'alertas'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if search %}
+        <div class="inv-filter-chip">
+            <span class="material-symbols-outlined">search</span>
+            "{{ search }}"
+            <a href="{{ request.GET.urlencode|remove:'search'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if orden_actual != 'ingrediente__categoria' %}
+        <div class="inv-filter-chip">
+            <span class="material-symbols-outlined">sort</span>
+            Orden activo
+            <a href="{{ request.GET.urlencode|remove:'orden'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="inv-filter-body" id="invFilterBody">
+        <form method="get" class="inv-filter-body-inner">
+            <div class="inv-filter-field">
+                <div class="md3-field">
+                    <input type="text" name="search" value="{{ search }}" class="md3-input" style="padding-top:24px;" placeholder=" ">
+                    <label class="md3-label">Buscar ingrediente</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="inv-filter-field">
+                <div class="md3-field">
+                    <select name="categoria" class="md3-input" style="padding-top:24px;">
+                        <option value="">Todas</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if categoria_actual == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                    <label class="md3-label">Categoria</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="inv-filter-field">
+                <div class="md3-field">
+                    <select name="estado" class="md3-input" style="padding-top:24px;">
+                        <option value="">Todos</option>
+                        <option value="bajo" {% if estado_actual == "bajo" or alertas == "1" %}selected{% endif %}>Bajo stock</option>
+                        <option value="ok" {% if estado_actual == "ok" %}selected{% endif %}>Stock OK</option>
+                    </select>
+                    <label class="md3-label">Estado</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="inv-filter-field">
+                <div class="md3-field">
+                    <select name="orden" class="md3-input" style="padding-top:24px;">
+                        <option value="ingrediente__categoria" {% if orden_actual == 'ingrediente__categoria' %}selected{% endif %}>Categoria A-Z</option>
+                        <option value="-ingrediente__categoria" {% if orden_actual == '-ingrediente__categoria' %}selected{% endif %}>Categoria Z-A</option>
+                        <option value="ingrediente__nombre" {% if orden_actual == 'ingrediente__nombre' %}selected{% endif %}>Nombre A-Z</option>
+                        <option value="-ingrediente__nombre" {% if orden_actual == '-ingrediente__nombre' %}selected{% endif %}>Nombre Z-A</option>
+                        <option value="cantidad_actual" {% if orden_actual == 'cantidad_actual' %}selected{% endif %}>Menor stock</option>
+                        <option value="-cantidad_actual" {% if orden_actual == '-cantidad_actual' %}selected{% endif %}>Mayor stock</option>
+                        <option value="costo_unitario" {% if orden_actual == 'costo_unitario' %}selected{% endif %}>Menor costo</option>
+                        <option value="-costo_unitario" {% if orden_actual == '-costo_unitario' %}selected{% endif %}>Mayor costo</option>
+                    </select>
+                    <label class="md3-label">Ordenar</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="inv-filter-actions">
+                <button type="submit" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="font-size:18px;">filter_list</span>
+                </button>
+                <a href="{% url 'inventario:list' %}" class="md3-btn md3-btn-outlined">
+                    <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if inventario %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+    <span style="font-size:13px; color:var(--md-sys-color-on-surface-variant);">
+        {{ inventario.paginator.count }} ingrediente{{ inventario.paginator.count|pluralize }}
+        {% if bajo_stock_count > 0 %}
+        <span style="color:var(--md-sys-color-error); font-weight:600;">| {{ bajo_stock_count }} con bajo stock</span>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
+
 <div class="md3-card-outlined">
     <div class="md3-card-body" style="padding: 0;">
         <div class="md3-table-wrapper">
-            <table class="md3-table">
+            <table class="md3-data-table">
                 <thead style="background-color: var(--md-sys-color-surface-container-low);">
                     <tr>
                         <th>Ingrediente</th>
@@ -43,8 +400,8 @@
                     <tr style="{% if inv.bajo_stock %}background-color: var(--md-sys-color-error-container);{% endif %}">
                         <td><strong>{{ inv.ingrediente.nombre }}</strong></td>
                         <td><span class="md3-badge md3-badge-secondary">{{ inv.ingrediente.categoria|default:"-" }}</span></td>
-                        <td style="font-weight: bold;">{{ inv.cantidad_actual }}</td>
-                        <td>{{ inv.ingrediente.stock_minimo }}</td>
+                        <td style="font-weight: bold;">{{ inv.cantidad_actual|floatformat:-3 }}</td>
+                        <td>{{ inv.ingrediente.stock_minimo|floatformat:-3 }}</td>
                         <td>{{ inv.get_unidad_display }}</td>
                         <td>{{ CURRENCY_SYMBOL }}{{ inv.costo_unitario|floatformat:2 }}</td>
                         <td>{{ CURRENCY_SYMBOL }}{{ inv.valor_total|floatformat:2 }}</td>
@@ -56,22 +413,36 @@
                             {% endif %}
                         </td>
                         <td style="text-align: end;">
-                            <button class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-success" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='flex'">
+                            <button class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-success" onclick="openMovModal({{ inv.pk }}, '{{ inv.ingrediente.nombre|escapejs }}', '{{ inv.cantidad_actual|floatformat:-3 }}', '{{ inv.get_unidad_display }}', '{{ inv.costo_unitario|floatformat:2 }}')">
                                 <span class="material-symbols-outlined">swap_horiz</span>
                             </button>
                             <a href="{% url 'inventario:editar' inv.pk %}" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-primary">
                                 <span class="material-symbols-outlined">edit</span>
                             </a>
+                            <form method="post" action="{% url 'inventario:eliminar' inv.pk %}" style="display:inline;" onsubmit="return confirm('¿Eliminar {{ inv.ingrediente.nombre }} y todo su inventario?')">
+                                {% csrf_token %}
+                                <button type="submit" class="md3-btn md3-btn-sm md3-btn-outlined" style="color:var(--md-sys-color-error); border-color:var(--md-sys-color-error-container);">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
                         <td colspan="9" style="text-align: center; padding: 1.5rem 1rem; color: var(--md-sys-color-on-surface-variant);">
+                            {% if search or categoria_actual or estado_actual or alertas %}
+                            <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem; color: var(--md-sys-color-outline);">filter_alt_off</span>
+                            No se encontraron resultados con los filtros aplicados.<br>
+                            <a href="{% url 'inventario:list' %}" class="md3-btn md3-btn-sm md3-btn-outlined" style="margin-top: 0.5rem;">
+                                <span class="material-symbols-outlined">restart_alt</span> Limpiar filtros
+                            </a>
+                            {% else %}
                             <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">inventory_2</span>
                             No hay ingredientes en inventario.<br>
                             <a href="{% url 'inventario:ingrediente_crear' %}" class="md3-btn md3-btn-sm md3-btn-success" style="margin-top: 0.5rem;">
                                 <span class="material-symbols-outlined">add</span> Crear primer ingrediente
                             </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -81,45 +452,112 @@
     </div>
 </div>
 
-{% for inv in inventario %}
-<div id="movModal{{ inv.pk }}" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="md3-card-elevated" style="max-width: 500px; width: 90%; padding: 0;">
-        <form method="post" action="{% url 'inventario:movimiento' inv.pk %}">
+{% if is_paginated %}
+<div class="md3-flex" style="justify-content:center; margin-top:16px; gap:8px;">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if alertas %}&alertas={{ alertas }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span>
+    </a>
+    {% endif %}
+    <span style="padding:8px 16px; font-size:14px;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if alertas %}&alertas={{ alertas }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if orden_actual %}&orden={{ orden_actual }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div id="movModal" class="mov-modal" onclick="if(event.target===this)closeMovModal()">
+    <div class="mov-dialog">
+        <form method="post" id="movForm">
             {% csrf_token %}
-            <div class="md3-card-header" style="background-color: transparent; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
-                <h5 style="font-weight: 600; margin: 0;">Movimiento - {{ inv.ingrediente.nombre }}</h5>
-                <button type="button" class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='none'" style="margin-left: auto;">&times;</button>
+            <div class="mov-header">
+                <h3 id="movTitle">Movimiento</h3>
+                <button type="button" class="md3-btn md3-btn-icon md3-btn-text" onclick="closeMovModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
             </div>
-            <div class="md3-card-body">
-                <div style="margin-bottom: 1rem;">
-                    <label class="md3-label" style="font-weight: 600;">Tipo de Movimiento</label>
-                    <select name="tipo" class="md3-input" required>
-                        <option value="entrada">Entrada</option>
-                        <option value="salida">Salida</option>
-                        <option value="ajuste">Ajuste</option>
-                        <option value="merma">Merma</option>
-                        <option value="devolucion">Devolucion</option>
-                    </select>
+            <div class="mov-body">
+                <div class="stock-info">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">inventory_2</span>
+                    <div>
+                        <div class="stock-val" id="movStock">0</div>
+                        <div class="stock-unit" id="movStockUnit">unidades</div>
+                        <div style="font-size:11px; color:var(--md-sys-color-on-surface-variant); margin-top:2px;">Stock actual</div>
+                    </div>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label class="md3-label" style="font-weight: 600;">Cantidad</label>
-                    <input type="number" name="cantidad" class="md3-input" step="0.001" min="0" required>
+
+                <div class="md3-field-filled" style="margin-bottom:12px;">
+                    <input type="number" name="cantidad" class="md3-field-input" step="0.001" min="0" required placeholder=" " id="movCantidad" oninput="updateNewStock()">
+                    <label class="md3-field-label">Cantidad a agregar</label>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label class="md3-label" style="font-weight: 600;">Costo Unitario</label>
-                    <input type="number" name="costo" class="md3-input" step="0.01" min="0" value="{{ inv.costo_unitario|floatformat:2 }}">
+
+                <div id="newStockPreview" style="display:none; margin-bottom:12px; padding:12px 16px; background:var(--md-sys-color-success-container); border-radius:12px;">
+                    <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--md-sys-color-on-success-container);">
+                        <span class="material-symbols-outlined" style="font-size:18px;">arrow_upward</span>
+                        <span>Stock resultante: <strong id="newStockValue">0</strong> <span id="newStockUnit">unidades</span></span>
+                    </div>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label class="md3-label" style="font-weight: 600;">Motivo</label>
-                    <input type="text" name="motivo" class="md3-input" placeholder="Opcional">
+
+                <input type="hidden" name="tipo" id="movTipo" value="entrada">
+
+                <div class="md3-field-filled" style="margin-bottom:12px;">
+                    <input type="number" name="costo" class="md3-field-input" step="any" min="0" id="movCosto" placeholder=" ">
+                    <label class="md3-field-label">Costo Unitario</label>
+                </div>
+
+                <div class="md3-field-filled">
+                    <input type="text" name="motivo" class="md3-field-input" placeholder=" ">
+                    <label class="md3-field-label">Motivo (opcional)</label>
                 </div>
             </div>
-            <div class="md3-card-footer" style="background-color: transparent; border-top: 1px solid var(--md-sys-color-outline-variant); display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <button type="button" class="md3-btn md3-btn-outlined" onclick="document.getElementById('movModal{{ inv.pk }}').style.display='none'">Cancelar</button>
+            <div class="mov-actions">
+                <button type="button" class="md3-btn md3-btn-text" onclick="closeMovModal()">Cancelar</button>
                 <button type="submit" class="md3-btn md3-btn-filled">Registrar</button>
             </div>
         </form>
     </div>
 </div>
-{% endfor %}
+
+<script>
+let currentStock = 0;
+function openMovModal(pk, nombre, stock, unit, costo) {
+    currentStock = parseFloat(stock) || 0;
+    document.getElementById('movTitle').textContent = nombre;
+    document.getElementById('movStock').textContent = currentStock % 1 === 0 ? currentStock : currentStock.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    document.getElementById('movStockUnit').textContent = unit;
+    document.getElementById('movCosto').value = costo;
+    document.getElementById('movCantidad').value = '';
+    document.getElementById('movForm').action = '/inventario/' + pk + '/movimiento/';
+    document.getElementById('newStockPreview').style.display = 'none';
+    document.getElementById('movModal').classList.add('open');
+}
+function closeMovModal() {
+    document.getElementById('movModal').classList.remove('open');
+}
+function updateNewStock() {
+    const cant = parseFloat(document.getElementById('movCantidad').value) || 0;
+    const preview = document.getElementById('newStockPreview');
+    if (cant > 0) {
+        const nuevo = currentStock + cant;
+        document.getElementById('newStockValue').textContent = nuevo % 1 === 0 ? nuevo : nuevo.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+}
+function toggleInvFilter() {
+    const body = document.getElementById('invFilterBody');
+    const chevron = document.getElementById('invFilterChevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+}
+{% if categoria_actual or estado_actual or search or alertas or orden_actual != 'ingrediente__categoria' %}
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('invFilterBody').classList.add('open');
+    document.getElementById('invFilterChevron').classList.add('open');
+});
+{% endif %}
+</script>
 {% endblock %}

@@ -1,20 +1,232 @@
 {% extends 'base.html' %}
+{% load perm_tags %}
 
 {% block title %}Cuentas por Pagar - {{ RESTAURANT_NAME }}{% endblock %}
 
 {% block content %}
+<style>
+    .cp-filter-card {
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+    .cp-filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s ease;
+    }
+    .cp-filter-header:hover {
+        background: var(--md-sys-color-surface-container);
+    }
+    .cp-filter-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .cp-filter-header-left .material-symbols-outlined {
+        font-size: 22px;
+        color: var(--md-sys-color-primary);
+    }
+    .cp-filter-header-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface);
+    }
+    .cp-filter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .cp-filter-chevron {
+        font-size: 24px;
+        color: var(--md-sys-color-on-surface-variant);
+        transition: transform 0.2s ease;
+    }
+    .cp-filter-chevron.open {
+        transform: rotate(180deg);
+    }
+    .cp-filter-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .cp-filter-body.open {
+        max-height: 200px;
+    }
+    .cp-filter-body-inner {
+        padding: 0 20px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+    }
+    .cp-filter-field {
+        flex: 1;
+        min-width: 130px;
+        max-width: 180px;
+    }
+    .cp-filter-field .md3-field {
+        margin-bottom: 0;
+    }
+    .cp-filter-field select,
+    .cp-filter-field input {
+        width: 100%;
+    }
+    .cp-filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+    .cp-active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 20px 12px;
+    }
+    .cp-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .cp-filter-chip .material-symbols-outlined {
+        font-size: 16px;
+        cursor: pointer;
+        opacity: 0.6;
+    }
+    .cp-filter-chip .material-symbols-outlined:hover {
+        opacity: 1;
+    }
+</style>
+
 <div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
     <h2 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right: 0.5rem;">receipt_long</span>Cuentas por Pagar</h2>
     <div>
-        <a href="?estado=vencida" class="md3-btn md3-btn-outlined md3-btn-error" style="margin-right: 0.5rem;">
-            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">warning</span>Vencidas
-        </a>
-        <a href="?estado=pendiente" class="md3-btn md3-btn-outlined md3-btn-warning" style="margin-right: 0.5rem;">
-            <span class="material-symbols-outlined" style="margin-right: 0.25rem;">schedule</span>Pendientes
-        </a>
         <a href="{% url 'inventario:cuenta_crear' %}" class="md3-btn md3-btn-filled">
             <span class="material-symbols-outlined" style="margin-right: 0.25rem;">add</span>Nueva Cuenta
         </a>
+    </div>
+</div>
+
+<div class="cp-filter-card">
+    <div class="cp-filter-header" onclick="toggleCpFilter()">
+        <div class="cp-filter-header-left">
+            <span class="material-symbols-outlined">tune</span>
+            <span class="cp-filter-header-text">Filtros</span>
+            {% if estado_actual or search or proveedor_actual or fecha_vencimiento or orden_actual != '-fecha_creacion' %}
+            <div class="cp-filter-badge">
+                {% if estado_actual %}+{% endif %}{% if search %}+{% endif %}{% if fecha_vencimiento %}+{% endif %}{% if orden_actual != '-fecha_creacion' %}+{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <span class="material-symbols-outlined cp-filter-chevron" id="cpFilterChevron">expand_more</span>
+    </div>
+    <div class="cp-active-filters" id="cpActiveFilters">
+        {% if estado_actual %}
+        <div class="cp-filter-chip">
+            <span class="material-symbols-outlined">
+                {% if estado_actual == "vencida" %}warning{% elif estado_actual == "pendiente" %}schedule{% elif estado_actual == "pagada" %}check_circle{% elif estado_actual == "parcial" %}hourglass_top{% else %}label{% endif %}
+            </span>
+            {{ estado_actual|title }}
+            <a href="{{ request.GET.urlencode|remove:'estado'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if search %}
+        <div class="cp-filter-chip">
+            <span class="material-symbols-outlined">search</span>
+            "{{ search }}"
+            <a href="{{ request.GET.urlencode|remove:'search'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if fecha_vencimiento %}
+        <div class="cp-filter-chip">
+            <span class="material-symbols-outlined">calendar_today</span>
+            Vence antes: {{ fecha_vencimiento }}
+            <a href="{{ request.GET.urlencode|remove:'fecha_vencimiento'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+        {% if orden_actual != '-fecha_creacion' %}
+        <div class="cp-filter-chip">
+            <span class="material-symbols-outlined">sort</span>
+            Orden activo
+            <a href="{{ request.GET.urlencode|remove:'orden'|safe }}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="cp-filter-body" id="cpFilterBody">
+        <form method="get" class="cp-filter-body-inner">
+            <div class="cp-filter-field">
+                <div class="md3-field">
+                    <input type="text" name="search" value="{{ search }}" class="md3-input" style="padding-top:24px;" placeholder=" ">
+                    <label class="md3-label">Buscar (proveedor, folio, notas)</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="cp-filter-field">
+                <div class="md3-field">
+                    <select name="estado" class="md3-input" style="padding-top:24px;">
+                        <option value="">Todos</option>
+                        <option value="pendiente" {% if estado_actual == "pendiente" %}selected{% endif %}>Pendiente</option>
+                        <option value="parcial" {% if estado_actual == "parcial" %}selected{% endif %}>Pago parcial</option>
+                        <option value="pagada" {% if estado_actual == "pagada" %}selected{% endif %}>Pagada</option>
+                        <option value="vencida" {% if estado_actual == "vencida" %}selected{% endif %}>Vencida</option>
+                        <option value="cancelada" {% if estado_actual == "cancelada" %}selected{% endif %}>Cancelada</option>
+                    </select>
+                    <label class="md3-label">Estado</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="cp-filter-field">
+                <div class="md3-field">
+                    <input type="date" name="fecha_vencimiento" value="{{ fecha_vencimiento }}" class="md3-input" style="padding-top:24px;">
+                    <label class="md3-label">Vence antes de</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="cp-filter-field">
+                <div class="md3-field">
+                    <select name="orden" class="md3-input" style="padding-top:24px;">
+                        <option value="-fecha_creacion" {% if orden_actual == '-fecha_creacion' %}selected{% endif %}>Mas recientes</option>
+                        <option value="fecha_creacion" {% if orden_actual == 'fecha_creacion' %}selected{% endif %}>Mas antiguas</option>
+                        <option value="fecha_vencimiento" {% if orden_actual == 'fecha_vencimiento' %}selected{% endif %}>Vencimiento proximo</option>
+                        <option value="-fecha_vencimiento" {% if orden_actual == '-fecha_vencimiento' %}selected{% endif %}>Vencimiento lejano</option>
+                        <option value="monto_pendiente" {% if orden_actual == 'monto_pendiente' %}selected{% endif %}>Menor pendiente</option>
+                        <option value="-monto_pendiente" {% if orden_actual == '-monto_pendiente' %}selected{% endif %}>Mayor pendiente</option>
+                        <option value="proveedor" {% if orden_actual == 'proveedor' %}selected{% endif %}>Proveedor A-Z</option>
+                        <option value="-proveedor" {% if orden_actual == '-proveedor' %}selected{% endif %}>Proveedor Z-A</option>
+                    </select>
+                    <label class="md3-label">Ordenar</label>
+                    <div class="md3-input-line"></div>
+                </div>
+            </div>
+            <div class="cp-filter-actions">
+                <button type="submit" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="font-size:18px;">filter_list</span>
+                </button>
+                <a href="{% url 'inventario:cuentas' %}" class="md3-btn md3-btn-outlined">
+                    <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -57,7 +269,7 @@
 <div class="md3-card-outlined">
     <div class="md3-card-body" style="padding: 0;">
         <div class="md3-table-wrapper">
-            <table class="md3-table">
+            <table class="md3-data-table">
                 <thead style="background-color: var(--md-sys-color-surface-container-low);">
                     <tr>
                         <th>Folio</th>
@@ -107,8 +319,16 @@
                     {% empty %}
                     <tr>
                         <td colspan="8" style="text-align: center; padding: 1.5rem 1rem; color: var(--md-sys-color-on-surface-variant);">
+                            {% if search or estado_actual or fecha_vencimiento %}
+                            <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem; color: var(--md-sys-color-outline);">filter_alt_off</span>
+                            No se encontraron resultados con los filtros aplicados.<br>
+                            <a href="{% url 'inventario:cuentas' %}" class="md3-btn md3-btn-sm md3-btn-outlined" style="margin-top: 0.5rem;">
+                                <span class="material-symbols-outlined">restart_alt</span> Limpiar filtros
+                            </a>
+                            {% else %}
                             <span class="material-symbols-outlined" style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">receipt_long</span>
                             No hay cuentas por pagar.
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -118,19 +338,34 @@
     </div>
 </div>
 
-{% if page_obj.paginator.num_pages > 1 %}
-<div class="md3-flex" style="justify-content: center; margin-top: 1rem;">
-    <div class="md3-flex" style="gap: 0.5rem;">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
-        {% endif %}
-        {% for num in page_obj.paginator.page_range %}
-        <a href="?page={{ num }}" class="md3-btn md3-btn-sm {% if page_obj.number == num %}md3-btn-filled{% else %}md3-btn-outlined{% endif %}">{{ num }}</a>
-        {% endfor %}
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
-        {% endif %}
-    </div>
+{% if is_paginated %}
+<div class="md3-flex" style="justify-content:center; margin-top:16px; gap:8px;">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if fecha_vencimiento %}&fecha_vencimiento={{ fecha_vencimiento }}{% endif %}{% if orden_actual != '-fecha_creacion' %}&orden={{ orden_actual }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span>
+    </a>
+    {% endif %}
+    <span style="padding:8px 16px; font-size:14px;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if fecha_vencimiento %}&fecha_vencimiento={{ fecha_vencimiento }}{% endif %}{% if orden_actual != '-fecha_creacion' %}&orden={{ orden_actual }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
+    </a>
+    {% endif %}
 </div>
 {% endif %}
+
+<script>
+function toggleCpFilter() {
+    const body = document.getElementById('cpFilterBody');
+    const chevron = document.getElementById('cpFilterChevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+}
+{% if estado_actual or search or fecha_vencimiento or orden_actual != '-fecha_creacion' %}
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('cpFilterBody').classList.add('open');
+    document.getElementById('cpFilterChevron').classList.add('open');
+});
+{% endif %}
+</script>
 {% endblock %}

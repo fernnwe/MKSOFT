@@ -2,37 +2,270 @@
 {% block title %}Nueva Compra{% endblock %}
 {% block content %}
 <style>
-    .compra-table input, .compra-table select {
-        width: 100%;
-        height: 40px;
-        padding: 4px 8px;
-        font-size: 14px;
-        font-family: inherit;
-        color: var(--md-sys-color-on-surface);
-        background: var(--md-sys-color-surface-container-highest);
-        border: none;
-        border-radius: var(--md-sys-shape-corner-extra-small);
-        outline: none;
-        box-sizing: border-box;
+.compra-search-wrap {
+    position: relative;
+}
+.compra-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px 0 44px;
+    border-radius: 28px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container-lowest);
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+    outline: none;
+    transition: all 0.2s;
+}
+.compra-search-input:focus {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+}
+.compra-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 20px;
+    pointer-events: none;
+}
+
+.ingredient-autocomplete {
+    position: relative;
+}
+.ingredient-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.ingredient-dropdown.show { display: block; }
+.ingredient-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.ingredient-dropdown-item:last-child { border-bottom: none; }
+.ingredient-dropdown-item:hover,
+.ingredient-dropdown-item.highlighted {
+    background: var(--md-sys-color-surface-container-high);
+}
+.ingredient-dropdown-item .name {
+    font-weight: 500;
+    font-size: 14px;
+}
+.ingredient-dropdown-item .meta {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    text-align: right;
+}
+.ingredient-dropdown-item .cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    margin-right: 6px;
+}
+
+.compra-item-row {
+    animation: slideIn 0.2s ease;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; transform: translateY(0); max-height: 80px; }
+    to { opacity: 0; transform: translateY(8px); max-height: 0; padding: 0; margin: 0; overflow: hidden; }
+}
+
+.compra-item-card {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: all 0.2s;
+}
+.compra-item-card:hover {
+    border-color: var(--md-sys-color-outline);
+}
+
+.compra-item-card .ing-name {
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.compra-item-card .ing-stock {
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.compra-qty-input {
+    width: 80px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.compra-qty-input:focus {
+    border-color: var(--md-sys-color-primary);
+}
+
+.compra-cost-input {
+    width: 100px;
+    height: 40px;
+    text-align: right;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.compra-cost-input:focus {
+    border-color: var(--md-sys-color-primary);
+}
+
+.compra-subtotal {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--md-sys-color-primary);
+    min-width: 80px;
+    text-align: right;
+}
+
+.compra-remove-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: all 0.2s;
+}
+.compra-remove-btn:hover {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-error);
+}
+
+.compra-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.compra-items-list::-webkit-scrollbar { width: 6px; }
+.compra-items-list::-webkit-scrollbar-track { background: transparent; }
+.compra-items-list::-webkit-scrollbar-thumb { background: var(--md-sys-color-outline-variant); border-radius: 3px; }
+
+.compra-add-btn {
+    width: 100%;
+    height: 48px;
+    border: 2px dashed var(--md-sys-color-outline);
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-sys-color-primary);
+    transition: all 0.2s;
+}
+.compra-add-btn:hover {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+}
+
+.sticky-total {
+    position: sticky;
+    bottom: 0;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 16px 16px;
+    margin-top: 0;
+    z-index: 10;
+}
+.sticky-total .label {
+    font-size: 14px;
+    font-weight: 500;
+}
+.sticky-total .amount {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.empty-items-msg {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.empty-items-msg .material-symbols-outlined {
+    font-size: 48px;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+.empty-items-msg p {
+    margin: 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .compra-item-card {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
     }
-    .compra-table input:focus, .compra-table select:focus {
-        background: var(--md-sys-color-surface-container-high);
+    .compra-item-card .ing-name {
+        grid-column: 1 / -1;
     }
-    .compra-table select {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%2349454F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        background-size: 16px;
-        cursor: pointer;
+    .compra-subtotal {
+        justify-self: end;
     }
-    .compra-table input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--md-sys-color-primary);
-        cursor: pointer;
+    .compra-remove-btn {
+        justify-self: end;
     }
-    .compra-table tr.deletrd { opacity: 0.4; text-decoration: line-through; }
+    .compra-qty-input { width: 100%; }
+    .compra-cost-input { width: 100%; }
+}
 </style>
 
 <div class="md3-page-header">
@@ -42,24 +275,13 @@
         </a>
         <div>
             <h1 class="md3-page-title">Nueva Compra</h1>
-            <p class="md3-page-subtitle">Registra ingredientes comprados a un proveedor</p>
+            <p class="md3-page-subtitle">Registrar ingredientes comprados a un proveedor</p>
         </div>
     </div>
 </div>
 
 <form method="post" id="compraForm">
     {% csrf_token %}
-
-    {% if is_post and formset.non_form_errors %}
-    <div class="px-3 px-md-4">
-        <div style="padding:12px 16px; margin-bottom:16px; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container); font-size:14px; display:flex; align-items:center; gap:8px;">
-            <span class="material-symbols-outlined">error</span>
-            {% for error in formset.non_form_errors %}
-            <span>{{ error }}</span>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
 
     <div class="px-3 px-md-4">
         <!-- Proveedor -->
@@ -69,84 +291,71 @@
                     <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">badge</span>
                     </div>
-                    <strong>Proveedor</strong>
+                    <strong>Datos del Proveedor</strong>
                 </div>
             </div>
             <div style="padding:12px 16px;">
-                {% for field in form %}
-                <div class="md3-field">
-                    {{ field.as_widget }}
-                    <label class="md3-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <div class="md3-field {% if form.proveedor.errors %}md3-field-error{% endif %}" style="margin-bottom:12px;">
+                    {{ form.proveedor }}
+                    <label class="md3-label" for="id_proveedor">Proveedor</label>
                     <div class="md3-input-line"></div>
-                    {% if is_post and field.errors %}
-                    <div style="font-size:12px; color:var(--md-sys-color-error); margin-top:4px;">{{ field.errors.0 }}</div>
-                    {% endif %}
+                    {% for error in form.proveedor.errors %}
+                    <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:8px;">
-                    <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">info</span>
-                    Nombre del proveedor que vendio los ingredientes.
-                </small>
+                <div class="md3-field" style="margin-bottom:0;">
+                    {{ form.notas }}
+                    <label class="md3-label" for="id_notas">Notas (opcional)</label>
+                    <div class="md3-input-line"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Productos -->
-        <div class="md3-card-outlined" style="margin-bottom:16px;">
+        <!-- Ingredientes -->
+        <div class="md3-card-outlined" style="margin-bottom:16px; overflow:visible;">
             <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px;">
                     <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">inventory_2</span>
                     </div>
                     <strong>Ingredientes</strong>
+                    <span id="itemCount" style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-left:auto;">0 items</span>
                 </div>
-                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Agrega al menos uno</small>
             </div>
 
-            <div class="md3-table-wrapper">
-                <table class="md3-table compra-table">
-                    <thead>
-                        <tr>
-                            <th style="width:35%;">Ingrediente</th>
-                            <th style="width:15%;">Cantidad</th>
-                            <th style="width:20%;">Costo Unit.</th>
-                            <th style="width:15%;">Subtotal</th>
-                            <th style="width:15%;"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{ formset.management_form }}
-                        {% for form in formset %}
-                        <tr class="compra-item-row">
-                            <td>{{ form.ingrediente }}</td>
-                            <td>{{ form.cantidad }}</td>
-                            <td>{{ form.costo_unitario }}</td>
-                            <td><strong class="subtotal-value" style="color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}0.00</strong></td>
-                            <td>
-                                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
-                                    {{ form.DELETE }}
-                                    <button type="button" class="md3-btn md3-btn-icon md3-btn-text" style="color:var(--md-sys-color-error);" onclick="deleteRow(this)">
-                                        <span class="material-symbols-outlined" style="font-size:20px;">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <!-- Search / Add bar -->
+            <div style="padding:12px 14px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="compra-search-wrap ingredient-autocomplete">
+                    <span class="material-symbols-outlined compra-search-icon">search</span>
+                    <input type="text" class="compra-search-input" id="ingredientSearch" placeholder="Buscar ingrediente..." autocomplete="off">
+                    <div class="ingredient-dropdown" id="ingredientDropdown"></div>
+                </div>
             </div>
 
-            <div style="padding:16px; background:var(--md-sys-color-primary-container); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:500; color:var(--md-sys-color-on-primary-container);">Total de la Compra</span>
-                <span style="font-weight:700; font-size:24px; color:var(--md-sys-color-on-primary-container);" id="compraTotal">{{ CURRENCY_SYMBOL }}0.00</span>
+            <!-- Items list -->
+            <div class="compra-items-list" id="compraItemsList">
+                <div class="empty-items-msg" id="emptyMsg">
+                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                    <p>Busca y selecciona ingredientes para agregar</p>
+                </div>
+            </div>
+
+            <!-- Sticky total -->
+            <div class="sticky-total">
+                <span class="label">Total de la Compra</span>
+                <span class="amount" id="compraTotal">{{ CURRENCY_SYMBOL }}0.00</span>
             </div>
         </div>
 
-        <div class="md3-flex md3-flex-justify-end" style="margin-top:16px; gap:8px;">
-            <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
-            <button type="submit" class="md3-btn md3-btn-filled">
-                <span class="material-symbols-outlined" style="font-size:18px;">shopping_cart</span>
-                Registrar Compra
-            </button>
+        <!-- Actions -->
+        <div style="padding:16px 0 24px;">
+            <div class="md3-flex md3-flex-justify-end" style="gap:12px;">
+                <a href="{% url 'inventario:compras' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled" id="submitBtn">
+                    <span class="material-symbols-outlined" style="font-size:18px;">shopping_cart</span>
+                    Registrar Compra
+                </button>
+            </div>
         </div>
     </div>
 </form>
@@ -154,57 +363,204 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.compra-item-row').forEach(function(row) {
-        row.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]), select').forEach(function(inp) {
-            inp.addEventListener('input', function() { calcSubtotal(row); });
-            inp.addEventListener('change', function() { calcSubtotal(row); });
-        });
-        const del = row.querySelector('input[type="checkbox"]');
-        if (del) {
-            del.addEventListener('change', function() {
-                calcTotal();
-                row.classList.toggle('deletrd', del.checked);
-            });
-            if (del.checked) row.classList.add('deletrd');
-        }
-        calcSubtotal(row);
-    });
-    calcTotal();
+const INGREDIENTES = {{ ingredientes_json|safe }};
+const CURRENCY = '{{ CURRENCY_SYMBOL }}';
+let itemIndex = 0;
+let highlightIdx = -1;
+let filteredIngredients = [];
+
+const searchInput = document.getElementById('ingredientSearch');
+const dropdown = document.getElementById('ingredientDropdown');
+const itemsList = document.getElementById('compraItemsList');
+const emptyMsg = document.getElementById('emptyMsg');
+const totalEl = document.getElementById('compraTotal');
+const countEl = document.getElementById('itemCount');
+
+searchInput.addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    highlightIdx = -1;
+    if (!q) {
+        filteredIngredients = INGREDIENTES;
+    } else {
+        filteredIngredients = INGREDIENTES.filter(ing =>
+            ing.nombre.toLowerCase().includes(q) ||
+            ing.categoria.toLowerCase().includes(q)
+        );
+    }
+    renderDropdown();
 });
 
-function calcSubtotal(row) {
-    const cant = row.querySelector('input[name*="cantidad"]');
-    const costo = row.querySelector('input[name*="costo_unitario"]');
-    const sub = row.querySelector('.subtotal-value');
-    if (cant && costo && sub) {
-        const c = parseFloat(cant.value) || 0;
-        const p = parseFloat(costo.value) || 0;
-        sub.textContent = '{{ CURRENCY_SYMBOL }}' + (c * p).toFixed(2);
+searchInput.addEventListener('focus', function() {
+    if (this.value.length > 0) {
+        searchInput.dispatchEvent(new Event('input'));
+    } else {
+        filteredIngredients = INGREDIENTES;
+        renderDropdown();
     }
-    calcTotal();
+});
+
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        highlightIdx = Math.min(highlightIdx + 1, filteredIngredients.length - 1);
+        updateHighlight();
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        highlightIdx = Math.max(highlightIdx - 1, 0);
+        updateHighlight();
+    } else if (e.key === 'Enter' && highlightIdx >= 0) {
+        e.preventDefault();
+        selectIngredient(filteredIngredients[highlightIdx]);
+    } else if (e.key === 'Escape') {
+        closeDropdown();
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.ingredient-autocomplete')) {
+        closeDropdown();
+    }
+});
+
+function renderDropdown() {
+    if (filteredIngredients.length === 0) {
+        dropdown.innerHTML = '<div style="padding:16px; text-align:center; color:var(--md-sys-color-on-surface-variant); font-size:13px;">Sin resultados</div>';
+        dropdown.classList.add('show');
+        return;
+    }
+    dropdown.innerHTML = filteredIngredients.map((ing, i) => `
+        <div class="ingredient-dropdown-item" data-idx="${i}" onclick="selectIngredient(INGREDIENTES.find(x => x.id === ${ing.id}))">
+            <div>
+                <span class="name">${highlightMatch(ing.nombre)}</span>
+                ${ing.categoria ? `<span class="cat-badge">${ing.categoria}</span>` : ''}
+            </div>
+            <div class="meta">
+                ${ing.costo_sugerido > 0 ? `<div>${CURRENCY}${ing.costo_sugerido.toFixed(2)}</div>` : ''}
+                <div>Stock: ${ing.stock_actual.toFixed(1)} ${ing.unidad}</div>
+            </div>
+        </div>
+    `).join('');
+    dropdown.classList.add('show');
 }
 
-function calcTotal() {
-    let total = 0;
-    document.querySelectorAll('.subtotal-value').forEach(function(sub) {
-        const row = sub.closest('.compra-item-row');
-        if (row) {
-            const del = row.querySelector('input[type="checkbox"]');
-            if (del && del.checked) return;
-        }
-        total += parseFloat(sub.textContent.replace('{{ CURRENCY_SYMBOL }}', '')) || 0;
+function highlightMatch(name) {
+    const q = searchInput.value.trim();
+    if (!q) return name;
+    const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return name.replace(regex, '<mark style="background:var(--md-sys-color-primary-container); border-radius:2px; padding:0 1px;">$1</mark>');
+}
+
+function updateHighlight() {
+    dropdown.querySelectorAll('.ingredient-dropdown-item').forEach((el, i) => {
+        el.classList.toggle('highlighted', i === highlightIdx);
     });
-    document.getElementById('compraTotal').textContent = '{{ CURRENCY_SYMBOL }}' + total.toFixed(2);
 }
 
-function deleteRow(btn) {
-    const row = btn.closest('.compra-item-row');
-    const cb = row.querySelector('input[type="checkbox"]');
-    if (cb) {
-        cb.checked = !cb.checked;
-        cb.dispatchEvent(new Event('change'));
-    }
+function closeDropdown() {
+    dropdown.classList.remove('show');
+    highlightIdx = -1;
 }
+
+function selectIngredient(ing) {
+    closeDropdown();
+    searchInput.value = '';
+
+    if (document.querySelector(`.compra-item-card[data-id="${ing.id}"]`)) {
+        showToast(`"${ing.nombre}" ya esta en la lista`, 'warning');
+        return;
+    }
+
+    emptyMsg.style.display = 'none';
+    const idx = itemIndex++;
+    const row = document.createElement('div');
+    row.className = 'compra-item-card compra-item-row';
+    row.dataset.id = ing.id;
+    row.innerHTML = `
+        <div class="ing-name">
+            <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-primary);">inventory_2</span>
+            <div>
+                <div>${ing.nombre}</div>
+                <div class="ing-stock">Stock: ${ing.stock_actual.toFixed(1)} ${ing.unidad}</div>
+            </div>
+            <input type="hidden" name="items[${idx}][ingrediente]" value="${ing.id}">
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px; color:var(--md-sys-color-on-surface-variant); margin-bottom:2px;">Cantidad</div>
+            <input type="number" class="compra-qty-input" name="items[${idx}][cantidad]" step="0.001" min="0.001" value="1" required>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:10px; color:var(--md-sys-color-on-surface-variant); margin-bottom:2px;">Costo Unit.</div>
+            <input type="number" class="compra-cost-input" name="items[${idx}][costo_unitario]" step="any" min="0" value="${ing.costo_sugerido.toFixed(2)}" required>
+        </div>
+        <div class="compra-subtotal">${CURRENCY}0.00</div>
+        <button type="button" class="compra-remove-btn" onclick="removeItem(this)" aria-label="Eliminar">
+            <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+        </button>
+    `;
+    itemsList.appendChild(row);
+
+    const qtyInput = row.querySelector('.compra-qty-input');
+    const costInput = row.querySelector('.compra-cost-input');
+    qtyInput.addEventListener('input', () => updateSubtotal(row));
+    costInput.addEventListener('input', () => updateSubtotal(row));
+    updateSubtotal(row);
+    updateTotal();
+    searchInput.focus();
+}
+
+function updateSubtotal(row) {
+    const qty = parseFloat(row.querySelector('.compra-qty-input').value) || 0;
+    const cost = parseFloat(row.querySelector('.compra-cost-input').value) || 0;
+    row.querySelector('.compra-subtotal').textContent = `${CURRENCY}${(qty * cost).toFixed(2)}`;
+    updateTotal();
+}
+
+function updateTotal() {
+    let total = 0;
+    let count = 0;
+    document.querySelectorAll('.compra-item-card').forEach(row => {
+        const qty = parseFloat(row.querySelector('.compra-qty-input')?.value) || 0;
+        const cost = parseFloat(row.querySelector('.compra-cost-input')?.value) || 0;
+        total += qty * cost;
+        if (qty > 0) count++;
+    });
+    totalEl.textContent = `${CURRENCY}${total.toFixed(2)}`;
+    countEl.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+}
+
+function removeItem(btn) {
+    const card = btn.closest('.compra-item-card');
+    card.style.animation = 'slideOut 0.2s ease forwards';
+    setTimeout(() => {
+        card.remove();
+        if (document.querySelectorAll('.compra-item-card').length === 0) {
+            emptyMsg.style.display = '';
+        }
+        updateTotal();
+    }, 200);
+}
+
+function showToast(msg, type) {
+    let container = document.getElementById('toastContainer2');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer2';
+        container.style.cssText = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:10000; display:flex; flex-direction:column; gap:8px; align-items:center;';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.style.cssText = 'padding:12px 20px; border-radius:8px; font-size:13px; font-weight:500; color:var(--md-sys-color-on-surface); background:var(--md-sys-color-inverse-surface); color:var(--md-sys-color-inverse-on-surface); box-shadow:0 2px 8px rgba(0,0,0,0.2); animation:slideIn 0.2s ease;';
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+document.getElementById('compraForm').addEventListener('submit', function(e) {
+    const items = document.querySelectorAll('.compra-item-card');
+    if (items.length === 0) {
+        e.preventDefault();
+        showToast('Agrega al menos un ingrediente', 'error');
+    }
+});
 </script>
 {% endblock %}

@@ -7,8 +7,16 @@
 </div>
 
 <div class="px-3 px-md-4">
-    <form method="post" enctype="multipart/form-data" class="md3-card-outlined" style="max-width:720px;">
+    <form method="post" enctype="multipart/form-data" class="md3-card-outlined" style="max-width:720px;" novalidate>
         {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant); color:var(--md-sys-color-error);">
+            {% for error in form.non_field_errors %}
+            <p style="margin:0;">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
             <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
@@ -16,57 +24,67 @@
                 <strong>Informacion General</strong>
             </div>
 
-            <div class="md3-field">
-                <input type="text" name="nombre" id="id_nombre" class="md3-input" placeholder=" " value="{{ object.nombre }}" required>
+            <div class="md3-field {% if form.nombre.errors %}md3-field-error{% endif %}">
+                <input type="text" name="nombre" id="id_nombre" class="md3-input" placeholder=" " value="{{ form.nombre.value|default:object.nombre }}" required>
                 <label class="md3-label" for="id_nombre">Nombre del Restaurante</label>
                 <div class="md3-input-line"></div>
+                {% for error in form.nombre.errors %}
+                <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                {% endfor %}
             </div>
 
             <div class="md3-grid md3-grid-2">
-                <div class="md3-field">
-                    <input type="text" name="rfc" id="id_rfc" class="md3-input" placeholder=" " value="{{ object.rfc }}" maxlength="13">
-                    <label class="md3-label" for="id_rfc">RFC</label>
+                <div class="md3-field {% if form.rfc.errors %}md3-field-error{% endif %}">
+                    <input type="text" name="rfc" id="id_rfc" class="md3-input" placeholder=" " value="{{ form.rfc.value|default:object.rfc|default:'' }}" maxlength="13">
+                    <label class="md3-label" for="id_rfc">RUC</label>
                     <div class="md3-input-line"></div>
+                    {% for error in form.rfc.errors %}
+                    <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                    {% endfor %}
                 </div>
-                <div class="md3-field">
-                    <input type="email" name="email" id="id_email" class="md3-input" placeholder=" " value="{{ object.email|default:'' }}">
+                <div class="md3-field {% if form.email.errors %}md3-field-error{% endif %}">
+                    <input type="email" name="email" id="id_email" class="md3-input" placeholder=" " value="{{ form.email.value|default:object.email|default:'' }}">
                     <label class="md3-label" for="id_email">Email</label>
                     <div class="md3-input-line"></div>
+                    {% for error in form.email.errors %}
+                    <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                    {% endfor %}
                 </div>
             </div>
 
-            <div class="md3-field">
-                <textarea name="direccion" id="id_direccion" class="md3-input md3-textarea" placeholder=" " rows="2">{{ object.direccion }}</textarea>
+            <div class="md3-field {% if form.direccion.errors %}md3-field-error{% endif %}">
+                <textarea name="direccion" id="id_direccion" class="md3-input md3-textarea" placeholder=" " rows="2">{{ form.direccion.value|default:object.direccion|default:'' }}</textarea>
                 <label class="md3-label" for="id_direccion">Direccion</label>
                 <div class="md3-input-line"></div>
+                {% for error in form.direccion.errors %}
+                <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                {% endfor %}
             </div>
 
-            <div class="md3-field">
-                <input type="text" name="telefono" id="id_telefono" class="md3-input" placeholder=" " value="{{ object.telefono }}">
+            <div class="md3-field {% if form.telefono.errors %}md3-field-error{% endif %}">
+                <input type="text" name="telefono" id="id_telefono" class="md3-input" placeholder=" " value="{{ form.telefono.value|default:object.telefono|default:'' }}">
                 <label class="md3-label" for="id_telefono">Telefono</label>
                 <div class="md3-input-line"></div>
+                {% for error in form.telefono.errors %}
+                <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                {% endfor %}
             </div>
         </div>
 
         <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
             <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
                 <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
-                <strong>Facturacion e Impuestos</strong>
+                <strong>Facturacion</strong>
             </div>
 
-            <div class="md3-grid md3-grid-2">
-                <div class="md3-field">
-                    <input type="text" name="simbolo_moneda" id="id_simbolo_moneda" class="md3-input" placeholder=" " value="{{ object.simbolo_moneda }}" maxlength="5">
-                    <label class="md3-label" for="id_simbolo_moneda">Simbolo de Moneda</label>
-                    <div class="md3-input-line"></div>
-                    <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ej: C$, $, €</small>
-                </div>
-                <div class="md3-field">
-                    <input type="number" name="tasa_impuesto" id="id_tasa_impuesto" class="md3-input" placeholder=" " value="{{ object.tasa_impuesto }}" step="0.01" min="0" max="1">
-                    <label class="md3-label" for="id_tasa_impuesto">Tasa de Impuesto</label>
-                    <div class="md3-input-line"></div>
-                    <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ej: 0.16 para 16%</small>
-                </div>
+            <div class="md3-field {% if form.simbolo_moneda.errors %}md3-field-error{% endif %}">
+                <input type="text" name="simbolo_moneda" id="id_simbolo_moneda" class="md3-input" placeholder=" " value="{{ form.simbolo_moneda.value|default:object.simbolo_moneda }}" maxlength="5">
+                <label class="md3-label" for="id_simbolo_moneda">Simbolo de Moneda</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ej: C$, $, €</small>
+                {% for error in form.simbolo_moneda.errors %}
+                <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -76,11 +94,14 @@
                 <strong>Proveedores y Credito</strong>
             </div>
 
-            <div class="md3-field">
-                <input type="number" name="dias_credito_proveedor" id="id_dias_credito_proveedor" class="md3-input" placeholder=" " value="{{ object.dias_credito_proveedor }}" step="1" min="1">
+            <div class="md3-field {% if form.dias_credito_proveedor.errors %}md3-field-error{% endif %}">
+                <input type="number" name="dias_credito_proveedor" id="id_dias_credito_proveedor" class="md3-input" placeholder=" " value="{{ form.dias_credito_proveedor.value|default:object.dias_credito_proveedor }}" step="1" min="1">
                 <label class="md3-label" for="id_dias_credito_proveedor">Dias de Credito a Proveedores</label>
                 <div class="md3-input-line"></div>
                 <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Dias para pagar a proveedores. Ej: 30</small>
+                {% for error in form.dias_credito_proveedor.errors %}
+                <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -117,6 +138,60 @@
             </button>
         </div>
     </form>
+
+    <!-- Zona de Peligro -->
+    <div class="md3-card-outlined" style="max-width:720px; margin-top:24px; border-color:var(--md-sys-color-error);">
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">gpp_maybe</span>
+                <strong>Zona de Peligro</strong>
+            </div>
+            <p style="font-size:13px; color:var(--md-sys-color-on-surface-variant); margin:4px 0 0;">Estas acciones son irreversibles. Procede con precaucion.</p>
+        </div>
+
+        <div style="padding:16px;">
+            <!-- Restaurar ultimo respaldo -->
+            <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div>
+                    <strong style="font-size:14px;">Restaurar ultimo respaldo</strong>
+                    <p style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin:2px 0 0;">
+                        {% if ultimo_respaldo %}
+                        Volver al estado del {{ ultimo_respaldo.fecha_creacion|date:"d/m/Y H:i" }} ({{ ultimo_respaldo.tamaño_mb }} MB)
+                        {% else %}
+                        No hay respaldos disponibles
+                        {% endif %}
+                    </p>
+                </div>
+                {% if ultimo_respaldo %}
+                <form method="post" action="{% url 'core:restaurar_ultimo_respaldo' %}" onsubmit="return confirmRestore(event)">
+                    {% csrf_token %}
+                    <input type="hidden" name="confirmacion" id="restoreConfirmHidden">
+                    <button type="submit" class="md3-btn md3-btn-tonal">
+                        <span class="material-symbols-outlined" style="font-size:18px;">restore</span>
+                        Restaurar
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'respaldos:crear' %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+                    <span class="material-symbols-outlined" style="font-size:18px;">backup</span>
+                    Crear respaldo primero
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Restablecer de fabrica -->
+            <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0;">
+                <div>
+                    <strong style="font-size:14px;">Restablecer de fabrica</strong>
+                    <p style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin:2px 0 0;">Elimina todos los datos y recrea los datos iniciales. Se crea un respaldo automatico antes.</p>
+                </div>
+                <a href="{% url 'core:restablecer_fabrica' %}" class="md3-btn md3-btn-tonal" style="color:var(--md-sys-color-error);">
+                    <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+                    Restablecer
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -143,6 +218,15 @@ function previewLogo(input) {
             area.insertBefore(div, area.querySelector('div'));
         };
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function confirmRestore(e) {
+    e.preventDefault();
+    const input = prompt('Esta accion reemplazara TODA la base de datos con el ultimo respaldo. Escribe RESTAURAR para confirmar:');
+    if (input && input.trim() === 'RESTAURAR') {
+        document.getElementById('restoreConfirmHidden').value = input.trim();
+        e.target.submit();
     }
 }
 </script>

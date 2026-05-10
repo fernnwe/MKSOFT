@@ -10,4 +10,6 @@ urlpatterns = [
     path("<int:pk>/eliminar/", views.ProductoDeleteView.as_view(), name="eliminar"),
     path("categorias/", views.CategoriaListView.as_view(), name="categorias"),
     path("categorias/crear/", views.CategoriaCreateView.as_view(), name="categoria_crear"),
+    path("categorias/<int:pk>/eliminar/", views.CategoriaDeleteView.as_view(), name="categoria_eliminar"),
+    path("pdf/productos/", views.productos_pdf, name="productos_pdf"),
 ]

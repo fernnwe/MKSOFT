@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% block title %}Crear Cliente - Super Admin{% endblock %}
+{% block content %}
+<style>
+    .form-panel { display: none; animation: panelIn 0.4s cubic-bezier(0.2, 0, 0, 1); }
+    .form-panel.active { display: block; }
+    @keyframes panelIn {
+        from { opacity: 0; transform: translateY(20px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .stepper { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 40px; padding: 0 20px; }
+    .stepper-step { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; position: relative; z-index: 2; transition: transform 0.2s; flex: 1; }
+    .stepper-step:hover { transform: translateY(-2px); }
+    .stepper-dot { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface-variant); border: 3px solid var(--md-sys-color-surface-container-high); transition: all 0.35s cubic-bezier(0.2, 0, 0, 1); position: relative; }
+    .stepper-step.active .stepper-dot { background: var(--md-sys-color-primary); color: white; border-color: var(--md-sys-color-primary); box-shadow: 0 4px 16px rgba(13, 148, 136, 0.35); transform: scale(1.1); }
+    .stepper-step.completed .stepper-dot { background: var(--md-sys-color-success); color: white; border-color: var(--md-sys-color-success); box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3); }
+    .stepper-step.completed .stepper-dot::after { content: 'check'; font-family: 'Material Symbols Outlined'; font-size: 22px; font-weight: 400; }
+    .stepper-step.completed .stepper-dot span { display: none; }
+    .stepper-label { text-align: center; }
+    .stepper-label-title { font-size: 13px; font-weight: 600; color: var(--md-sys-color-on-surface); transition: color 0.3s; }
+    .stepper-label-sub { font-size: 11px; color: var(--md-sys-color-on-surface-variant); transition: color 0.3s; }
+    .stepper-step.active .stepper-label-title { color: var(--md-sys-color-primary); }
+    .stepper-step.completed .stepper-label-title { color: var(--md-sys-color-success); }
+    .stepper-connector { flex: 1; height: 3px; background: var(--md-sys-color-surface-container-highest); border-radius: 2px; margin: 0 -4px; margin-bottom: 28px; position: relative; z-index: 1; overflow: hidden; }
+    .stepper-connector-fill { height: 100%; width: 0%; background: var(--md-sys-color-success); border-radius: 2px; transition: width 0.5s cubic-bezier(0.2, 0, 0, 1); }
+    .stepper-connector.filled .stepper-connector-fill { width: 100%; }
+    .period-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .period-chip { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 14px 22px; border-radius: 16px; border: 2px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container-lowest); color: var(--md-sys-color-on-surface); cursor: pointer; transition: all 0.25s; min-width: 90px; font-family: inherit; }
+    .period-chip:hover { background: var(--md-sys-color-surface-container); border-color: var(--md-sys-color-outline); }
+    .period-chip.selected { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .period-chip-value { font-size: 18px; font-weight: 700; }
+    .period-chip-label { font-size: 11px; opacity: 0.7; }
+    .period-chip input { display: none; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+    .summary-card { background: var(--md-sys-color-surface-container); border-radius: 16px; padding: 24px; border: 1px solid var(--md-sys-color-outline-variant); }
+    .summary-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+    .summary-card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .summary-card-icon.primary { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+    .summary-card-icon.tertiary { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+    .summary-card-title { font-size: 14px; font-weight: 700; color: var(--md-sys-color-on-surface); }
+    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row-label { font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
+    .summary-row-value { font-size: 14px; font-weight: 600; color: var(--md-sys-color-on-surface); }
+    .summary-plan { background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%); border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; }
+    .summary-plan-info { display: flex; align-items: center; gap: 14px; }
+    .summary-plan-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--md-sys-color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .summary-plan-name { font-size: 16px; font-weight: 700; color: var(--md-sys-color-on-primary-container); }
+    .summary-plan-period { font-size: 13px; color: var(--md-sys-color-on-primary-container); opacity: 0.7; }
+    .summary-plan-price { font-size: 24px; font-weight: 800; color: var(--md-sys-color-primary); }
+    .field-error { display: none; font-size: 12px; color: var(--md-sys-color-error); margin-top: 6px; align-items: center; gap: 6px; }
+    .field-error.show { display: flex; }
+    .field-error .material-symbols-outlined { font-size: 16px; }
+    @media (max-width: 768px) {
+        .stepper { gap: 0; padding: 0; }
+        .stepper-label { display: none; }
+        .stepper-dot { width: 36px; height: 36px; font-size: 14px; }
+        .stepper-connector { margin-bottom: 18px; }
+        .summary-grid { grid-template-columns: 1fr; }
+        .period-chips { justify-content: center; }
+        .period-chip { min-width: 80px; padding: 12px 16px; }
+    }
+</style>
+
+<div class="create-wrapper" style="max-width:960px;margin:0 auto;padding:0 12px 60px;">
+    <!-- Hero Banner -->
+    <div class="md3-hero">
+        <div class="md3-hero-content">
+            <a href="{% url 'core:superadmin_dashboard' %}" class="md3-hero-back">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver al Dashboard
+            </a>
+            <h1>Nuevo Cliente</h1>
+            <p>Configura una nueva cuenta de restaurante en 4 simples pasos</p>
+        </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+        <div class="stepper-step active" data-step="1" onclick="goToStep(1)">
+            <div class="stepper-dot"><span>1</span></div>
+            <div class="stepper-label">
+                <div class="stepper-label-title">Negocio</div>
+                <div class="stepper-label-sub">Informacion basica</div>
+            </div>
+        </div>
+        <div class="stepper-connector"><div class="stepper-connector-fill"></div></div>
+        <div class="stepper-step" data-step="2" onclick="goToStep(2)">
+            <div class="stepper-dot"><span>2</span></div>
+            <div class="stepper-label">
+                <div class="stepper-label-title">Admin</div>
+                <div class="stepper-label-sub">Cuenta de acceso</div>
+            </div>
+        </div>
+        <div class="stepper-connector"><div class="stepper-connector-fill"></div></div>
+        <div class="stepper-step" data-step="3" onclick="goToStep(3)">
+            <div class="stepper-dot"><span>3</span></div>
+            <div class="stepper-label">
+                <div class="stepper-label-title">Confirmar</div>
+                <div class="stepper-label-sub">Resumen final</div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" id="clienteForm" novalidate>
+        {% csrf_token %}
+
+        <!-- STEP 1: Business -->
+        <div class="form-panel active" data-section="1">
+            <div class="md3-form-card">
+                <div class="md3-form-card-header">
+                    <div class="md3-form-card-icon primary">
+                        <span class="material-symbols-outlined">storefront</span>
+                    </div>
+                    <div>
+                        <div class="md3-form-card-heading">Informacion del Negocio</div>
+                        <div class="md3-form-card-desc">Datos del restaurante que se mostraran en la plataforma</div>
+                    </div>
+                </div>
+                <div class="md3-form-card-body">
+                    <div class="md3-field-group">
+                        <div class="full-width">
+                            <div class="md3-field-filled">
+                                <input type="text" id="nombre_negocio" name="nombre_negocio" class="md3-field-input" value="{{ nombre }}" required autocomplete="off" placeholder=" ">
+                                <label for="nombre_negocio" class="md3-field-label">Nombre del Negocio</label>
+                                <div class="md3-field-supporting-line">Nombre visible para los clientes</div>
+                            </div>
+                            <div class="field-error" id="err-nombre">
+                                <span class="material-symbols-outlined">error</span>
+                                El nombre del negocio es obligatorio
+                            </div>
+                        </div>
+                        <div>
+                            <div class="md3-field-filled">
+                                <input type="text" id="rfc" name="rfc" class="md3-field-input" value="{{ rfc }}" maxlength="11" autocomplete="off" placeholder=" ">
+                                <label for="rfc" class="md3-field-label">RUC</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="md3-field-filled">
+                                <input type="tel" id="telefono" name="telefono" class="md3-field-input" value="{{ telefono }}" autocomplete="off" placeholder=" " pattern="[\+]?[0-9\s\-]+">
+                                <label for="telefono" class="md3-field-label">Telefono</label>
+                                <div class="md3-field-supporting-line">Ej: +505 8888 1234</div>
+                            </div>
+                        </div>
+                        <div class="full-width">
+                            <div class="md3-field-filled">
+                                <input type="text" id="direccion" name="direccion" class="md3-field-input" value="{{ direccion }}" autocomplete="off" placeholder=" ">
+                                <label for="direccion" class="md3-field-label">Direccion</label>
+                            </div>
+                        </div>
+                        <div class="full-width">
+                            <div class="md3-field-filled">
+                                <input type="email" id="email" name="email" class="md3-field-input" value="{{ email }}" autocomplete="off" placeholder=" ">
+                                <label for="email" class="md3-field-label">Email</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md3-form-nav-between">
+                <div></div>
+                <button type="button" class="md3-btn md3-btn-filled" style="padding:12px 28px;font-size:15px;border-radius:14px;background:linear-gradient(135deg,var(--md-sys-color-primary),#0d6e64);" onclick="goToStep(2)">
+                    Siguiente
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Admin Account -->
+        <div class="form-panel" data-section="2">
+            <div class="md3-form-card">
+                <div class="md3-form-card-header">
+                    <div class="md3-form-card-icon tertiary">
+                        <span class="material-symbols-outlined">admin_panel_settings</span>
+                    </div>
+                    <div>
+                        <div class="md3-form-card-heading">Cuenta de Administrador</div>
+                        <div class="md3-form-card-desc">Credenciales de acceso para el administrador del restaurante</div>
+                    </div>
+                </div>
+                <div class="md3-form-card-body">
+                    <div class="md3-field-group">
+                        <div class="full-width">
+                            <div class="md3-field-filled">
+                                <input type="text" id="admin_username" name="admin_username" class="md3-field-input" value="{{ admin_username }}" required autocomplete="off" placeholder=" ">
+                                <label for="admin_username" class="md3-field-label">Nombre de Usuario</label>
+                                <div class="md3-field-supporting-line">El administrador usara esto para iniciar sesion</div>
+                            </div>
+                            <div class="field-error" id="err-username">
+                                <span class="material-symbols-outlined">error</span>
+                                El nombre de usuario es obligatorio
+                            </div>
+                        </div>
+                        <div class="full-width">
+                            <div class="md3-field-filled">
+                                <input type="email" id="admin_email" name="admin_email" class="md3-field-input" value="{{ admin_email }}" autocomplete="off" placeholder=" ">
+                                <label for="admin_email" class="md3-field-label">Email del Administrador</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md3-info-banner">
+                        <span class="material-symbols-outlined">info</span>
+                        <div class="md3-info-banner-text">
+                            Se generara una <strong>contraseña automatica segura</strong> que podras ver y compartir despues de crear el cliente.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md3-form-nav-between">
+                <button type="button" class="md3-btn md3-btn-outlined" style="padding:12px 28px;font-size:15px;border-radius:14px;" onclick="goToStep(1)">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Atras
+                </button>
+                <button type="button" class="md3-btn md3-btn-filled" style="padding:12px 28px;font-size:15px;border-radius:14px;background:linear-gradient(135deg,var(--md-sys-color-primary),#0d6e64);" onclick="goToStep(3)">
+                    Revisar
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Summary -->
+        <div class="form-panel" data-section="3">
+            <div class="md3-form-card">
+                <div class="md3-form-card-header">
+                    <div class="md3-form-card-icon success">
+                        <span class="material-symbols-outlined">fact_check</span>
+                    </div>
+                    <div>
+                        <div class="md3-form-card-heading">Confirmar y Crear</div>
+                        <div class="md3-form-card-desc">Revisa los datos, selecciona el periodo y crea la cuenta</div>
+                    </div>
+                </div>
+                <div class="md3-form-card-body">
+                    <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Periodo de Facturacion</div>
+                    <div class="period-chips" style="margin-bottom: 28px;">
+                        <label class="period-chip {% if periodo == '14' %}selected{% endif %}" onclick="selectPeriod(this, '14')">
+                            <span class="period-chip-value">14</span>
+                            <span class="period-chip-label">dias</span>
+                            <input type="radio" name="periodo" value="14" {% if periodo == '14' %}checked{% endif %}>
+                        </label>
+                        <label class="period-chip {% if periodo == '30' or not periodo %}selected{% endif %}" onclick="selectPeriod(this, '30')">
+                            <span class="period-chip-value">30</span>
+                            <span class="period-chip-label">dias</span>
+                            <input type="radio" name="periodo" value="30" {% if periodo == '30' or not periodo %}checked{% endif %}>
+                        </label>
+                        <label class="period-chip {% if periodo == '90' %}selected{% endif %}" onclick="selectPeriod(this, '90')">
+                            <span class="period-chip-value">90</span>
+                            <span class="period-chip-label">dias</span>
+                            <input type="radio" name="periodo" value="90" {% if periodo == '90' %}checked{% endif %}>
+                        </label>
+                        <label class="period-chip {% if periodo == '180' %}selected{% endif %}" onclick="selectPeriod(this, '180')">
+                            <span class="period-chip-value">180</span>
+                            <span class="period-chip-label">dias</span>
+                            <input type="radio" name="periodo" value="180" {% if periodo == '180' %}checked{% endif %}>
+                        </label>
+                        <label class="period-chip {% if periodo == '365' %}selected{% endif %}" onclick="selectPeriod(this, '365')">
+                            <span class="period-chip-value">365</span>
+                            <span class="period-chip-label">dias</span>
+                            <input type="radio" name="periodo" value="365" {% if periodo == '365' %}checked{% endif %}>
+                        </label>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="summary-card-header">
+                                <div class="summary-card-icon primary">
+                                    <span class="material-symbols-outlined">storefront</span>
+                                </div>
+                                <div class="summary-card-title">Negocio</div>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Nombre</span>
+                                <span class="summary-row-value" id="sum-nombre">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">RUC</span>
+                                <span class="summary-row-value" id="sum-rfc">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Telefono</span>
+                                <span class="summary-row-value" id="sum-telefono">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Email</span>
+                                <span class="summary-row-value" id="sum-email">-</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-card">
+                            <div class="summary-card-header">
+                                <div class="summary-card-icon tertiary">
+                                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                                </div>
+                                <div class="summary-card-title">Administrador</div>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Usuario</span>
+                                <span class="summary-row-value" id="sum-user">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Email</span>
+                                <span class="summary-row-value" id="sum-admin-email">-</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-row-label">Contraseña</span>
+                                <span class="summary-row-value" style="color: var(--md-sys-color-success);">Auto-generada</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-plan">
+                        <div class="summary-plan-info">
+                            <div class="summary-plan-icon">
+                                <span class="material-symbols-outlined">workspace_premium</span>
+                            </div>
+                            <div>
+                                <div class="summary-plan-name">Plan Unico</div>
+                                <div class="summary-plan-period">Todo ilimitado · <span id="sum-periodo-name">-</span></div>
+                            </div>
+                        </div>
+                        <div class="summary-plan-price">C$750/mes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md3-form-nav-between">
+                <button type="button" class="md3-btn md3-btn-outlined" style="padding:12px 28px;font-size:15px;border-radius:14px;" onclick="goToStep(2)">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Atras
+                </button>
+                <button type="submit" class="md3-btn md3-btn-filled" style="padding:12px 28px;font-size:15px;border-radius:14px;background:linear-gradient(135deg,var(--md-sys-color-primary),#0d6e64);box-shadow:0 4px 16px rgba(13,148,136,0.3);">
+                    <span class="material-symbols-outlined">check</span>
+                    Crear Cliente
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+let currentStep = 1;
+
+function goToStep(step) {
+    if (step === 3) updateSummary();
+
+    if (step === 2 && currentStep === 1) {
+        const nombre = document.getElementById('nombre_negocio').value.trim();
+        const errEl = document.getElementById('err-nombre');
+        if (!nombre) {
+            errEl.classList.add('show');
+            document.getElementById('nombre_negocio').focus();
+            return;
+        }
+        errEl.classList.remove('show');
+    }
+
+    if (step === 3 && currentStep === 2) {
+        const username = document.getElementById('admin_username').value.trim();
+        const errEl = document.getElementById('err-username');
+        if (!username) {
+            errEl.classList.add('show');
+            document.getElementById('admin_username').focus();
+            return;
+        }
+        errEl.classList.remove('show');
+    }
+
+    currentStep = step;
+    document.querySelectorAll('.form-panel').forEach(s => s.classList.remove('active'));
+    document.querySelector(`[data-section="${step}"]`).classList.add('active');
+
+    document.querySelectorAll('.stepper-step').forEach(ind => {
+        const s = parseInt(ind.dataset.step);
+        ind.classList.remove('active', 'completed');
+        if (s === step) ind.classList.add('active');
+        else if (s < step) ind.classList.add('completed');
+    });
+
+    document.querySelectorAll('.stepper-connector').forEach((line, i) => {
+        line.classList.toggle('filled', i < step - 1);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectPeriod(chip, value) {
+    document.querySelectorAll('.period-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    chip.querySelector('input').checked = true;
+}
+
+function updateSummary() {
+    const v = id => document.getElementById(id)?.value.trim();
+    document.getElementById('sum-nombre').textContent = v('nombre_negocio') || '-';
+    document.getElementById('sum-rfc').textContent = v('rfc') || '-';
+    document.getElementById('sum-telefono').textContent = v('telefono') || '-';
+    document.getElementById('sum-email').textContent = v('email') || '-';
+    document.getElementById('sum-user').textContent = v('admin_username') || '-';
+    document.getElementById('sum-admin-email').textContent = v('admin_email') || '-';
+
+    const periodo = document.querySelector('input[name="periodo"]:checked')?.value;
+    const periodNames = { '14': 'Prueba · 14 dias', '30': 'Mensual · 30 dias', '90': 'Trimestral · 90 dias', '180': 'Semestral · 180 dias', '365': 'Anual · 365 dias' };
+    document.getElementById('sum-periodo-name').textContent = periodNames[periodo] || '-';
+}
+
+document.querySelectorAll('.md3-field-input').forEach(input => {
+    input.addEventListener('input', () => {
+        input.closest('.full-width')?.querySelector('.field-error')?.classList.remove('show');
+    });
+});
+</script>
+{% endblock %}

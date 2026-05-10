@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Restablecer de Fabrica{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <h1 class="md3-page-title">Restablecer de Fabrica</h1>
+    <p class="md3-page-subtitle">Esta accion es irreversible sin un respaldo</p>
+</div>
+
+<div class="px-3 px-md-4">
+    <form method="post" class="md3-card-outlined" style="max-width:560px; border-color:var(--md-sys-color-error);">
+        {% csrf_token %}
+
+        <div style="padding:24px; text-align:center;">
+            <div style="width:80px; height:80px; border-radius:24px; background:var(--md-sys-color-error-container); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                <span class="material-symbols-outlined" style="font-size:48px; color:var(--md-sys-color-error);">warning</span>
+            </div>
+            <h2 style="font-size:22px; font-weight:600; margin-bottom:8px;">Restablecer Sistema</h2>
+            <p style="font-size:14px; color:var(--md-sys-color-on-surface-variant); margin-bottom:24px;">
+                Se eliminaran <strong>todos los datos operativos</strong> y se recrearan los datos iniciales.
+            </p>
+        </div>
+
+        <div style="padding:0 20px 20px;">
+            <div class="md3-card-filled" style="padding:16px; border-radius:12px; margin-bottom:16px; background:var(--md-sys-color-primary-container);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">backup</span>
+                    <strong style="font-size:14px;">Respaldo automatico</strong>
+                </div>
+                <p style="font-size:13px; color:var(--md-sys-color-on-primary-container); margin:0;">
+                    Antes de restablecer, se creara un respaldo completo de la base de datos. Si algo sale mal, podras restaurarlo desde la seccion de respaldos.
+                </p>
+            </div>
+
+            <div class="md3-card-filled" style="padding:16px; border-radius:12px; margin-bottom:16px;">
+                <strong style="font-size:14px; display:block; margin-bottom:8px;">Se eliminara:</strong>
+                <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--md-sys-color-on-surface-variant); line-height:1.8;">
+                    <li>Mesas, comandas e items de comanda</li>
+                    <li>Productos y categorias</li>
+                    <li>Ingredientes e inventario</li>
+                    <li>Facturas y cuentas por pagar</li>
+                    <li>Compras a proveedores</li>
+                    <li>Aperturas y cierres de caja</li>
+                </ul>
+            </div>
+
+            <div class="md3-card-filled" style="padding:16px; border-radius:12px; margin-bottom:16px;">
+                <strong style="font-size:14px; display:block; margin-bottom:8px;">Se conservara:</strong>
+                <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--md-sys-color-on-surface-variant); line-height:1.8;">
+                    <li>Cuenta de usuario y configuracion</li>
+                    <li>Datos del restaurante</li>
+                    <li>Suscripcion y pagos</li>
+                </ul>
+            </div>
+
+            <div class="md3-field" style="margin-bottom:16px;">
+                <input type="text" name="confirmacion" id="id_confirmacion" class="md3-input" placeholder=" " required>
+                <label class="md3-label" for="id_confirmacion">Escribe <strong>RESTABLECER</strong> para confirmar</label>
+                <div class="md3-input-line"></div>
+            </div>
+
+            {% if ultimo_respaldo %}
+            <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-bottom:16px;">
+                Ultimo respaldo: {{ ultimo_respaldo.fecha_creacion|date:"d/m/Y H:i" }} ({{ ultimo_respaldo.tamaño_mb }} MB)
+            </div>
+            {% endif %}
+
+            <div class="md3-flex" style="gap:12px; justify-content:center;">
+                <a href="{% url 'core:config_restaurante' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled" style="background:var(--md-sys-color-error); color:#fff;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+                    Restablecer de Fabrica
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

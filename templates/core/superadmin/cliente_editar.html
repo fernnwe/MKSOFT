@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Editar {{ cliente.nombre_negocio }} - Super Admin{% endblock %}
+{% block content %}
+<div class="edit-wrapper" style="max-width:800px;margin:0 auto;padding:0 12px 60px;">
+    <!-- Hero Banner -->
+    <div class="md3-hero md3-hero-sm">
+        <div class="md3-hero-content">
+            <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="md3-hero-back">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver al detalle
+            </a>
+            <h1>Editar Cliente</h1>
+            <p>{{ cliente.nombre_negocio }}</p>
+            <div class="md3-status-row">
+                <span class="md3-status-chip {{ cliente.estado }}">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">
+                        {% if cliente.estado == 'activo' %}check_circle
+                        {% elif cliente.estado == 'prueba' %}hourglass_top
+                        {% elif cliente.estado == 'vencido' %}warning
+                        {% else %}cancel
+                        {% endif %}
+                    </span>
+                    {{ cliente.get_estado_display }}
+                </span>
+                <span class="md3-meta">
+                    Inicio: {{ cliente.fecha_inicio|date:"d/m/Y" }}
+                    {% if cliente.fecha_pago_proximo %} · Vence: {{ cliente.fecha_pago_proximo|date:"d/m/Y" }}{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Business Info -->
+        <div class="md3-form-card">
+            <div class="md3-form-card-header">
+                <div class="md3-form-card-icon primary">
+                    <span class="material-symbols-outlined">storefront</span>
+                </div>
+                <div>
+                    <div class="md3-form-card-heading">Informacion del Negocio</div>
+                    <div class="md3-form-card-desc">Datos del restaurante que se muestran en la plataforma</div>
+                </div>
+            </div>
+            <div class="md3-form-card-body">
+                <div class="md3-field-group">
+                    <div class="full-width">
+                        <div class="md3-field-filled">
+                            <input type="text" id="nombre_negocio" name="nombre_negocio" class="md3-field-input" value="{{ cliente.nombre_negocio }}" required autocomplete="off" placeholder=" ">
+                            <label for="nombre_negocio" class="md3-field-label">Nombre del Negocio</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="md3-field-filled">
+                            <input type="text" id="rfc" name="rfc" class="md3-field-input" value="{{ cliente.rfc }}" maxlength="11" autocomplete="off" placeholder=" ">
+                            <label for="rfc" class="md3-field-label">RUC</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="md3-field-filled">
+                            <input type="tel" id="telefono" name="telefono" class="md3-field-input" value="{{ cliente.telefono }}" autocomplete="off" placeholder=" " pattern="[\+]?[0-9\s\-]+">
+                            <label for="telefono" class="md3-field-label">Telefono</label>
+                        </div>
+                    </div>
+                    <div class="full-width">
+                        <div class="md3-field-filled">
+                            <input type="text" id="direccion" name="direccion" class="md3-field-input" value="{{ cliente.direccion }}" autocomplete="off" placeholder=" ">
+                            <label for="direccion" class="md3-field-label">Direccion</label>
+                        </div>
+                    </div>
+                    <div class="full-width">
+                        <div class="md3-field-filled">
+                            <input type="email" id="email" name="email" class="md3-field-input" value="{{ cliente.email }}" autocomplete="off" placeholder=" ">
+                            <label for="email" class="md3-field-label">Email</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription -->
+        <div class="md3-form-card">
+            <div class="md3-form-card-header">
+                <div class="md3-form-card-icon success">
+                    <span class="material-symbols-outlined">subscriptions</span>
+                </div>
+                <div>
+                    <div class="md3-form-card-heading">Suscripcion</div>
+                    <div class="md3-form-card-desc">Estado del plan y extension del periodo</div>
+                </div>
+            </div>
+            <div class="md3-form-card-body">
+                <div class="md3-field-group">
+                    <div>
+                        <div class="md3-field-filled">
+                            <select id="estado" name="estado" class="md3-field-select">
+                                <option value="activo" {% if cliente.estado == 'activo' %}selected{% endif %}>Activo</option>
+                                <option value="prueba" {% if cliente.estado == 'prueba' %}selected{% endif %}>Prueba</option>
+                                <option value="vencido" {% if cliente.estado == 'vencido' %}selected{% endif %}>Vencido</option>
+                                <option value="cancelado" {% if cliente.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                            </select>
+                            <label for="estado" class="md3-field-label">Estado</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="md3-field-filled">
+                            <select id="periodo" name="periodo" class="md3-field-select">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="30">30 dias</option>
+                                <option value="90">90 dias</option>
+                                <option value="180">180 dias</option>
+                                <option value="365">365 dias</option>
+                            </select>
+                            <label for="periodo" class="md3-field-label">Extender suscripcion</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md3-sub-info">
+                    <div class="md3-sub-info-left">
+                        <span class="material-symbols-outlined">workspace_premium</span>
+                        <div class="md3-sub-text">
+                            <strong>Plan Unico</strong> · Todo ilimitado<br>
+                            Periodo actual: {{ cliente.periodo_dias }} dias
+                        </div>
+                    </div>
+                    <div class="md3-sub-price">C${{ cliente.PRECIO_MENSUAL }}/mes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="md3-form-card">
+            <div class="md3-form-card-header">
+                <div class="md3-form-card-icon warning">
+                    <span class="material-symbols-outlined">lock_reset</span>
+                </div>
+                <div>
+                    <div class="md3-form-card-heading">Cambiar Contraseña Admin</div>
+                    <div class="md3-form-card-desc">Solo si necesitas restablecer la contraseña del administrador</div>
+                </div>
+            </div>
+            <div class="md3-form-card-body">
+                <div class="md3-field-filled">
+                    <input type="text" id="nueva_password" name="nueva_password" class="md3-field-input" autocomplete="off" placeholder=" ">
+                    <label for="nueva_password" class="md3-field-label">Nueva Contraseña</label>
+                    <div class="md3-field-supporting-line">Dejar en blanco para mantener la contraseña actual</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="md3-form-card">
+            <div class="md3-form-card-header">
+                <div class="md3-form-card-icon note">
+                    <span class="material-symbols-outlined">sticky_note_2</span>
+                </div>
+                <div>
+                    <div class="md3-form-card-heading">Notas Internas</div>
+                    <div class="md3-form-card-desc">Solo visible para el superadmin</div>
+                </div>
+            </div>
+            <div class="md3-form-card-body">
+                <div class="md3-field-filled">
+                    <textarea id="notas" name="notas" class="md3-field-input" rows="4" placeholder=" ">{{ cliente.notas }}</textarea>
+                    <label for="notas" class="md3-field-label">Notas</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nav Buttons -->
+        <div class="md3-form-nav">
+            <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="md3-btn md3-btn-outlined" style="padding:12px 28px;font-size:15px;border-radius:14px;">
+                <span class="material-symbols-outlined">close</span>
+                Cancelar
+            </a>
+            <button type="submit" class="md3-btn md3-btn-filled" style="padding:12px 28px;font-size:15px;border-radius:14px;background:linear-gradient(135deg,var(--md-sys-color-primary),#0d6e64);box-shadow:0 4px 16px rgba(13,148,136,0.3);">
+                <span class="material-symbols-outlined">save</span>
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

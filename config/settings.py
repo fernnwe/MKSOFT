@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "channels",
+    "corsheaders",
     "core",
     "mesas",
     "meseros",
@@ -38,18 +39,25 @@ INSTALLED_APPS = [
     "comandas",
     "inventario",
     "facturacion",
+    "respaldos",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.views.SubscriptionCheckMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [h for h in CORS_ALLOWED_ORIGINS if h]
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "config.urls"
 
@@ -132,7 +140,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-LOGIN_URL = "core:login"
+LOGIN_URL = "core:cliente_login"
 LOGIN_REDIRECT_URL = "core:dashboard"
 LOGOUT_REDIRECT_URL = "core:login"
 
@@ -152,8 +160,17 @@ RESTAURANT_NAME = os.getenv("RESTAURANT_NAME", "Mi Restaurante")
 RESTAURANT_RFC = os.getenv("RESTAURANT_RFC", "XAXX010101000")
 RESTAURANT_ADDRESS = os.getenv("RESTAURANT_ADDRESS", "Calle Principal #123")
 RESTAURANT_PHONE = os.getenv("RESTAURANT_PHONE", "+52 55 1234 5678")
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 CURRENCY_SYMBOL = os.getenv("CURRENCY_SYMBOL", "C$")
 TAX_RATE = float(os.getenv("TAX_RATE", "0.16"))
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "no-reply@localhost")
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -165,3 +182,12 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
+
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN", ""),
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=0.5,
+        send_default_pii=False,
+    )

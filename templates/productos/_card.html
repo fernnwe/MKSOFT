@@ -1,0 +1,36 @@
+<div class="producto-card {% if not producto.disponible %}producto-card-no-disponible{% endif %}">
+    <div class="producto-card-top">
+        <div class="producto-card-info">
+            <div class="producto-card-name">{{ producto.nombre }}</div>
+            <span class="producto-card-code">{{ producto.codigo }}</span>
+        </div>
+        <div class="producto-card-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</div>
+    </div>
+    <div class="producto-card-meta">
+        {% if producto.tipo == 'plato' %}
+        <span class="md3-badge md3-badge-primary">Plato</span>
+        {% elif producto.tipo == 'bebida' %}
+        <span class="md3-badge md3-badge-tertiary">Bebida</span>
+        {% elif producto.tipo == 'postre' %}
+        <span class="md3-badge md3-badge-success">Postre</span>
+        {% else %}
+        <span class="md3-badge md3-badge-secondary">{{ producto.get_tipo_display }}</span>
+        {% endif %}
+        {% if producto.disponible %}
+        <span class="md3-badge md3-badge-success">Disponible</span>
+        {% else %}
+        <span class="md3-badge md3-badge-error">No disponible</span>
+        {% endif %}
+        {% if producto.categoria %}
+        <span class="md3-badge">{{ producto.categoria.icono|default:'' }} {{ producto.categoria.nombre }}</span>
+        {% endif %}
+    </div>
+    <div class="producto-card-actions">
+        <a href="{% url 'productos:editar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
+            <span class="material-symbols-outlined">edit</span>
+        </a>
+        <a href="{% url 'productos:eliminar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar {{ producto.nombre }}?')">
+            <span class="material-symbols-outlined">delete</span>
+        </a>
+    </div>
+</div>

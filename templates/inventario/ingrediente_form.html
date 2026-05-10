@@ -48,7 +48,7 @@
             </div>
 
             <div class="md3-field">
-                <input type="number" name="stock_minimo" id="id_stock_minimo" class="md3-input" placeholder=" " value="{{ form.stock_minimo.value|default:0 }}" step="0.001" min="0">
+                <input type="number" name="stock_minimo" id="id_stock_minimo" class="md3-input" placeholder=" " value="{{ form.stock_minimo.value|floatformat:-3|default:0 }}" step="0.001" min="0">
                 <label class="md3-label" for="id_stock_minimo">Stock Minimo (alerta)</label>
                 <div class="md3-input-line"></div>
                 {% if form.stock_minimo.errors %}<div style="font-size:12px; color:var(--md-sys-color-error); margin-top:4px;">{{ form.stock_minimo.errors|striptags }}</div>{% endif %}

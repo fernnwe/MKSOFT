@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("mksoft-panel/", admin.site.urls),
     path("api/", include("comandas.api_urls")),
     path("", include("core.urls")),
     path("mesas/", include("mesas.urls")),
@@ -13,6 +13,7 @@ urlpatterns = [
     path("comandas/", include("comandas.urls")),
     path("inventario/", include("inventario.urls")),
     path("facturacion/", include("facturacion.urls")),
+    path("respaldos/", include("respaldos.urls")),
 ]
 
 if settings.DEBUG:

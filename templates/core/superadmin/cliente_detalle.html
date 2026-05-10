@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+{% load perm_tags %}
+{% block title %}{{ cliente.nombre_negocio }} - Super Admin{% endblock %}
+{% block content %}
+
+<div class="md3-page-header">
+    <div>
+        <a href="{% url 'core:superadmin_dashboard' %}" class="md3-btn md3-btn-text md3-btn-sm">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </a>
+        <h1 class="md3-page-title">{{ cliente.nombre_negocio }}</h1>
+        <p class="md3-page-subtitle">
+            Plan Unico &middot;
+            {% if cliente.estado == 'activo' %}
+                <span class="md3-badge md3-badge-success">Activo</span>
+            {% elif cliente.estado == 'prueba' %}
+                <span class="md3-badge md3-badge-warning">Prueba</span>
+            {% elif cliente.estado == 'vencido' %}
+                <span class="md3-badge md3-badge-error">Vencido</span>
+            {% else %}
+                <span class="md3-badge">Cancelado</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="md3-flex" style="gap:8px;">
+        <a href="{% url 'core:superadmin_cliente_editar' cliente.pk %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">edit</span>
+            Editar
+        </a>
+        {% if cliente.estado == 'cancelado' or cliente.estado == 'vencido' %}
+        <form method="post" action="{% url 'core:superadmin_cliente_reactivar' cliente.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">refresh</span>
+                Reactivar
+            </button>
+        </form>
+        {% elif cliente.estado == 'activo' %}
+        <form method="post" action="{% url 'core:superadmin_cliente_suspender' cliente.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="md3-btn md3-btn-outlined" style="color:var(--md-sys-color-warning); border-color:var(--md-sys-color-warning);" onclick="return confirm('¿Suspender acceso?')">
+                <span class="material-symbols-outlined">block</span>
+                Suspender
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="md3-grid md3-grid-4 px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-stat-card">
+        <div class="md3-stat-card-icon" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);">
+            <span class="material-symbols-outlined">workspace_premium</span>
+        </div>
+        <div class="md3-stat-card-value">Unico</div>
+        <div class="md3-stat-card-label">Plan · C$ {{ cliente.PRECIO_MENSUAL }}/mes</div>
+    </div>
+    <div class="md3-stat-card">
+        <div class="md3-stat-card-icon" style="background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);">
+            <span class="material-symbols-outlined">calendar_month</span>
+        </div>
+        <div class="md3-stat-card-value">{% if cliente.dias_restantes <= 7 %}<span style="color:var(--md-sys-color-error);">{{ cliente.dias_restantes }}</span>{% else %}{{ cliente.dias_restantes }}{% endif %}</div>
+        <div class="md3-stat-card-label">Dias restantes · {{ cliente.fecha_pago_proximo|date:"d/m/Y" }}</div>
+    </div>
+    <div class="md3-stat-card">
+        <div class="md3-stat-card-icon" style="background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);">
+            <span class="material-symbols-outlined">play_arrow</span>
+        </div>
+        <div class="md3-stat-card-value">{{ cliente.fecha_inicio|date:"d/m/Y" }}</div>
+        <div class="md3-stat-card-label">Inicio de suscripcion</div>
+    </div>
+    <div class="md3-stat-card">
+        <div class="md3-stat-card-icon" style="background:var(--md-sys-color-success-container);color:var(--md-sys-color-on-success-container);">
+            <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div class="md3-stat-card-value">C$ {{ total_pagado|default:"0.00"|floatformat:2 }}</div>
+        <div class="md3-stat-card-label">Total pagado · {{ pagos.count }} pagos</div>
+    </div>
+</div>
+
+<!-- Actividad del Restaurante -->
+<div class="px-3 px-md-4" style="margin-bottom:16px;">
+    <div class="md3-card-filled" style="background: linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%);">
+        <h3 style="font-size:14px; font-weight:500; margin-bottom:12px; color:var(--md-sys-color-on-primary-container);">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle; margin-right: 6px;">analytics</span>
+            Actividad del Restaurante
+        </h3>
+        <div class="md3-grid md3-grid-4">
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Mesas</div>
+                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ total_mesas }} <span style="font-size:12px; opacity:0.7;">({{ mesas_ocupadas }} ocupadas)</span></div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Comandas</div>
+                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ total_comandas }}</div>
+                <div style="font-size:11px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">{{ comandas_abiertas }} abiertas, {{ comandas_en_cocina }} cocina</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ventas Totales</div>
+                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">C$ {{ ventas_total|floatformat:2 }}</div>
+                <div style="font-size:11px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">{{ total_facturas }} facturas</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Menu / Inventario</div>
+                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">{{ total_productos }} / {{ total_ingredientes }}</div>
+                {% if productos_bajo_stock > 0 %}
+                <div style="font-size:11px; color:var(--md-sys-color-error); font-weight:600;">{{ productos_bajo_stock }} bajo stock</div>
+                {% else %}
+                <div style="font-size:11px; color:var(--md-sys-color-success);">Stock OK</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="px-3 px-md-4">
+    <div class="md3-tab-bar">
+        <button class="md3-tab-item active" onclick="switchTab('info')">
+            <span class="material-symbols-outlined">info</span>
+            Informacion
+        </button>
+        <button class="md3-tab-item" onclick="switchTab('credenciales')">
+            <span class="material-symbols-outlined">lock</span>
+            Credenciales
+        </button>
+        <button class="md3-tab-item" onclick="switchTab('acciones')">
+            <span class="material-symbols-outlined">build</span>
+            Acciones
+        </button>
+        <button class="md3-tab-item" onclick="switchTab('pagos')">
+            <span class="material-symbols-outlined">receipt_long</span>
+            Historial de Pagos
+        </button>
+        <button class="md3-tab-item" onclick="switchTab('usuarios')">
+            <span class="material-symbols-outlined">people</span>
+            Usuarios
+        </button>
+    </div>
+</div>
+
+<!-- Tab: Info -->
+<div class="md3-tab-panel active px-3 px-md-4" data-tab="info" style="margin-bottom:24px;">
+    <div class="md3-card-outlined" style="padding:24px;">
+        <h2 style="font-size:16px; font-weight:500; margin-bottom:20px;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">store</span>
+            Datos del Negocio
+        </h2>
+        <div class="md3-info-grid">
+            <div class="md3-info-item">
+                <label>RUC</label>
+                <div class="value">{{ cliente.rfc|default:"N/A" }}</div>
+            </div>
+            <div class="md3-info-item">
+                <label>Telefono</label>
+                <div class="value">{{ cliente.telefono|default:"N/A" }}</div>
+            </div>
+            <div class="md3-info-item">
+                <label>Email</label>
+                <div class="value">{{ cliente.email|default:"N/A" }}</div>
+            </div>
+            <div class="md3-info-item">
+                <label>Direccion</label>
+                <div class="value">{{ cliente.direccion|default:"N/A" }}</div>
+            </div>
+            <div class="md3-info-item">
+                <label>Estado</label>
+                <div class="value">
+                    {% if cliente.estado == 'activo' %}
+                        <span class="md3-badge md3-badge-success">Activo</span>
+                    {% elif cliente.estado == 'prueba' %}
+                        <span class="md3-badge md3-badge-warning">Prueba</span>
+                    {% elif cliente.estado == 'vencido' %}
+                        <span class="md3-badge md3-badge-error">Vencido</span>
+                    {% else %}
+                        <span class="md3-badge">Cancelado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="md3-info-item">
+                <label>Ciclo de Facturacion</label>
+                <div class="value">{{ cliente.periodo_dias }} dias</div>
+            </div>
+        </div>
+        {% if cliente.notas %}
+        <div style="margin-top:16px; padding:12px; background:var(--md-sys-color-surface-container); border-radius:8px;">
+            <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-bottom:4px;">Notas</div>
+            <div style="font-size:14px; color:var(--md-sys-color-on-surface);">{{ cliente.notas }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tab: Credenciales -->
+<div class="md3-tab-panel px-3 px-md-4" data-tab="credenciales" style="margin-bottom:24px;">
+    <div class="md3-card-outlined" style="padding:24px;">
+        <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom:20px;">
+            <h2 style="font-size:16px; font-weight:500;">
+                <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">admin_panel_settings</span>
+                Cuenta de Administrador
+            </h2>
+            <form method="post" action="{% url 'core:superadmin_cliente_reset_password' cliente.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="md3-btn md3-btn-text md3-btn-sm" onclick="return confirm('¿Generar nueva contraseña? La anterior dejara de funcionar')">
+                    <span class="material-symbols-outlined">lock_reset</span>
+                    Regenerar
+                </button>
+            </form>
+        </div>
+        {% if admin_user %}
+        <div class="md3-info-grid" style="margin-bottom:16px;">
+            <div class="md3-info-item">
+                <label>Usuario</label>
+                <div class="value">{{ admin_user.username }}</div>
+            </div>
+            <div class="md3-info-item">
+                <label>Email</label>
+                <div class="value">{{ admin_user.email|default:"N/A" }}</div>
+            </div>
+        </div>
+        <div class="md3-password-display">
+            <div>
+                <div style="font-size:11px; color:var(--md-sys-color-on-surface-variant); margin-bottom:4px;">Contraseña Actual</div>
+                <code id="passwordCode">{{ admin_user.visible_password }}</code>
+            </div>
+            <div class="md3-flex" style="gap:4px;">
+                <button type="button" class="md3-copy-btn" onclick="copyPassword()" title="Copiar contraseña">
+                    <span class="material-symbols-outlined">content_copy</span>
+                </button>
+                <button type="button" class="md3-copy-btn" onclick="sendWhatsApp()" title="Enviar por WhatsApp" style="color:var(--md-sys-color-success);">
+                    <span class="material-symbols-outlined">chat</span>
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div style="padding:16px; color:var(--md-sys-color-on-surface-variant); text-align:center;">
+            <span class="material-symbols-outlined" style="font-size:48px; opacity:0.3; display:block; margin-bottom:8px;">person_off</span>
+            No se encontro cuenta de administrador
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tab: Acciones -->
+<div class="md3-tab-panel px-3 px-md-4" data-tab="acciones" style="margin-bottom:24px;">
+    <div class="md3-grid md3-grid-3">
+        <!-- Registrar Pago -->
+        <div class="md3-action-card">
+            <div class="md3-action-card-header">
+                <div class="md3-action-icon success">
+                    <span class="material-symbols-outlined">payments</span>
+                </div>
+                <div>
+                    <div class="md3-action-title">Registrar Pago</div>
+                    <div class="md3-action-desc">Registra un pago y extiende la suscripcion</div>
+                </div>
+            </div>
+            <form method="post" action="{% url 'core:superadmin_registrar_pago' cliente.pk %}">
+                {% csrf_token %}
+                <div class="md3-field-filled" style="margin-bottom:8px;">
+                    <input type="number" name="monto" class="md3-field-input" step="any" min="0" placeholder="0.00" required>
+                    <label class="md3-field-label">Monto</label>
+                </div>
+                <div class="md3-grid md3-grid-2" style="margin-bottom:8px;">
+                    <div class="md3-field-filled">
+                        <select name="metodo" class="md3-field-select">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="tarjeta">Tarjeta</option>
+                        </select>
+                        <label class="md3-field-label">Metodo</label>
+                    </div>
+                    <div class="md3-field-filled">
+                        <input type="text" name="notas" class="md3-field-input" placeholder="Notas">
+                        <label class="md3-field-label">Notas</label>
+                    </div>
+                </div>
+                <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                    <span class="material-symbols-outlined">check</span>
+                    Registrar
+                </button>
+            </form>
+        </div>
+
+        <!-- Extender Suscripcion -->
+        <div class="md3-action-card">
+            <div class="md3-action-card-header">
+                <div class="md3-action-icon primary">
+                    <span class="material-symbols-outlined">calendar_add_on</span>
+                </div>
+                <div>
+                    <div class="md3-action-title">Extender Suscripcion</div>
+                    <div class="md3-action-desc">Agrega dias al periodo sin registrar pago</div>
+                </div>
+            </div>
+            <form method="post" action="{% url 'core:superadmin_cliente_extender' cliente.pk %}">
+                {% csrf_token %}
+                <div class="md3-field-filled" style="margin-bottom:8px;">
+                    <input type="number" name="dias" class="md3-field-input" min="1" placeholder="30" required>
+                    <label class="md3-field-label">Dias a agregar</label>
+                </div>
+                <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Extender
+                </button>
+            </form>
+        </div>
+
+        <!-- Suspender / Reactivar -->
+        <div class="md3-action-card">
+            <div class="md3-action-card-header">
+                <div class="md3-action-icon warning">
+                    <span class="material-symbols-outlined">
+                        {% if cliente.estado == 'vencido' %}check_circle{% else %}block{% endif %}
+                    </span>
+                </div>
+                <div>
+                    <div class="md3-action-title">
+                        {% if cliente.estado == 'vencido' %}Reactivar Acceso{% else %}Suspender Acceso{% endif %}
+                    </div>
+                    <div class="md3-action-desc">
+                        {% if cliente.estado == 'vencido' %}Restaura el acceso del cliente{% else %}Bloquea el inicio de sesion{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if cliente.estado == 'activo' or cliente.estado == 'prueba' %}
+            <form method="post" action="{% url 'core:superadmin_cliente_suspender' cliente.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="md3-btn md3-btn-outlined md3-btn-sm" style="color:var(--md-sys-color-warning); border-color:var(--md-sys-color-warning);" onclick="return confirm('¿Suspender el acceso?')">
+                    <span class="material-symbols-outlined">block</span>
+                    Suspender
+                </button>
+            </form>
+            {% elif cliente.estado == 'vencido' %}
+            <form method="post" action="{% url 'core:superadmin_cliente_reactivar' cliente.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    Reactivar
+                </button>
+            </form>
+            {% elif cliente.estado == 'cancelado' %}
+            <span class="md3-badge">Cuenta cancelada</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div style="margin-top:24px;">
+        <div class="md3-danger-zone">
+            <div class="md3-flex md3-flex-align-center" style="gap:12px; margin-bottom:12px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-error); font-size:24px;">warning</span>
+                <h3 style="font-size:16px; font-weight:500; margin:0; color:var(--md-sys-color-error);">Zona de Peligro</h3>
+            </div>
+            <p style="font-size:13px; color:var(--md-sys-color-on-surface-variant); margin-bottom:16px;">
+                Esta accion es destructiva y no se puede deshacer. Se eliminara toda la informacion del cliente incluyendo usuarios, configuracion y pagos.
+            </p>
+            <a href="{% url 'core:superadmin_cliente_eliminar' cliente.pk %}" class="md3-btn md3-btn-outlined" style="color:var(--md-sys-color-error); border-color:var(--md-sys-color-error);">
+                <span class="material-symbols-outlined">delete_forever</span>
+                Eliminar Cliente Permanentemente
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Pagos -->
+<div class="md3-tab-panel px-3 px-md-4" data-tab="pagos" style="margin-bottom:24px;">
+    <div class="md3-card-outlined" style="padding:24px;">
+        <h2 style="font-size:16px; font-weight:500; margin-bottom:16px;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">receipt_long</span>
+            Historial de Pagos
+        </h2>
+        <div class="md3-table-wrapper">
+            <table class="md3-data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Metodo</th>
+                        <th>Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pago in pagos %}
+                    <tr>
+                        <td>{{ pago.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>C$ {{ pago.monto|floatformat:2 }}</td>
+                        <td>{{ pago.get_metodo_display }}</td>
+                        <td>{{ pago.notas|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:24px; color:var(--md-sys-color-on-surface-variant);">No hay pagos registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Usuarios -->
+<div class="md3-tab-panel px-3 px-md-4" data-tab="usuarios" style="margin-bottom:24px;">
+    {% if usuarios %}
+    <div class="md3-grid" style="grid-template-columns:1fr; gap:1rem;">
+        {% for usuario in usuarios %}
+        <div class="md3-card-outlined" data-usuario-id="{{ usuario.pk }}">
+            <div class="md3-card-body" style="padding:0.75rem; cursor:pointer;" onclick="togglePermCard(this)">
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+                    <div class="md3-flex" style="gap:0.75rem; align-items:center;">
+                        <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--md-sys-color-primary-container) 0%,var(--md-sys-color-primary) 100%); display:flex; align-items:center; justify-content:center; position:relative;">
+                            <span style="font-size:1.1rem; font-weight:700; color:var(--md-sys-color-on-primary);">{{ usuario.get_full_name|default:usuario.username|slice:":1"|upper }}</span>
+                            <span style="position:absolute; bottom:-2px; right:-2px; width:14px; height:14px; border-radius:50%; border:2.5px solid var(--md-sys-color-surface); {% if usuario.is_active %}background:var(--md-sys-color-success);{% else %}background:var(--md-sys-color-error);{% endif %}"></span>
+                        </div>
+                        <div>
+                            <h3 style="font-size:1rem; font-weight:600; color:var(--md-sys-color-on-surface); margin:0;">{{ usuario.get_full_name|default:usuario.username }}</h3>
+                            <div class="md3-flex" style="gap:0.5rem; align-items:center; margin-top:0.25rem; flex-wrap:wrap;">
+                                <span class="md3-badge {% if usuario.role == 'admin' %}md3-badge-warning{% elif usuario.role == 'manager' %}md3-badge-primary{% elif usuario.role == 'waiter' %}md3-badge-success{% elif usuario.role == 'cashier' %}md3-badge-primary{% else %}md3-badge-secondary{% endif %}" style="font-size:0.7rem;">
+                                    <span class="material-symbols-outlined" style="margin-right:0.25rem; font-size:0.8rem;">
+                                        {% if usuario.role == 'admin' %}admin_panel_settings{% elif usuario.role == 'manager' %}manage_accounts{% elif usuario.role == 'waiter' %}restaurant{% elif usuario.role == 'cashier' %}payments{% else %}stove{% endif %}
+                                    </span>
+                                    {{ usuario.get_role_display }}
+                                </span>
+                                <span style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant);">@{{ usuario.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:0.25rem;">
+                        <span class="material-symbols-outlined" style="font-size:1.1rem; color:var(--md-sys-color-outline); transition:transform 0.3s ease;">expand_more</span>
+                        <span style="font-size:0.65rem; color:var(--md-sys-color-on-surface-variant);">Permisos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="max-height:0; overflow:hidden; transition:max-height 0.4s ease;">
+                {% if usuario.role == 'admin' %}
+                <div class="md3-card-body" style="padding:2rem; text-align:center;">
+                    <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--md-sys-color-warning); display:block; margin-bottom:0.75rem;">lock</span>
+                    <p style="color:var(--md-sys-color-on-surface-variant); font-size:0.875rem; margin:0; max-width:350px; margin-left:auto; margin-right:auto;">
+                        Los permisos del <strong>Administrador</strong> no pueden ser modificados. Tiene acceso completo al sistema por defecto.
+                    </p>
+                </div>
+                {% else %}
+                <form method="post" action="{% url 'core:actualizar_permisos' usuario.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'core:superadmin_cliente_detalle' cliente.pk %}">
+                    {% for group_label, perms in all_perms %}
+                    <div style="padding:0 1.5rem;">
+                        <div class="md3-flex" style="gap:0.5rem; align-items:center; justify-content:space-between; padding:1rem 0 0.75rem;">
+                            <div class="md3-flex" style="gap:0.5rem; align-items:center;">
+                                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:1rem;">{% if group_label == 'General' %}apartment{% else %}settings{% endif %}</span>
+                                <h4 style="font-size:0.875rem; font-weight:600; color:var(--md-sys-color-on-surface); margin:0; text-transform:uppercase; letter-spacing:0.5px;">{{ group_label }}</h4>
+                            </div>
+                            <button type="button" class="md3-btn md3-btn-text md3-btn-sm" onclick="toggleAllInSection(this)" style="font-size:0.75rem;">
+                                Seleccionar todos
+                            </button>
+                        </div>
+                        <div class="md3-grid" style="grid-template-columns:1fr 1fr; gap:0.5rem; padding-bottom:1rem;">
+                            {% for perm_key, label in perms %}
+                            <label class="md3-flex md3-flex-justify-between md3-flex-align-center" style="gap:0.5rem; padding:0.5rem; background:var(--md-sys-color-surface-container-low); border-radius:10px; cursor:pointer; transition:all 0.2s ease;" onmouseover="this.style.background='var(--md-sys-color-surface-container)'" onmouseout="this.style.background='var(--md-sys-color-surface-container-low)'">
+                                <div style="flex:1; min-width:0;">
+                                    <span style="font-size:0.85rem; font-weight:500; color:var(--md-sys-color-on-surface); display:block;">{{ label }}</span>
+                                    <span style="font-size:0.7rem; color:var(--md-sys-color-outline); font-family:'SF Mono','Fira Code',monospace;">{{ perm_key }}</span>
+                                </div>
+                                <input type="checkbox" name="{{ perm_key }}" value="on" {% if usuario|attr:perm_key %}checked{% endif %} onchange="updateCount(this)" style="accent-color:var(--md-sys-color-primary); width:18px; height:18px;">
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:1rem 1.5rem; background:var(--md-sys-color-surface-container-low); border-top:1px solid var(--md-sys-color-outline-variant); margin-top:0.75rem;">
+                        <button type="button" class="md3-btn md3-btn-outlined md3-btn-sm" onclick="resetPerms(this)">
+                            <span class="material-symbols-outlined" style="margin-right:0.25rem; font-size:0.9rem;">restart_alt</span>
+                            Restablecer
+                        </button>
+                        <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
+                            <span class="material-symbols-outlined" style="margin-right:0.25rem; font-size:0.9rem;">check</span>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="md3-card-outlined" style="padding:3rem; text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:3rem; color:var(--md-sys-color-on-surface-variant); display:block; margin-bottom:0.75rem;">group_off</span>
+        <h3 style="font-size:1.1rem; font-weight:500; margin:0 0 0.5rem;">Sin usuarios</h3>
+        <p style="color:var(--md-sys-color-on-surface-variant); font-size:0.875rem; margin:0;">Este cliente no tiene usuarios registrados. Crea usuarios desde el panel de Usuarios del restaurante.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Copy Toast -->
+<div class="md3-copy-toast" id="copyToast">Contraseña copiada al portapapeles</div>
+
+<div id="credData" style="display:none;"
+    data-phone="{{ cliente.telefono|default:'' }}"
+    data-username="{{ admin_user.username|default:'' }}"
+    data-password="{{ admin_user.visible_password|default:'' }}"
+    data-nombre="{{ cliente.nombre_negocio }}"
+    data-login-url="{{ request.scheme }}://{{ request.get_host }}/login/"
+></div>
+
+<script>
+function switchTab(name) {
+    document.querySelectorAll('.md3-tab-item').forEach(tab => {
+        tab.classList.toggle('active', tab.textContent.toLowerCase().includes(name.toLowerCase().substring(0, 4)));
+    });
+    document.querySelectorAll('.md3-tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.tab === name);
+    });
+}
+
+function copyPassword() {
+    const text = document.getElementById('passwordCode').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('copyToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    });
+}
+
+function sendWhatsApp() {
+    const data = document.getElementById('credData').dataset;
+    let phone = data.phone.replace(/\s+/g, '').replace(/^\+/, '');
+    if (!phone) {
+        const promptPhone = prompt('Ingresa el numero de WhatsApp (ej: 88881234):');
+        if (!promptPhone) return;
+        phone = promptPhone.replace(/\s+/g, '').replace(/^\+/, '');
+    }
+    if (phone.startsWith('505')) {
+        phone = phone.substring(3);
+    }
+    phone = '505' + phone;
+    const msg = `Bienvenido a ${data.nombre} 🍽️\n\n` +
+        `Tu cuenta esta lista.\n\n` +
+        `🔑 *Credenciales de acceso:*\n` +
+        `Usuario: ${data.username}\n` +
+        `Contraseña: ${data.password}\n\n` +
+        `Ingresa aqui: ${data.loginUrl}\n\n` +
+        `Por seguridad, te recomendamos cambiar tu contraseña despues del primer inicio de sesion.`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+/* Permission panel */
+function togglePermCard(header) {
+    const card = header.closest('.md3-card-outlined');
+    const body = card.querySelector('div[style*="max-height"]');
+    const icon = card.querySelector('.material-symbols-outlined');
+    if (body.style.maxHeight === '0px' || body.style.maxHeight === '') {
+        body.style.maxHeight = '2000px';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        body.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+function updateCount(checkbox) {
+    const card = checkbox.closest('.md3-card-outlined');
+    const count = card.querySelectorAll('input[type="checkbox"]:checked').length;
+    const num = card.querySelector('.perm-active-num');
+    if (num) num.textContent = count;
+}
+function toggleAllInSection(btn) {
+    const section = btn.closest('div[style*="padding: 0 1.5rem"]');
+    const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(function(cb) {
+        cb.checked = !allChecked;
+        updateCount(cb);
+    });
+}
+function resetPerms(btn) {
+    const form = btn.closest('form');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(cb) {
+        cb.checked = false;
+        updateCount(cb);
+    });
+}
+</script>
+{% endblock %}

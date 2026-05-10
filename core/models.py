@@ -1,17 +1,89 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models.signals import post_migrate
-from django.dispatch import receiver
+
+
+class Cliente(models.Model):
+    PRECIO_MENSUAL = 750
+
+    class Estado(models.TextChoices):
+        ACTIVO = "activo", "Activo"
+        VENCIDO = "vencido", "Vencido"
+        CANCELADO = "cancelado", "Cancelado"
+        PRUEBA = "prueba", "Periodo de Prueba"
+
+    nombre_negocio = models.CharField(max_length=200)
+    rfc = models.CharField(max_length=13, blank=True, verbose_name="RUC")
+    direccion = models.TextField(blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    simbolo_moneda = models.CharField(max_length=5, default="C$")
+
+    admin_username = models.CharField(max_length=150, unique=True)
+    admin_email = models.EmailField(blank=True)
+    admin_password_visible = models.CharField(max_length=255)
+
+    periodo_dias = models.PositiveIntegerField(default=30, help_text="Dias del periodo contratado")
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PRUEBA)
+    fecha_inicio = models.DateTimeField(auto_now_add=True)
+    fecha_pago_proximo = models.DateTimeField(null=True, blank=True)
+    fecha_cancelacion = models.DateTimeField(null=True, blank=True)
+
+    notas = models.TextField(blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Cliente"
+        verbose_name_plural = "Clientes"
+        ordering = ["-fecha_creacion"]
+
+    def __str__(self):
+        return f"{self.nombre_negocio} (Plan Unico)"
+
+    def dias_restantes(self):
+        from django.utils import timezone
+        if self.fecha_pago_proximo:
+            delta = self.fecha_pago_proximo - timezone.now()
+            return max(0, delta.days)
+        return 0
+
+    @property
+    def subscription_percent(self):
+        if self.periodo_dias <= 0:
+            return 0
+        return min(100, int((self.dias_restantes() / self.periodo_dias) * 100))
+
+
+class PagoCliente(models.Model):
+    class Metodo(models.TextChoices):
+        EFECTIVO = "efectivo", "Efectivo"
+        TRANSFERENCIA = "transferencia", "Transferencia"
+        TARJETA = "tarjeta", "Tarjeta"
+
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="pagos")
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    metodo = models.CharField(max_length=20, choices=Metodo.choices, default=Metodo.EFECTIVO)
+    fecha = models.DateTimeField(auto_now_add=True)
+    notas = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Pago"
+        verbose_name_plural = "Pagos"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"Pago {self.cliente.nombre_negocio} - {self.monto}"
 
 
 class ConfigRestaurante(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="configs")
     nombre = models.CharField(max_length=200, default="Mi Restaurante")
-    rfc = models.CharField(max_length=13, default="XAXX010101000", blank=True)
+    rfc = models.CharField(max_length=13, default="XAXX010101000", blank=True, verbose_name="RUC")
     direccion = models.TextField(default="Calle Principal #123", blank=True)
     telefono = models.CharField(max_length=20, default="+52 55 1234 5678", blank=True)
     email = models.EmailField(default="", blank=True)
     simbolo_moneda = models.CharField(max_length=5, default="C$")
-    tasa_impuesto = models.FloatField(default=0.16, help_text="Ej: 0.16 para 16%")
+    tasa_impuesto = models.FloatField(default=0.15, help_text="Ej: 0.15 para 15%")
     logo = models.ImageField(upload_to="restaurante/", blank=True, null=True)
     dias_credito_proveedor = models.PositiveIntegerField(default=30, help_text="Dias para pagar a proveedores (cuentas por pagar)")
     fecha_actualizacion = models.DateTimeField(auto_now=True)
@@ -24,11 +96,16 @@ class ConfigRestaurante(models.Model):
         return self.nombre
 
     @classmethod
-    def get_config(cls):
+    def get_config(cls, cliente=None):
+        if cliente:
+            config = cls.objects.filter(cliente=cliente).order_by("-fecha_actualizacion").first()
+            if not config:
+                config = cls.objects.create(cliente=cliente, nombre=cliente.nombre_negocio, simbolo_moneda=cliente.simbolo_moneda)
+            return config
+        from django.conf import settings
         config = cls.objects.first()
         if not config:
-            from django.conf import settings
-            config = cls.objects.create(
+            config = cls(
                 nombre=settings.RESTAURANT_NAME,
                 rfc=settings.RESTAURANT_RFC,
                 direccion=settings.RESTAURANT_ADDRESS,
@@ -40,22 +117,6 @@ class ConfigRestaurante(models.Model):
         return config
 
 
-@receiver(post_migrate)
-def crear_config_restaurante(sender, **kwargs):
-    if sender.name == "core":
-        if not ConfigRestaurante.objects.exists():
-            from django.conf import settings
-            ConfigRestaurante.objects.create(
-                nombre=settings.RESTAURANT_NAME,
-                rfc=settings.RESTAURANT_RFC,
-                direccion=settings.RESTAURANT_ADDRESS,
-                telefono=settings.RESTAURANT_PHONE,
-                simbolo_moneda=settings.CURRENCY_SYMBOL,
-                tasa_impuesto=settings.TAX_RATE,
-                dias_credito_proveedor=getattr(settings, "DIAS_CREDITO_PROVEEDOR", 30),
-            )
-
-
 class User(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = "admin", "Administrador"
@@ -65,6 +126,7 @@ class User(AbstractUser):
         KITCHEN = "kitchen", "Cocina"
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.WAITER)
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE, null=True, blank=True, related_name='usuarios')
     phone = models.CharField(max_length=20, blank=True)
     photo = models.ImageField(upload_to="users/", blank=True, null=True)
     is_active_staff = models.BooleanField(default=True)

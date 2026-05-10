@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar {{ cliente.nombre_negocio }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div>
+        <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="md3-btn md3-btn-text md3-btn-sm">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </a>
+        <h1 class="md3-page-title">Eliminar Cliente</h1>
+        <p class="md3-page-subtitle">Esta accion es permanente e irreversible</p>
+    </div>
+</div>
+
+<div class="px-3 px-md-4" style="max-width:600px;">
+    <div class="md3-card-outlined" style="border-color:var(--md-sys-color-error);">
+        <div class="md3-flex md3-flex-align-center" style="gap:16px; margin-bottom:20px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-error); font-size:40px;">delete_forever</span>
+            <div>
+                <h2 style="font-size:18px; font-weight:500; color:var(--md-sys-color-error);">Confirmar Eliminacion</h2>
+                <p style="font-size:13px; color:var(--md-sys-color-on-surface-variant); margin-top:4px;">Se eliminara <strong>{{ cliente.nombre_negocio }}</strong> y todos sus datos</p>
+            </div>
+        </div>
+
+        <div style="background:var(--md-sys-color-error-container); border-radius:var(--md-sys-shape-corner-medium); padding:16px; margin-bottom:20px;">
+            <div style="font-size:14px; font-weight:500; color:var(--md-sys-color-on-error-container); margin-bottom:8px;">Se eliminara lo siguiente:</div>
+            <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--md-sys-color-on-error-container);">
+                {% if admin_user %}
+                <li>Cuenta de administrador ({{ admin_user.username }})</li>
+                {% endif %}
+                {% if config %}
+                <li>Configuracion del restaurante</li>
+                {% endif %}
+                <li>{{ pagos.count }} registro(s) de pago</li>
+                <li>Usuarios, mesas, comandas, facturas e inventario</li>
+            </ul>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="confirmacion" style="font-size:14px; font-weight:500; margin-bottom:8px; display:block;">
+                Escribe <strong>{{ cliente.nombre_negocio }}</strong> para confirmar
+            </label>
+            <input type="text" id="confirmacion" name="confirmacion" class="confirm-input" placeholder="{{ cliente.nombre_negocio }}" required autocomplete="off">
+
+            {% if error %}
+            <div style="padding:12px; background:var(--md-sys-color-error-container); border-radius:var(--md-sys-shape-corner-small); margin-bottom:16px; font-size:13px; color:var(--md-sys-color-on-error-container);">
+                El nombre no coincide. Intenta de nuevo.
+            </div>
+            {% endif %}
+
+            <div class="md3-flex" style="gap:8px; justify-content:flex-end;">
+                <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled" style="background:var(--md-sys-color-error); color:var(--md-sys-color-on-error);" onclick="return confirm('¿Estas completamente seguro? Esta accion no se puede deshacer')">
+                    <span class="material-symbols-outlined">delete_forever</span>
+                    Eliminar Permanentemente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Restaurante - MKSOFT</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/md3.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <style>
+        :root {
+            --md-ref-typeface-brand: 'Inter', system-ui, sans-serif;
+            --md-ref-typeface-plain: 'Inter', system-ui, sans-serif;
+            --md-sys-color-primary: #00e5b0;
+            --md-sys-color-on-primary: #003828;
+            --md-sys-color-primary-container: #00513b;
+            --md-sys-color-on-primary-container: #6effc6;
+            --md-sys-color-secondary: #00d0ea;
+            --md-sys-color-on-secondary: #003640;
+            --md-sys-color-secondary-container: #004e5c;
+            --md-sys-color-on-secondary-container: #5fe6ff;
+            --md-sys-color-tertiary: #bb8cff;
+            --md-sys-color-on-tertiary: #33006b;
+            --md-sys-color-tertiary-container: #4d009f;
+            --md-sys-color-on-tertiary-container: #e9d6ff;
+            --md-sys-color-surface: #0a0e14;
+            --md-sys-color-surface-dim: #0a0e14;
+            --md-sys-color-surface-bright: #30343b;
+            --md-sys-color-surface-container-lowest: #05090e;
+            --md-sys-color-surface-container-low: #12161c;
+            --md-sys-color-surface-container: #161a21;
+            --md-sys-color-surface-container-high: #21252c;
+            --md-sys-color-surface-container-highest: #2b2f37;
+            --md-sys-color-on-surface: #e2e2e9;
+            --md-sys-color-on-surface-variant: #c2c2c9;
+            --md-sys-color-outline: #8c8d95;
+            --md-sys-color-outline-variant: #42434a;
+            --md-sys-color-error: #ffb4ab;
+            --md-sys-color-on-error: #690005;
+            --md-sys-color-success: #66ffb2;
+        }
+        body {
+            font-family: var(--md-ref-typeface-plain);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        @keyframes orbFloat {
+            0%,100% { transform:translate(0,0) scale(1); }
+            25% { transform:translate(30px,-40px) scale(1.05); }
+            50% { transform:translate(-20px,20px) scale(0.95); }
+            75% { transform:translate(15px,30px) scale(1.02); }
+        }
+        @keyframes cardAppear {
+            from { opacity:0; transform:translateY(24px) scale(0.98); }
+            to { opacity:1; transform:translateY(0) scale(1); }
+        }
+        @keyframes errorSlide {
+            from { opacity:0; transform:translateY(-8px); }
+            to { opacity:1; transform:translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div style="position:fixed; inset:0; z-index:0; overflow:hidden;">
+        <div style="position:absolute; width:800px; height:800px; top:-30%; right:-15%; border-radius:50%; filter:blur(120px); background:radial-gradient(circle at 30% 70%, color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent) 0%, transparent 60%); animation:orbFloat 20s ease-in-out infinite;"></div>
+        <div style="position:absolute; width:600px; height:600px; bottom:-25%; left:-10%; border-radius:50%; filter:blur(120px); background:radial-gradient(circle at 70% 30%, color-mix(in srgb, var(--md-sys-color-secondary) 8%, transparent) 0%, transparent 60%); animation:orbFloat 25s ease-in-out infinite reverse;"></div>
+        <div style="position:fixed; inset:0; background-image:linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size:60px 60px; z-index:1;"></div>
+    </div>
+
+    <div class="login-container" style="position:relative; z-index:2; display:flex; width:100%; min-height:100vh;">
+        <div class="login-hero" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:4rem 3rem; max-width:600px;">
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:4rem;">
+                <div style="width:44px; height:44px; border-radius:var(--md-sys-shape-corner-medium); background:var(--md-sys-color-primary); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary); font-size:1.5rem;">storefront</span>
+                </div>
+                <span style="font-family:var(--md-ref-typeface-brand); font-size:1.25rem; font-weight:600; letter-spacing:-0.01em;">{{ RESTAURANT_NAME }}</span>
+            </div>
+            <div style="max-width:480px;">
+                <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 0.875rem; background:var(--md-sys-color-primary-container); border:1px solid color-mix(in srgb, var(--md-sys-color-primary) 20%, transparent); border-radius:var(--md-sys-shape-corner-full); font-size:0.75rem; font-weight:500; color:var(--md-sys-color-primary); margin-bottom:1.5rem; text-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 50%, transparent);">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">shield</span>
+                    Plataforma segura
+                </div>
+                <h1 style="font-size:clamp(2rem,4vw,3rem); font-weight:600; line-height:1.1; letter-spacing:-0.02em; margin:0 0 1rem;">
+                    Gestiona tu restaurante de forma <span style="background:linear-gradient(135deg,var(--md-sys-color-primary),var(--md-sys-color-secondary),var(--md-sys-color-tertiary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">inteligente</span>
+                </h1>
+                <p style="font-size:1rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0 0 2.5rem;">
+                    Control total de comandas, inventario, meseros y facturacion desde un solo lugar. Disenado para restaurantes que quieren crecer.
+                </p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:1rem; background:color-mix(in srgb, var(--md-sys-color-surface-container-high) 50%, transparent); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); transition:all 0.3s;">
+                        <div style="width:36px; height:36px; min-width:36px; background:color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center;">
+                            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:1.25rem;">receipt_long</span>
+                        </div>
+                        <span style="font-size:0.8125rem; font-weight:500; line-height:1.3;">Comandas digitales en tiempo real</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:1rem; background:color-mix(in srgb, var(--md-sys-color-surface-container-high) 50%, transparent); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); transition:all 0.3s;">
+                        <div style="width:36px; height:36px; min-width:36px; background:color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center;">
+                            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:1.25rem;">inventory_2</span>
+                        </div>
+                        <span style="font-size:0.8125rem; font-weight:500; line-height:1.3;">Inventario inteligente</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:1rem; background:color-mix(in srgb, var(--md-sys-color-surface-container-high) 50%, transparent); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); transition:all 0.3s;">
+                        <div style="width:36px; height:36px; min-width:36px; background:color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center;">
+                            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:1.25rem;">group</span>
+                        </div>
+                        <span style="font-size:0.8125rem; font-weight:500; line-height:1.3;">Gestion de meseros</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:1rem; background:color-mix(in srgb, var(--md-sys-color-surface-container-high) 50%, transparent); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); transition:all 0.3s;">
+                        <div style="width:36px; height:36px; min-width:36px; background:color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center;">
+                            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary); font-size:1.25rem;">payments</span>
+                        </div>
+                        <span style="font-size:0.8125rem; font-weight:500; line-height:1.3;">Facturacion integrada</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-form-panel" style="flex:1; display:flex; align-items:center; justify-content:center; padding:2rem;">
+            <div style="width:100%; max-width:420px;">
+                <div class="login-card" style="background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); padding:2.5rem 2rem; box-shadow:0 16px 64px rgba(0,0,0,0.3); animation:cardAppear 0.6s cubic-bezier(0.2,0,0,1) both;">
+                    <div style="margin-bottom:2rem;">
+                        <h2 style="font-size:1.75rem; font-weight:600; letter-spacing:-0.02em; margin:0 0 0.375rem;">Bienvenido</h2>
+                        <p style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); margin:0;">Ingresa tus credenciales para continuar</p>
+                    </div>
+
+                    <form method="post" action="{% url 'core:cliente_login' %}" style="display:flex; flex-direction:column; gap:1.25rem;">
+                        {% csrf_token %}
+
+                        {% if form.errors %}
+                        <div style="display:flex; align-items:center; gap:0.625rem; padding:0.875rem 1rem; background:color-mix(in srgb, var(--md-sys-color-error) 10%, transparent); border:1px solid color-mix(in srgb, var(--md-sys-color-error) 20%, transparent); border-radius:var(--md-sys-shape-corner-large); color:var(--md-sys-color-error); font-size:0.8125rem; font-weight:500; animation:errorSlide 0.4s cubic-bezier(0.2,0,0,1);">
+                            <span class="material-symbols-outlined" style="font-size:1.125rem; flex-shrink:0;">error</span>
+                            <span>Usuario o contraseña incorrectos</span>
+                        </div>
+                        {% endif %}
+
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div style="display:flex; align-items:center; gap:0.625rem; padding:0.875rem 1rem; background:color-mix(in srgb, var(--md-sys-color-error) 10%, transparent); border:1px solid color-mix(in srgb, var(--md-sys-color-error) 20%, transparent); border-radius:var(--md-sys-shape-corner-large); color:var(--md-sys-color-error); font-size:0.8125rem; font-weight:500;">
+                                <span class="material-symbols-outlined" style="font-size:1.125rem; flex-shrink:0;">error</span>
+                                <span>{{ message }}</span>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div>
+                            <label style="display:block; font-size:0.8125rem; font-weight:500; color:var(--md-sys-color-on-surface-variant); margin-bottom:0.5rem;">Usuario</label>
+                            <div style="position:relative; display:flex; align-items:center;">
+                                <span style="position:absolute; left:1rem; color:var(--md-sys-color-on-surface-variant); pointer-events:none;">
+                                    <span class="material-symbols-outlined" style="font-size:1.25rem;">person</span>
+                                </span>
+                                <input type="text" name="username" style="width:100%; height:52px; padding:0 1rem 0 3rem; font-size:0.9375rem; font-family:inherit; color:var(--md-sys-color-on-surface); background:var(--md-sys-color-surface-container-high); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); outline:none; transition:all 0.2s;" placeholder="Tu usuario" autofocus autocomplete="username" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display:block; font-size:0.8125rem; font-weight:500; color:var(--md-sys-color-on-surface-variant); margin-bottom:0.5rem;">Contraseña</label>
+                            <div style="position:relative; display:flex; align-items:center;">
+                                <span style="position:absolute; left:1rem; color:var(--md-sys-color-on-surface-variant); pointer-events:none; z-index:1;">
+                                    <span class="material-symbols-outlined" style="font-size:1.25rem;">lock</span>
+                                </span>
+                                <input type="password" name="password" id="password-input" style="width:100%; height:52px; padding:0 3rem 0 3rem; font-size:0.9375rem; font-family:inherit; color:var(--md-sys-color-on-surface); background:var(--md-sys-color-surface-container-high); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-large); outline:none; transition:all 0.2s;" placeholder="Tu contraseña" autocomplete="current-password" required>
+                                <button type="button" id="password-toggle" style="position:absolute; right:0.75rem; background:none; border:none; cursor:pointer; padding:0.25rem; color:var(--md-sys-color-on-surface-variant); border-radius:50%; display:flex; transition:all 0.2s; z-index:1;">
+                                    <span class="material-symbols-outlined" id="toggle-icon" style="font-size:1.25rem;">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" style="width:100%; height:52px; background:var(--md-sys-color-primary); color:var(--md-sys-color-on-primary); border:none; border-radius:var(--md-sys-shape-corner-large); font-size:0.9375rem; font-weight:600; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:all 0.2s ease; box-shadow:0 4px 16px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent); margin-top:0.25rem;">
+                            <span>Iniciar Sesion</span>
+                            <span class="material-symbols-outlined" style="font-size:1.125rem;">arrow_forward</span>
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        input:focus { border-color:var(--md-sys-color-primary) !important; box-shadow:0 0 0 3px color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent) !important; }
+        .pass-toggle:hover { background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+        button[type="submit"]:hover { box-shadow:0 6px 24px color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent) !important; transform:translateY(-1px); }
+        button[type="submit"]:active { transform:translateY(0); box-shadow:0 2px 8px color-mix(in srgb, var(--md-sys-color-primary) 20%, transparent) !important; }
+        .feature-item:hover { background:color-mix(in srgb, var(--md-sys-color-surface-container-high) 80%, transparent) !important; border-color:var(--md-sys-color-primary) !important; }
+        .admin-link:hover { background:color-mix(in srgb, var(--md-sys-color-tertiary) 12%, transparent) !important; border-color:color-mix(in srgb, var(--md-sys-color-tertiary) 30%, transparent) !important; color:var(--md-sys-color-tertiary) !important; }
+        @media (max-width:768px) {
+            body { overflow:auto; height:auto; }
+            .login-container { flex-direction:column !important; }
+            .login-hero { display:none !important; }
+            .login-form-panel { padding:0 !important; width:100% !important; }
+            .login-card { padding:1.5rem 1.25rem !important; border-radius:var(--md-sys-shape-corner-large) !important; }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggle = document.getElementById('password-toggle');
+            var input = document.getElementById('password-input');
+            var icon = document.getElementById('toggle-icon');
+            if (toggle && input && icon) {
+                toggle.addEventListener('click', function() {
+                    var isPassword = input.getAttribute('type') === 'password';
+                    input.setAttribute('type', isPassword ? 'text' : 'password');
+                    icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

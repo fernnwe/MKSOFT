@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocina - {{ comanda.codigo }}</title>
+    <style>
+        @page { size: 58mm 297mm; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background: white; color: #000; font-size: 11px; line-height: 1.2; font-weight: 700; padding: 2mm; }
+        .header { text-align: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #000; }
+        .header h2 { font-size: 15px; font-weight: 900; margin-bottom: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .header .codigo { font-size: 20px; font-weight: 900; letter-spacing: 2px; margin-top: 4px; }
+        .header .meta { font-size: 11px; font-weight: 700; margin-top: 2px; }
+        .prioridad-urgente { color: #ff0000; font-size: 16px !important; font-weight: 900 !important; margin-top: 4px !important; }
+        .prioridad-vip { color: #fd7e14; font-size: 13px !important; font-weight: 900 !important; margin-top: 4px !important; }
+        .fecha { font-size: 10px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+        hr { border: none; border-top: 2px solid #000; margin: 6px 0; }
+        .div-dashed { border: none; border-top: 1px dashed #000; margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 10px; font-weight: 700; padding: 4px 0; border-bottom: 2px solid #000; }
+        td { padding: 4px 0; vertical-align: top; font-weight: 700; }
+        .col-cant { width: 30px; text-align: center; font-size: 12px; }
+        .item-row td:first-child { font-size: 13px; }
+        .nota-item { font-size: 10px; font-weight: 700; font-style: italic; padding-left: 30px; color: #000; }
+        .nota-general { font-size: 11px; font-weight: 700; padding: 4px 0; }
+        .nota-general strong { text-decoration: underline; }
+        .footer { text-align: center; margin-top: 8px; padding-top: 6px; border-top: 2px solid #000; font-size: 10px; font-weight: 700; }
+        .total-items { font-size: 10px; font-weight: 700; text-align: center; margin-top: 4px; }
+        @media print {
+            body { padding: 1mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>{{ RESTAURANT_NAME }}</h2>
+        <div class="codigo">{{ comanda.codigo }}</div>
+        <div class="meta">
+            Mesa: <strong>{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}N/A{% endif %}</strong>
+            {% if comanda.mesero %} | {{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% endif %}
+        </div>
+        {% if comanda.prioridad == 'urgente' %}
+        <div class="meta prioridad-urgente">*** U R G E N T E ***</div>
+        {% elif comanda.prioridad == 'vip' %}
+        <div class="meta prioridad-vip">*** V I P ***</div>
+        {% endif %}
+    </div>
+
+    <div class="fecha">{{ comanda.fecha_creacion|date:"d/m/Y H:i" }}</div>
+
+    <hr>
+
+    <table>
+        <thead>
+            <tr><th class="col-cant">Cant</th><th>Producto</th></tr>
+        </thead>
+        <tbody>
+            {% for item in comanda.items.all %}
+            {% if not item.cancelado %}
+            <tr class="item-row">
+                <td class="col-cant">{{ item.cantidad }}</td>
+                <td>{{ item.producto.nombre }}</td>
+            </tr>
+            {% if item.notas %}
+            <tr><td></td><td class="nota-item">Nota: {{ item.notas }}</td></tr>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-items">{{ comanda.items.all|length }} item{{ comanda.items.all|length|pluralize:"es" }}</div>
+
+    {% if comanda.notas %}
+    <hr class="div-dashed">
+    <div class="nota-general">
+        <strong>Nota general:</strong> {{ comanda.notas }}
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <div class="footer">Gracias!</div>
+
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>

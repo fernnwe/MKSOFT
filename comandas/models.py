@@ -18,7 +18,8 @@ class Comanda(models.Model):
         URGENTE = "urgente", "Urgente"
         VIP = "vip", "VIP"
 
-    codigo = models.CharField(max_length=20, unique=True)
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="comandas")
+    codigo = models.CharField(max_length=20)
     mesa = models.ForeignKey(Mesa, on_delete=models.PROTECT, related_name="comandas")
     mesero = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="comandas"
@@ -34,6 +35,9 @@ class Comanda(models.Model):
         ordering = ["-fecha_creacion"]
         verbose_name = "Comanda"
         verbose_name_plural = "Comandas"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "codigo"], name="unique_comanda_codigo_per_cliente"),
+        ]
 
     def __str__(self):
         return f"Comanda {self.codigo} - Mesa {self.mesa.numero}"

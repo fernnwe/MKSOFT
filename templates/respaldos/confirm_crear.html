@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Respaldo{% endblock %}
+
+{% block content %}
+<div class="md3-page-header" style="margin-bottom: 1.5rem;">
+    <h2 class="md3-page-title">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">backup</span>
+        Crear Respaldo
+    </h2>
+</div>
+
+<div class="md3-card-filled" style="max-width: 600px; margin: 0 auto;">
+    <div class="md3-card-body" style="padding: 24px;">
+        <div class="md3-flex md3-flex-align-center" style="gap: 12px; margin-bottom: 16px;">
+            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--md-sys-color-primary);">backup</span>
+            <div>
+                <h3 style="margin: 0;">Selecciona el tipo de respaldo</h3>
+                <p style="margin: 4px 0 0; color: var(--md-sys-color-on-surface-variant); font-size: 14px;">
+                    {% if is_superadmin %}
+                    Puedes crear un respaldo completo de toda la base de datos o seleccionar un restaurante especifico.
+                    {% else %}
+                    Se creara una copia de todos los datos de tu restaurante: {{ cliente.nombre_negocio }}.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="md3-divider" style="margin: 16px 0;"></div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% if is_superadmin %}
+            <div style="margin-bottom: 16px;">
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; margin-bottom: 8px; cursor: pointer;">
+                    <input type="radio" name="tipo" value="completo" id="tipoCompleto" checked style="accent-color: var(--md-sys-color-primary);">
+                    <span class="material-symbols-outlined" style="color: var(--md-sys-color-tertiary);">database</span>
+                    <div>
+                        <strong>Respaldo Completo</strong>
+                        <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Copia completa de toda la base de datos (todos los restaurantes)</div>
+                    </div>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; margin-bottom: 8px; cursor: pointer;">
+                    <input type="radio" name="tipo" value="tenant" id="tipoTenant" style="accent-color: var(--md-sys-color-primary);">
+                    <span class="material-symbols-outlined" style="color: var(--md-sys-color-primary);">storefront</span>
+                    <div>
+                        <strong>Respaldo por Restaurante</strong>
+                        <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Selecciona el restaurante a respaldar</div>
+                    </div>
+                </label>
+
+                <div id="selectorRestaurante" style="display: none; margin-left: 48px; margin-top: 8px;">
+                    <select name="cliente_id" id="selectCliente" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); font-size: 14px;">
+                        <option value="">-- Selecciona un restaurante --</option>
+                        {% for c in clientes %}
+                        <option value="{{ c.pk }}">{% if selected_cliente.pk == c.pk %}selected{% endif %}>{{ c.nombre_negocio }} ({{ c.estado }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% endif %}
+            <div class="md3-flex md3-flex-justify-end" style="gap: 8px;">
+                <a href="{% url 'respaldos:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled">
+                    <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">backup</span>
+                    Crear Respaldo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('tipoCompleto').addEventListener('change', function() {
+    document.getElementById('selectorRestaurante').style.display = 'none';
+});
+document.getElementById('tipoTenant').addEventListener('change', function() {
+    document.getElementById('selectorRestaurante').style.display = 'block';
+});
+</script>
+{% endblock %}

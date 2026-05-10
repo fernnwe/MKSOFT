@@ -1,30 +1,54 @@
 {% extends 'base.html' %}
 {% block title %}Imprimir Factura {{ factura.folio }}{% endblock %}
+{% block extra_css %}
+<style>
+    @page { size: 58mm 297mm; margin: 0; }
+    body { margin: 0; padding: 0; }
+    .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
+    .messages-wrap, .md3-fab, .md3-nav-drawer-overlay,
+    header, nav { display: none !important; }
+    .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    #factura-print { padding: 2mm 1.5mm; color: #000 !important; font-size: 12px !important; line-height: 1.15; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #factura-print hr { border-color: #000 !important; margin: 3px 0; border-width: 1px; }
+    #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 12px !important; font-weight: 700; }
+    #factura-print table { width: 100%; border-collapse: collapse; }
+    #factura-print td, #factura-print th { padding: 2px 0; }
+    @media print {
+        .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
+        .messages-wrap, .md3-fab, header, nav { display: none !important; }
+        .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        body { background: white !important; margin: 0; padding: 0; }
+        #factura-print { padding: 1mm; color: #000 !important; font-size: 11px !important; line-height: 1.1; font-weight: 700; }
+        #factura-print hr { border-color: #000 !important; margin: 2px 0; border-width: 1px; }
+        #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 11px !important; font-weight: 700; }
+    }
+</style>
+{% endblock %}
 {% block content %}
-<div id="factura-print" style="max-width:80mm; margin:0 auto; font-family:'Courier New', monospace; font-size:12px;">
-    <div style="text-align:center; margin-bottom:16px;">
+<div id="factura-print" style="max-width:58mm; margin:0; font-family:'Courier New', monospace;">
+    <div style="text-align:center; margin-bottom:8px;">
         <h4 style="font-weight:700; margin:0;">{{ RESTAURANT_NAME }}</h4>
-        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0; font-size:11px;">{{ RESTAURANT_ADDRESS }}</p>
-        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0; font-size:11px;">Tel: {{ RESTAURANT_PHONE }}</p>
-        <p style="color:var(--md-sys-color-on-surface-variant); margin:4px 0 0; font-size:11px;">RFC: {{ RESTAURANT_RFC }}</p>
+        <p style="margin:2px 0;">{{ RESTAURANT_ADDRESS }}</p>
+        <p style="margin:2px 0;">Tel: {{ RESTAURANT_PHONE }}</p>
+        <p style="margin:2px 0 0;">RUC: {{ RESTAURANT_RFC }}</p>
     </div>
 
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <hr>
 
-    <p style="font-size:11px; margin:4px 0;"><strong>Folio:</strong> {{ factura.folio }}</p>
-    <p style="font-size:11px; margin:4px 0;"><strong>Comanda:</strong> {{ factura.comanda.codigo }}</p>
-    <p style="font-size:11px; margin:4px 0;"><strong>Fecha:</strong> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
+    <p style="margin:2px 0;"><strong>Folio:</strong> {{ factura.folio }}</p>
+    <p style="margin:2px 0;"><strong>Comanda:</strong> {{ factura.comanda.codigo }}</p>
+    <p style="margin:2px 0;"><strong>Fecha:</strong> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
 
     {% if factura.cliente_nombre %}
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
-    <p style="font-size:11px; margin:4px 0;"><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
-    {% if factura.cliente_rfc %}<p style="font-size:11px; margin:4px 0;"><strong>RFC:</strong> {{ factura.cliente_rfc }}</p>{% endif %}
+    <hr>
+    <p style="margin:2px 0;"><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
+    {% if factura.cliente_rfc %}<p style="margin:2px 0;"><strong>RUC:</strong> {{ factura.cliente_rfc }}</p>{% endif %}
     {% endif %}
 
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <hr>
 
-    <table class="md3-table" style="font-size:11px;">
-        <thead><tr><th>Cant</th><th>Concepto</th><th style="text-align:right;">Total</th></tr></thead>
+    <table>
+        <thead><tr><th style="text-align:left;">Cant</th><th style="text-align:left;">Concepto</th><th style="text-align:right;">Total</th></tr></thead>
         <tbody>
             {% for item in factura.comanda.items.all %}
             {% if not item.cancelado %}
@@ -38,28 +62,33 @@
         </tbody>
     </table>
 
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
+    <hr>
 
-    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0;">
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
         <span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span>
     </div>
+    {% if factura.impuestos > 0 %}
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span>
+    </div>
+    {% endif %}
     {% if factura.descuento > 0 %}
-    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0; color:var(--md-sys-color-error);">
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
         <span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span>
     </div>
     {% endif %}
     {% if factura.propina > 0 %}
-    <div class="md3-flex md3-flex-justify-between" style="font-size:11px; margin:4px 0; color:var(--md-sys-color-success);">
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
         <span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span>
     </div>
     {% endif %}
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
-    <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:14px;">
+    <hr>
+    <div style="display:flex; justify-content:space-between; font-weight:700; font-size:11px !important;">
         <span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
     </div>
 
-    <hr style="border-color:var(--md-sys-color-outline-variant);">
-    <p style="text-align:center; font-size:11px; margin:0;">Gracias por su preferencia!</p>
+    <hr>
+    <p style="text-align:center; margin:2px 0;">Gracias por su preferencia!</p>
 </div>
 
 <script>

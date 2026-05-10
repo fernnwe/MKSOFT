@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Categoria(models.Model):
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="categorias")
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True)
     icono = models.CharField(max_length=50, blank=True, help_text="Emoji o clase de icono")
@@ -14,6 +15,9 @@ class Categoria(models.Model):
         ordering = ["orden", "nombre"]
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "nombre"], name="unique_categoria_per_cliente"),
+        ]
 
     def __str__(self):
         return self.nombre
@@ -26,7 +30,8 @@ class Producto(models.Model):
         POSTRE = "postre", "Postre"
         EXTRA = "extra", "Extra"
 
-    codigo = models.CharField(max_length=50, unique=True)
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="productos")
+    codigo = models.CharField(max_length=50)
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     tipo = models.CharField(max_length=20, choices=Tipo.choices, default=Tipo.PLATO)
@@ -46,6 +51,9 @@ class Producto(models.Model):
         ordering = ["categoria__orden", "nombre"]
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "codigo"], name="unique_producto_codigo_per_cliente"),
+        ]
 
     def __str__(self):
         return f"{self.nombre} - {settings.CURRENCY_SYMBOL}{self.precio}"

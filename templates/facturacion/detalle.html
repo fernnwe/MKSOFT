@@ -1,43 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Factura {{ factura.folio }}{% endblock %}
 {% block content %}
-<style>
-    .md3-dialog-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-        z-index: 1050; display: none; align-items: center; justify-content: center;
-        animation: fadeIn 0.15s ease;
-    }
-    .md3-dialog-overlay.active { display: flex; }
-    .md3-dialog {
-        background: var(--md-sys-color-surface-container-high);
-        border-radius: 28px;
-        max-width: 400px;
-        width: 90%;
-        overflow: hidden;
-        animation: dialogIn 0.25s ease;
-    }
-    .md3-dialog-header {
-        display: flex; align-items: center; gap: 12px;
-        padding: 24px 24px 0 24px;
-    }
-    .md3-dialog-icon {
-        width: 48px; height: 48px; border-radius: 12px;
-        background: var(--md-sys-color-error-container);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-    .md3-dialog-icon .material-symbols-outlined { color: var(--md-sys-color-on-error-container); font-size: 24px; }
-    .md3-dialog-title { font-size: 22px; font-weight: 400; color: var(--md-sys-color-on-surface); }
-    .md3-dialog-body { padding: 16px 24px 24px; }
-    .md3-dialog-body p { margin: 0 0 8px; color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.5; }
-    .md3-dialog-body .md3-folio { font-family: monospace; background: var(--md-sys-color-surface-container-highest); padding: 2px 8px; border-radius: 4px; font-size: 13px; }
-    .md3-dialog-actions {
-        display: flex; justify-content: flex-end; gap: 8px;
-        padding: 12px 24px 24px;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes dialogIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-</style>
 
 <div class="md3-page-header">
     <div class="md3-flex md3-flex-align-center" style="gap:8px;">
@@ -122,6 +85,12 @@
                 <span style="color:var(--md-sys-color-on-surface-variant);">Subtotal:</span>
                 <span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span>
             </div>
+            {% if factura.impuestos > 0 %}
+            <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
+                <span>IVA (15%):</span>
+                <span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span>
+            </div>
+            {% endif %}
             {% if factura.descuento > 0 %}
             <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);">
                 <span>Descuento:</span>
@@ -162,12 +131,10 @@
         <form id="deleteForm" method="post" action="{% url 'facturacion:eliminar' factura.pk %}">
             {% csrf_token %}
             <div class="md3-dialog-header">
-                <div class="md3-dialog-icon">
-                    <span class="material-symbols-outlined">delete</span>
-                </div>
+                <span class="material-symbols-outlined" style="font-size:24px;color:var(--md-sys-color-error);">delete</span>
                 <div class="md3-dialog-title">Eliminar Factura</div>
             </div>
-            <div class="md3-dialog-body">
+            <div class="md3-dialog-content">
                 <p>¿Deseas eliminar la factura <span class="md3-folio">{{ factura.folio }}</span>?</p>
                 <p style="color:var(--md-sys-color-error); margin-bottom:0;"><strong>Esta accion no se puede deshacer.</strong></p>
             </div>
@@ -181,10 +148,10 @@
 
 <script>
 function openDeleteModal() {
-    document.getElementById('deleteDialog').classList.add('active');
+    document.getElementById('deleteDialog').classList.add('open');
 }
 function closeDeleteModal() {
-    document.getElementById('deleteDialog').classList.remove('active');
+    document.getElementById('deleteDialog').classList.remove('open');
 }
 document.getElementById('deleteDialog').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();

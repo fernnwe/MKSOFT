@@ -3,6 +3,47 @@ from django.conf import settings
 from comandas.models import Comanda
 
 
+class CajaApertura(models.Model):
+    class Estado(models.TextChoices):
+        ABIERTA = "abierta", "Abierta"
+        CERRADA = "cerrada", "Cerrada"
+
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="cajas_apertura")
+    fecha_apertura = models.DateTimeField(auto_now_add=True)
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+    monto_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    usuario_apertura = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="cajas_abiertas")
+    usuario_cierre = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="cajas_cerradas")
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ABIERTA)
+    notas = models.TextField(blank=True)
+    monto_cierre_efectivo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    diferencia = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-fecha_apertura"]
+        verbose_name = "Apertura de Caja"
+        verbose_name_plural = "Aperturas de Caja"
+
+    def __str__(self):
+        return f"Caja {self.pk} - {self.fecha_apertura.strftime('%d/%m/%Y %H:%M')} ({self.get_estado_display()})"
+
+    def cerrar(self, monto_cierre, usuario):
+        self.fecha_cierre = models.functions.Now()
+        self.usuario_cierre = usuario
+        self.estado = self.Estado.CERRADA
+        self.monto_cierre_efectivo = monto_cierre
+        from django.db.models import Sum
+        facturas_efectivo = Factura.objects.filter(
+            fecha_emision__gte=self.fecha_apertura,
+            fecha_emision__lte=self.fecha_cierre,
+            estado=Factura.Estado.PAGADA,
+            metodo_pago=Factura.MetodoPago.EFECTIVO
+        ).aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+        efectivo_esperado = self.monto_inicial + facturas_efectivo
+        self.diferencia = monto_cierre - efectivo_esperado
+        self.save()
+
+
 class Factura(models.Model):
     class Estado(models.TextChoices):
         PENDIENTE = "pendiente", "Pendiente"
@@ -14,10 +55,11 @@ class Factura(models.Model):
         TARJETA = "tarjeta", "Tarjeta"
         TRANSFERENCIA = "transferencia", "Transferencia"
 
-    folio = models.CharField(max_length=50, unique=True)
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="facturas")
+    folio = models.CharField(max_length=50)
     comanda = models.ForeignKey(Comanda, on_delete=models.PROTECT, related_name="facturas")
     cliente_nombre = models.CharField(max_length=200, blank=True)
-    cliente_rfc = models.CharField(max_length=13, blank=True)
+    cliente_rfc = models.CharField(max_length=13, blank=True, verbose_name="RUC del cliente")
     cliente_email = models.EmailField(blank=True)
 
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
@@ -39,6 +81,9 @@ class Factura(models.Model):
         ordering = ["-fecha_emision"]
         verbose_name = "Factura"
         verbose_name_plural = "Facturas"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "folio"], name="unique_factura_folio_per_cliente"),
+        ]
 
     def __str__(self):
         return f"Factura {self.folio} - {self.cliente_nombre or 'Sin cliente'}"
@@ -46,7 +91,10 @@ class Factura(models.Model):
     def save(self, *args, **kwargs):
         if not self.folio:
             import uuid
-            self.folio = f"FAC-{uuid.uuid4().hex[:8].upper()}"
+            for _ in range(5):
+                self.folio = f"FAC-{uuid.uuid4().hex[:8].upper()}"
+                if not Factura.objects.filter(cliente=self.cliente, folio=self.folio).exists():
+                    break
         super().save(*args, **kwargs)
 
     @property

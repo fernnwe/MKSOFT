@@ -1,0 +1,587 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('MKSOFT Admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --md-primary: #6750A4;
+        --md-on-primary: #FFFFFF;
+        --md-primary-container: #EADDFF;
+        --md-on-primary-container: #21005D;
+        --md-secondary: #625B71;
+        --md-secondary-container: #E8DEF8;
+        --md-surface: #FEF7FF;
+        --md-surface-container: #F3EDF7;
+        --md-surface-container-high: #ECE6F0;
+        --md-surface-container-highest: #E6E0E9;
+        --md-on-surface: #1D1B20;
+        --md-on-surface-variant: #49454F;
+        --md-outline: #79747E;
+        --md-outline-variant: #CAC4D0;
+        --md-error: #B3261E;
+        --md-error-container: #F9DEDC;
+        --md-success: #386A20;
+        --md-success-container: #B8F397;
+        --md-shape-sm: 8px;
+        --md-shape-md: 12px;
+        --md-shape-lg: 16px;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--md-surface);
+        color: var(--md-on-surface);
+    }
+
+    #header {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+        padding: 12px 24px;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #header a:link, #header a:visited {
+        color: rgba(255,255,255,0.9);
+    }
+
+    #branding h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    #branding h1 a:link, #branding h1 a:visited {
+        color: var(--md-on-primary);
+    }
+
+    #user-tools {
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .module caption, .module h2, .module h3 {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .module {
+        border-radius: var(--md-shape-md);
+        border: 1px solid var(--md-outline-variant);
+        background: white;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+    }
+
+    .module caption {
+        background: var(--md-primary-container);
+        color: var(--md-on-primary-container);
+        font-weight: 600;
+        font-size: 14px;
+        padding: 12px 16px;
+        border-radius: var(--md-shape-md) var(--md-shape-md) 0 0;
+    }
+
+    .module h2, .module caption+* {
+        border-radius: var(--md-shape-md) var(--md-shape-md) 0 0;
+    }
+
+    #content {
+        padding: 20px 24px;
+    }
+
+    #content-main {
+        float: none;
+        width: 100%;
+    }
+
+    #content-related {
+        float: none;
+        width: 100%;
+        margin-right: 0;
+    }
+
+    @media (min-width: 1024px) {
+        #content-main {
+            float: left;
+            width: 70%;
+        }
+        #content-related {
+            float: right;
+            width: 28%;
+            margin-right: 0;
+        }
+    }
+
+    #content-related .module {
+        background: var(--md-surface-container);
+    }
+
+    div.breadcrumbs {
+        background: var(--md-surface-container-high);
+        color: var(--md-on-surface-variant);
+        font-size: 12px;
+        font-weight: 500;
+        padding: 10px 24px;
+        border-bottom: 1px solid var(--md-outline-variant);
+    }
+
+    div.breadcrumbs a {
+        color: var(--md-primary);
+    }
+
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: var(--md-shape-md);
+        overflow: hidden;
+    }
+
+    thead th {
+        background: var(--md-surface-container) !important;
+        color: var(--md-on-surface-variant) !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 12px 16px !important;
+        border-bottom: 1px solid var(--md-outline-variant) !important;
+    }
+
+    td, th {
+        padding: 12px 16px !important;
+        border-bottom: 1px solid var(--md-outline-variant) !important;
+    }
+
+    tr:last-child td {
+        border-bottom: none !important;
+    }
+
+    tr:hover td {
+        background: var(--md-surface-container) !important;
+    }
+
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .button:hover, input[type=submit]:hover, input[type=button]:hover {
+        background: var(--md-on-primary-container);
+        color: var(--md-primary);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .button.default, input[type=submit].default, .submit-row input.default {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+        font-weight: 600;
+    }
+
+    .button.default:hover, input[type=submit].default:hover {
+        filter: brightness(1.1);
+    }
+
+    .deletelink {
+        background: var(--md-error);
+        color: white !important;
+        border-radius: 9999px;
+        padding: 8px 16px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 13px;
+    }
+
+    .deletelink:hover {
+        filter: brightness(1.1);
+    }
+
+    .submit-row {
+        padding: 16px 0;
+        border: none;
+        background: transparent;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .submit-row input {
+        height: auto;
+        margin: 0;
+    }
+
+    .submit-row input.default {
+        margin: 0;
+    }
+
+    .submit-row p {
+        margin: 0;
+    }
+
+    a:link, a:visited {
+        color: var(--md-primary);
+    }
+
+    .selector {
+        width: auto;
+    }
+
+    .selector-available, .selector-chosen {
+        border-radius: var(--md-shape-sm);
+        border: 1px solid var(--md-outline-variant);
+    }
+
+    .selector h2 {
+        background: var(--md-surface-container);
+        color: var(--md-on-surface);
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: var(--md-shape-sm) var(--md-shape-sm) 0 0;
+    }
+
+    .selector .selector-filter {
+        border: none;
+        padding: 8px;
+    }
+
+    .inline-group {
+        border-radius: var(--md-shape-md);
+        border: 1px solid var(--md-outline-variant);
+        overflow: hidden;
+    }
+
+    .inline-group h2 {
+        background: var(--md-primary-container);
+        color: var(--md-on-primary-container);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .inline-related h3 {
+        background: var(--md-surface-container);
+        color: var(--md-on-surface-variant);
+        font-size: 13px;
+        font-weight: 500;
+        border-bottom: 1px solid var(--md-outline-variant);
+    }
+
+    .form-row {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--md-outline-variant);
+    }
+
+    .form-row:last-child {
+        border-bottom: none;
+    }
+
+    label {
+        font-weight: 500;
+        color: var(--md-on-surface-variant);
+        font-size: 13px;
+    }
+
+    input, textarea, select, .form-row .vTextField, .form-row .vLargeTextField {
+        border: 1px solid var(--md-outline-variant);
+        border-radius: var(--md-shape-sm);
+        padding: 8px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        background: white;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+        border-color: var(--md-primary);
+        box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.1);
+        outline: none;
+    }
+
+    .aligned label {
+        padding: 0;
+        margin: 0;
+    }
+
+    .help {
+        font-size: 11px;
+        color: var(--md-on-surface-variant);
+    }
+
+    .errornote {
+        border-radius: var(--md-shape-sm);
+        background: var(--md-error-container);
+        color: var(--md-on-error-container);
+        font-weight: 500;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+
+    .errorlist {
+        color: var(--md-error);
+        font-size: 12px;
+    }
+
+    .messagelist li {
+        border-radius: var(--md-shape-sm);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: var(--md-success-container);
+        color: var(--md-on-success-container);
+        border: none;
+        font-weight: 500;
+    }
+
+    .messagelist li.error {
+        background: var(--md-error-container);
+        color: var(--md-on-error-container);
+    }
+
+    .messagelist li.warning {
+        background: var(--md-primary-container);
+    }
+
+    .paginator {
+        background: var(--md-surface-container);
+        border-radius: var(--md-shape-md);
+        padding: 8px 16px;
+        font-size: 13px;
+        margin-top: 20px;
+        border: 1px solid var(--md-outline-variant);
+    }
+
+    .paginator a {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: transparent;
+        color: var(--md-primary);
+        font-weight: 500;
+    }
+
+    .paginator a:hover {
+        background: var(--md-primary-container);
+    }
+
+    .paginator .this-page {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+        font-weight: 600;
+    }
+
+    .object-tools {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        gap: 8px;
+    }
+
+    .object-tools a {
+        border-radius: 9999px;
+        padding: 6px 16px;
+        font-weight: 500;
+        font-size: 12px;
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .object-tools a:hover {
+        filter: brightness(1.1);
+    }
+
+    .object-tools a.addlink {
+        background: var(--md-primary);
+    }
+
+    #changelist {
+        border-radius: var(--md-shape-md);
+        border: 1px solid var(--md-outline-variant);
+        overflow: hidden;
+    }
+
+    #changelist .toplinks, #changelist .actions {
+        background: var(--md-surface-container);
+        border-bottom: 1px solid var(--md-outline-variant);
+        padding: 8px 16px;
+    }
+
+    #changelist .actions select {
+        border-radius: 9999px;
+        padding: 4px 12px;
+    }
+
+    #changelist .actions .button {
+        margin: 0;
+    }
+
+    #changelist-filter {
+        border-radius: var(--md-shape-sm);
+        border: 1px solid var(--md-outline-variant);
+        background: white;
+    }
+
+    #changelist-filter h2 {
+        background: var(--md-surface-container);
+        color: var(--md-on-surface);
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: var(--md-shape-sm) var(--md-shape-sm) 0 0;
+    }
+
+    #changelist-filter li {
+        border: none;
+    }
+
+    #changelist-filter a {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+
+    #changelist-filter li.selected a {
+        background: var(--md-primary-container);
+        color: var(--md-on-primary-container);
+        font-weight: 600;
+    }
+
+    .dashboard #content {
+        display: block;
+    }
+
+    .dashboard .module table {
+        border-radius: 0;
+    }
+
+    .dashboard .module table th {
+        width: auto;
+    }
+
+    .calendar caption, .calendarbox h2 {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .calendar td, .calendar th {
+        border: none;
+        padding: 6px;
+        text-align: center;
+    }
+
+    .calendar td a {
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calendar td a:hover {
+        background: var(--md-primary-container);
+    }
+
+    .calendar td.selected a {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .clockbox.module {
+        border-radius: var(--md-shape-sm);
+    }
+
+    /* Nav sidebar */
+    #nav-sidebar {
+        border-right: 1px solid var(--md-outline-variant);
+        background: var(--md-surface);
+    }
+
+    #nav-sidebar .module {
+        border: none;
+        margin-bottom: 0;
+    }
+
+    #nav-sidebar .module h2 {
+        background: transparent;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--md-on-surface-variant);
+        font-weight: 600;
+    }
+
+    #nav-sidebar .module a {
+        padding: 8px 16px;
+        border-radius: var(--md-shape-sm);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    #nav-sidebar .module a:hover {
+        background: var(--md-surface-container);
+    }
+
+    #nav-sidebar .module a.addlink {
+        background: transparent;
+        color: var(--md-primary);
+        font-size: 12px;
+        padding: 4px 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+        #header {
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+        #content {
+            padding: 16px;
+        }
+        #nav-sidebar {
+            border: none;
+        }
+        .submit-row {
+            flex-direction: column;
+        }
+        .submit-row input {
+            width: 100%;
+        }
+        .object-tools {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <span class="material-symbols-outlined" style="font-size:24px;color:var(--md-on-primary);">admin_panel_settings</span>
+        {{ site_header|default:_('MKSOFT Administration') }}
+    </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

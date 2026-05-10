@@ -4,14 +4,37 @@
 <div class="md3-page-header no-print">
     <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
         <div>
-            <h1 class="md3-page-title">Cierre de Caja</h1>
+            <h1 class="md3-page-title">Caja</h1>
             <p class="md3-page-subtitle">{{ fecha_seleccionada|date:"l, d \d\e F \d\e Y" }}</p>
         </div>
-        <div class="md3-flex md3-flex-align-center" style="gap:16px; flex-wrap:wrap;">
+        <div class="md3-flex md3-flex-align-center" style="gap:12px; flex-wrap:wrap;">
+            {% if caja_abierta %}
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-success); font-size:28px;">check_circle</span>
+            <span style="font-size:13px; color:var(--md-sys-color-success); font-weight:600;">Caja abierta desde {{ caja_abierta.fecha_apertura|date:"H:i" }}</span>
+            <a href="{% url 'facturacion:cierre_confirm' %}" class="md3-btn md3-btn-tonal">
+                <span class="material-symbols-outlined">lock</span>
+                Cerrar Caja
+            </a>
+            {% else %}
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-error); font-size:28px;">cancel</span>
+            <span style="font-size:13px; color:var(--md-sys-color-error); font-weight:600;">Caja cerrada</span>
+            <a href="{% url 'facturacion:apertura' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">lock_open</span>
+                Abrir Caja
+            </a>
+            {% endif %}
+            <a href="{% url 'facturacion:historial_cierres' %}" class="md3-btn md3-btn-outlined">
+                <span class="material-symbols-outlined">history</span>
+                Historial
+            </a>
+            <a href="{% url 'facturacion:cierre_pdf' %}" class="md3-btn md3-btn-outlined">
+                <span class="material-symbols-outlined">picture_as_pdf</span>
+                PDF
+            </a>
             <form method="get">
                 <div class="md3-field" style="margin-bottom:0; min-width:200px;">
                     <input type="date" name="fecha" value="{{ fecha_seleccionada|date:'Y-m-d' }}" class="md3-input" style="padding-top:24px;" onchange="this.form.submit()">
-                    <label class="md3-label">Fecha de Cierre</label>
+                    <label class="md3-label">Fecha</label>
                     <div class="md3-input-line"></div>
                 </div>
             </form>
@@ -141,6 +164,12 @@
                     </div>
                     <span style="font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span>
                 </div>
+                {% if total_iva > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
+                    <span>IVA 15%</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span>
+                </div>
+                {% endif %}
                 {% if total_servicio > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
                     <span>Servicio 10%</span>
@@ -170,13 +199,49 @@
     </div>
 </div>
 
+{% if aperturas_dia %}
+<div class="px-3 px-md-4 no-print" style="margin-bottom:16px;">
+    <h3 style="font-size:16px; margin:0 0 12px; padding:0 4px; display:flex; align-items:center; gap:8px;">
+        <span class="material-symbols-outlined">history</span>
+        Aperturas del día
+    </h3>
+    <div class="md3-card-outlined" style="padding:0; overflow:hidden;">
+        {% for apertura in aperturas_dia %}
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; {% if not forloop.last %}border-bottom:1px solid var(--md-sys-color-outline-variant);{% endif %}">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="material-symbols-outlined" style="color:{% if apertura.estado == 'abierta' %}var(--md-sys-color-success){% else %}var(--md-sys-color-on-surface-variant){% endif %};">
+                    {% if apertura.estado == 'abierta' %}lock_open{% else %}lock{% endif %}
+                </span>
+                <div>
+                    <div style="font-weight:600; font-size:14px;">{{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ apertura.fecha_apertura|date:"H:i" }} — Inicial: {{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                {% if apertura.estado == 'cerrada' %}
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Cerró {{ apertura.fecha_cierre|date:"H:i" }}</div>
+                <div style="font-weight:600; color:{% if apertura.diferencia < 0 %}var(--md-sys-color-error){% elif apertura.diferencia > 0 %}var(--md-sys-color-tertiary){% else %}var(--md-sys-color-success){% endif %};">
+                    Dif: {{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}
+                </div>
+                {% else %}
+                <span style="padding:4px 10px; border-radius:12px; background:var(--md-sys-color-success-container); color:var(--md-sys-color-on-success-container); font-size:12px; font-weight:600;">Abierta</span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant);">Sin aperturas este día</div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Ticket para impresion -->
 <div id="cierre-box" class="ticket-container">
     <div class="ticket">
         <div class="ticket-header">
             <h2 class="ticket-title">{{ RESTAURANT_NAME }}</h2>
             <p class="ticket-info">{{ RESTAURANT_ADDRESS }}</p>
-            <p class="ticket-info">Tel: {{ RESTAURANT_PHONE }} | RFC: {{ RESTAURANT_RFC }}</p>
+            <p class="ticket-info">Tel: {{ RESTAURANT_PHONE }} | RUC: {{ RESTAURANT_RFC }}</p>
             <div class="ticket-divider"></div>
             <h3 class="ticket-section">Cierre de Caja</h3>
             <p class="ticket-info">{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
@@ -197,12 +262,17 @@
         <div class="ticket-row ticket-total"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span></div>
         <div class="ticket-divider"></div>
 
-        {% if total_servicio > 0 %}
+        {% if total_iva > 0 or total_servicio > 0 or total_descuentos > 0 %}
         <div class="ticket-section-title">DESGLOSE</div>
+        {% if total_iva > 0 %}
+        <div class="ticket-row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_servicio > 0 %}
         <div class="ticket-row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span></div>
         {% endif %}
         {% if total_descuentos > 0 %}
         <div class="ticket-row ticket-error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span></div>
+        {% endif %}
         {% endif %}
         <div class="ticket-divider"></div>
 
@@ -239,6 +309,21 @@
         <div class="ticket-row ticket-grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span></div>
         <div class="ticket-divider"></div>
 
+        {% if aperturas_dia %}
+        <div class="ticket-section-title">APERTURAS DEL DIA</div>
+        {% for apertura in aperturas_dia %}
+        <div class="ticket-subsection">{{ apertura.fecha_apertura|date:"H:i" }} - {{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
+        <div class="ticket-row ticket-indent"><span>Monto inicial:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</span></div>
+        {% if apertura.estado == "cerrada" %}
+        <div class="ticket-row ticket-indent"><span>Cierre:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_cierre_efectivo|floatformat:2 }}</span></div>
+        <div class="ticket-row ticket-indent"><span>Diferencia:</span><span class="{% if apertura.diferencia < 0 %}ticket-error{% endif %}">{{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}</span></div>
+        {% else %}
+        <div class="ticket-row ticket-indent"><span>Estado:</span><span>ABIERTA</span></div>
+        {% endif %}
+        {% endfor %}
+        <div class="ticket-divider"></div>
+        {% endif %}
+
         <div class="ticket-footer">
             <p class="ticket-footer-text">Gracias por su preferencia</p>
             <p class="ticket-footer-small">{{ RESTAURANT_NAME }}</p>
@@ -256,29 +341,35 @@
     .ticket-container, .ticket-container * { visibility: visible !important; }
     .ticket-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 80mm; margin: 0 auto; }
     @page { size: 80mm auto; margin: 0; }
-    .ticket { padding: 4px; font-size: 10px; }
+    .ticket { padding: 3px; font-size: 10px; font-weight: 700; }
+    .ticket-title { font-size: 15px; font-weight: 900; }
+    .ticket-info { font-weight: 700; }
+    .ticket-row { font-weight: 700; }
+    .ticket-total { font-weight: 900; }
+    .ticket-grand-total { font-weight: 900; }
+    .ticket-section-title { font-weight: 900; }
 }
 @media print and (max-width: 58mm) {
     @page { size: 58mm auto; margin: 0; }
     .ticket-container { max-width: 58mm; }
-    .ticket { font-size: 9px; padding: 3px; }
+    .ticket { font-size: 9px; padding: 2px; font-weight: 700; }
 }
 
-.ticket { font-family: 'Courier New', monospace; font-size: 11px; color: #000; line-height: 1.4; padding: 8px; }
+.ticket { font-family: 'Courier New', monospace; font-size: 11px; color: #000; line-height: 1.3; padding: 6px; font-weight: 700; }
 .ticket-header { text-align: center; }
-.ticket-title { font-size: 16px; font-weight: bold; margin: 0 0 4px; }
-.ticket-info { margin: 0; font-size: 10px; color: #333; }
-.ticket-divider { border-top: 1px dashed #000; margin: 6px 0; }
-.ticket-section { font-size: 13px; font-weight: bold; text-align: center; margin: 4px 0; }
-.ticket-section-title { font-weight: bold; text-transform: uppercase; margin: 6px 0 4px; font-size: 11px; }
-.ticket-subsection { font-weight: bold; margin: 4px 0 2px; font-size: 10px; }
-.ticket-row { display: flex; justify-content: space-between; margin: 2px 0; }
+.ticket-title { font-size: 16px; font-weight: 900; margin: 0 0 4px; letter-spacing: 0.5px; }
+.ticket-info { margin: 0; font-size: 10px; font-weight: 700; }
+.ticket-divider { border-top: 1px solid #000; margin: 6px 0; }
+.ticket-section { font-size: 13px; font-weight: 900; text-align: center; margin: 4px 0; }
+.ticket-section-title { font-weight: 900; text-transform: uppercase; margin: 6px 0 4px; font-size: 11px; letter-spacing: 0.5px; }
+.ticket-subsection { font-weight: 700; margin: 4px 0 2px; font-size: 10px; }
+.ticket-row { display: flex; justify-content: space-between; margin: 2px 0; font-weight: 700; }
 .ticket-indent { padding-left: 10px; }
-.ticket-total { font-weight: bold; border-top: 1px dashed #000; padding-top: 4px; }
-.ticket-grand-total { font-size: 13px; font-weight: bold; border-top: 1px double #000; padding-top: 4px; margin-top: 4px; }
-.ticket-error { color: #B3261E; }
+.ticket-total { font-weight: 900; border-top: 1px solid #000; padding-top: 4px; }
+.ticket-grand-total { font-size: 13px; font-weight: 900; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
+.ticket-error { color: #B3261E; font-weight: 700; }
 .ticket-footer { text-align: center; margin-top: 10px; }
-.ticket-footer-text { margin: 0; font-size: 12px; }
-.ticket-footer-small { margin: 0; font-size: 9px; color: #666; }
+.ticket-footer-text { margin: 0; font-size: 12px; font-weight: 700; }
+.ticket-footer-small { margin: 0; font-size: 9px; font-weight: 700; }
 </style>
 {% endblock %}

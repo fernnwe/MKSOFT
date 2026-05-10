@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% block title %}Suscripcion Vencida{% endblock %}
+{% block content %}
+<style>
+    .expired-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+        padding: 20px;
+    }
+
+    .expired-card {
+        max-width: 520px;
+        width: 100%;
+        border-radius: 28px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface-container-lowest);
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+        animation: slideUp 0.5s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .expired-banner {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+        padding: 40px 32px 32px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .expired-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .expired-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        backdrop-filter: blur(8px);
+    }
+
+    .expired-icon .material-symbols-outlined {
+        font-size: 44px;
+        color: white;
+    }
+
+    .expired-banner h1 {
+        font-size: 24px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+    }
+
+    .expired-banner p {
+        font-size: 14px;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .expired-body {
+        padding: 32px;
+    }
+
+    .expired-message {
+        font-size: 15px;
+        color: var(--md-sys-color-on-surface);
+        text-align: center;
+        line-height: 1.6;
+        margin-bottom: 24px;
+    }
+
+    .expired-message strong {
+        color: var(--md-sys-color-primary);
+    }
+
+    .expired-info-card {
+        background: var(--md-sys-color-primary-container);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .expired-info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--md-sys-color-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .expired-info-icon .material-symbols-outlined {
+        font-size: 22px;
+    }
+
+    .expired-info-text {
+        font-size: 13px;
+        color: var(--md-sys-color-on-primary-container);
+        line-height: 1.5;
+    }
+
+    .expired-info-text strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+
+    .expired-details {
+        background: var(--md-sys-color-surface-container);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+
+    .expired-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+    }
+
+    .expired-detail-row:not(:last-child) {
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .expired-detail-label {
+        font-size: 13px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .expired-detail-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+    }
+
+    .expired-detail-value.error {
+        color: var(--md-sys-color-error);
+    }
+
+    .expired-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .expired-actions .md3-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 24px;
+        border-radius: 14px;
+        font-size: 15px;
+        font-weight: 600;
+        gap: 8px;
+    }
+
+    .expired-actions .md3-btn .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .expired-contact {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    @media (max-width: 540px) {
+        .expired-wrapper { padding: 16px; min-height: auto; padding-top: 40px; }
+        .expired-card { border-radius: 20px; }
+        .expired-banner { padding: 32px 24px 24px; }
+        .expired-banner h1 { font-size: 20px; }
+        .expired-body { padding: 24px; }
+    }
+</style>
+
+<div class="expired-wrapper">
+    <div class="expired-card">
+        <div class="expired-banner">
+            <div class="expired-icon">
+                <span class="material-symbols-outlined">payments</span>
+            </div>
+            <h1>Suscripcion Vencida</h1>
+            <p>Tu periodo de suscripcion ha finalizado</p>
+        </div>
+
+        <div class="expired-body">
+            <p class="expired-message">
+                Para continuar utilizando el sistema, debes <strong>pagar la mensualidad</strong> y comunicarte con el administrador del sistema.
+            </p>
+
+            <div class="expired-info-card">
+                <div class="expired-info-icon">
+                    <span class="material-symbols-outlined">support_agent</span>
+                </div>
+                <div class="expired-info-text">
+                    <strong>Contacta al administrador</strong>
+                    Reporta tu pago para reactivar tu cuenta lo antes posible. Tu informacion y datos estan seguros.
+                </div>
+            </div>
+
+            <div class="expired-details">
+                <div class="expired-detail-row">
+                    <span class="expired-detail-label">Restaurante</span>
+                    <span class="expired-detail-value">{{ cliente.nombre_negocio }}</span>
+                </div>
+                <div class="expired-detail-row">
+                    <span class="expired-detail-label">Plan</span>
+                    <span class="expired-detail-value">Unico · C${{ cliente.PRECIO_MENSUAL }}/mes</span>
+                </div>
+                <div class="expired-detail-row">
+                    <span class="expired-detail-label">Vencio el</span>
+                    <span class="expired-detail-value error">
+                        {% if cliente.fecha_pago_proximo %}
+                            {{ cliente.fecha_pago_proximo|date:"d/m/Y" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="expired-actions">
+                <a href="{% url 'core:dashboard' %}" class="md3-btn md3-btn-outlined">
+                    <span class="material-symbols-outlined">home</span>
+                    Ir al Dashboard
+                </a>
+            </div>
+
+            <p class="expired-contact">
+                ¿Dudas? Contacta a soporte para reactivar tu cuenta
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.md3-nav-drawer, .md3-top-app-bar, .md3-bottom-nav').forEach(el => {
+        if (el) el.style.display = 'none';
+    });
+</script>
+{% endblock %}

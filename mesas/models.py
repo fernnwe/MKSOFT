@@ -15,7 +15,8 @@ class Mesa(models.Model):
         VIP = "vip", "VIP"
         JARDIN = "jardin", "Jardín"
 
-    numero = models.CharField(max_length=10, unique=True)
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="mesas")
+    numero = models.CharField(max_length=10)
     zona = models.CharField(max_length=20, choices=Zona.choices, default=Zona.INTERIOR)
     capacidad = models.PositiveIntegerField(help_text="Número de personas")
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.LIBRE)
@@ -26,6 +27,9 @@ class Mesa(models.Model):
         ordering = ["numero"]
         verbose_name = "Mesa"
         verbose_name_plural = "Mesas"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "numero"], name="unique_mesa_per_cliente"),
+        ]
 
     def __str__(self):
         return f"Mesa {self.numero} - {self.get_zona_display()}"

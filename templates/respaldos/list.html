@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Respaldos de Base de Datos{% endblock %}
+
+{% block content %}
+<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-bottom: 1.5rem;">
+    <h2 class="md3-page-title">
+        <span class="material-symbols-outlined" style="margin-right: 0.5rem;">backup</span>
+        Respaldos de Base de Datos
+    </h2>
+    <a href="{% url 'respaldos:crear' %}" class="md3-btn md3-btn-filled">
+        <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">add</span>
+        Nuevo Respaldo
+    </a>
+</div>
+
+{% if messages %}
+<div class="md3-messages">
+    {% for message in messages %}
+    <div class="md3-alert {% if message.tags %}md3-alert-{{ message.tags }}{% endif %}" style="margin-bottom: 1rem;">
+        <span class="material-symbols-outlined" style="font-size: 20px;">
+            {% if message.tags == 'success' %}check_circle
+            {% elif message.tags == 'error' %}error
+            {% else %}info{% endif %}
+        </span>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="md3-card-outlined">
+    <div class="md3-card-body" style="padding: 0;">
+        <div class="md3-table-wrapper">
+            <table class="md3-data-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Restaurante</th>
+                        <th>Fecha</th>
+                        <th>Tamaño</th>
+                        <th>Estado</th>
+                        <th>Creado por</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for respaldo in respaldos %}
+                    <tr>
+                        <td style="font-weight: 500;">
+                            {{ respaldo.nombre }}
+                            {% if respaldo.tipo == 'completo' %}
+                            <span class="md3-badge" style="font-size:0.6rem; margin-left:4px;">Completo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if respaldo.cliente %}
+                            <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:var(--md-sys-color-on-surface-variant);">storefront</span>
+                            {{ respaldo.cliente.nombre_negocio }}
+                            {% else %}
+                            <span style="color:var(--md-sys-color-on-surface-variant);">Global</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ respaldo.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                        <td>{{ respaldo.tamaño_mb }} MB</td>
+                        <td>
+                            {% if respaldo.estado == 'exitoso' %}
+                            <span class="md3-badge md3-badge-success">{{ respaldo.get_estado_display }}</span>
+                            {% elif respaldo.estado == 'fallido' %}
+                            <span class="md3-badge md3-badge-error">{{ respaldo.get_estado_display }}</span>
+                            {% elif respaldo.estado == 'restaurado' %}
+                            <span class="md3-badge md3-badge-primary">{{ respaldo.get_estado_display }}</span>
+                            {% else %}
+                            <span class="md3-badge md3-badge-warning">{{ respaldo.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ respaldo.creado_por.get_full_name|default:respaldo.creado_por.username }}</td>
+                        <td>
+                            <div class="md3-flex" style="gap: 8px;">
+                                {% if respaldo.estado == 'exitoso' %}
+                                <a href="{% url 'respaldos:restaurar' respaldo.id_backup %}" class="md3-btn md3-btn-tonal md3-btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">restore</span>
+                                    Restaurar
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'respaldos:descargar' respaldo.id_backup %}" class="md3-btn md3-btn-outlined md3-btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+                                    Descargar
+                                </a>
+                                <a href="{% url 'respaldos:eliminar' respaldo.id_backup %}" class="md3-btn md3-btn-error md3-btn-outlined md3-btn-sm">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--md-sys-color-on-surface-variant);">
+                            <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 8px;">backup</span>
+                            No hay respaldos creados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<div class="md3-flex" style="justify-content: center; margin-top: 1.5rem;">
+    <div class="md3-flex" style="gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

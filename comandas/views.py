@@ -6,9 +6,10 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from core.views import PermissionRequiredMixin
+from core.views import ClienteScopeMixin, PermissionRequiredMixin
 from .models import Comanda, ComandaItem
 from mesas.models import Mesa
 from productos.models import Producto
@@ -18,7 +19,7 @@ from channels.layers import get_channel_layer
 User = get_user_model()
 
 
-class ComandaListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+class ComandaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Comanda
     template_name = "comandas/list.html"
     context_object_name = "comandas"
@@ -26,7 +27,7 @@ class ComandaListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission = "can_view_comandas"
 
     def get_queryset(self):
-        qs = Comanda.objects.select_related("mesa", "mesero")
+        qs = super().get_queryset().select_related("mesa", "mesero")
         estado = self.request.GET.get("estado")
         if estado:
             qs = qs.filter(estado=estado)
@@ -38,26 +39,47 @@ class ComandaListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
 
-class ComandaCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+class ComandaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Comanda
     template_name = "comandas/crear.html"
     fields = ["mesa", "prioridad", "notas"]
     success_url = reverse_lazy("comandas:list")
     permission = "can_create_comandas"
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        cliente = self.get_cliente()
+        if cliente:
+            form.fields["mesa"].queryset = Mesa.objects.filter(cliente=cliente)
+        return form
+
     def form_valid(self, form):
+        import uuid
+        if not form.instance.codigo:
+            form.instance.codigo = f"CMD-{uuid.uuid4().hex[:8].upper()}"
+
+        cliente = self.get_cliente()
+        if not form.instance.cliente_id and cliente:
+            form.instance.cliente = cliente
+
         mesero_id = self.request.POST.get("mesero")
         if mesero_id:
-            form.instance.mesero = User.objects.filter(pk=mesero_id).first() or self.request.user
+            mesero_qs = User.objects.all()
+            if cliente:
+                mesero_qs = mesero_qs.filter(cliente=cliente)
+            form.instance.mesero = mesero_qs.filter(pk=mesero_id).first() or self.request.user
         else:
             form.instance.mesero = self.request.user
 
         mesa = form.instance.mesa
+        if cliente and mesa.cliente_id != cliente.pk:
+            messages.error(self.request, "La mesa seleccionada no pertenece a tu restaurante")
+            return self.form_invalid(form)
         if mesa.estado == Mesa.Estado.LIBRE:
             mesa.estado = Mesa.Estado.OCUPADA
             mesa.save()
-        messages.success(self.request, f"Comanda {form.instance.codigo} creada. Agrega productos y envia a cocina.")
         response = super().form_valid(form)
+        messages.success(self.request, f"Comanda {form.instance.codigo} creada. Agrega productos y envia a cocina.")
 
         async_to_sync(get_channel_layer().group_send)(
             "comandas",
@@ -72,26 +94,52 @@ class ComandaCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["mesas_libres"] = Mesa.objects.filter(estado__in=[Mesa.Estado.LIBRE, Mesa.Estado.OCUPADA])
-        context["categorias"] = Producto.objects.filter(
+        cliente = self.get_cliente()
+        if cliente:
+            # Limpiar productos huerfanos sin categoria y sin comanda items
+            Producto.objects.filter(
+                cliente=cliente,
+                categoria__isnull=True
+            ).annotate(
+                has_items=models.Exists(ComandaItem.objects.filter(producto=models.OuterRef('pk')))
+            ).filter(has_items=False).delete()
+        mesas_qs = Mesa.objects.all()
+        productos_qs = Producto.objects.all()
+        users_qs = User.objects.all()
+        if cliente:
+            mesas_qs = mesas_qs.filter(cliente=cliente)
+            productos_qs = productos_qs.filter(cliente=cliente)
+            users_qs = users_qs.filter(cliente=cliente)
+        context["mesas_libres"] = mesas_qs.filter(estado__in=[Mesa.Estado.LIBRE, Mesa.Estado.OCUPADA])
+        context["categorias"] = productos_qs.filter(
             activo=True, disponible=True, categoria__isnull=False
         ).values_list("categoria__id", "categoria__nombre", "categoria__icono").distinct()
-        context["meseros"] = User.objects.filter(
+        context["meseros"] = users_qs.filter(
             role__in=[User.Role.WAITER, User.Role.CASHIER, User.Role.ADMIN, User.Role.MANAGER],
             is_active=True
         ).order_by("first_name", "last_name")
         return context
 
 
-class ComandaDetailView(LoginRequiredMixin, DetailView):
+class ComandaDetailView(ClienteScopeMixin, LoginRequiredMixin, DetailView):
     model = Comanda
     template_name = "comandas/detalle.html"
     context_object_name = "comanda"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["productos"] = Producto.objects.filter(activo=True, disponible=True).select_related("categoria")
-        context["categorias"] = Producto.objects.filter(
+        cliente = self.get_cliente()
+        if cliente:
+            # Limpiar productos huerfanos sin categoria y sin comanda items
+            Producto.objects.filter(
+                cliente=cliente,
+                categoria__isnull=True
+            ).annotate(
+                has_items=models.Exists(ComandaItem.objects.filter(producto=models.OuterRef('pk')))
+            ).filter(has_items=False).delete()
+        productos_qs = Producto.objects.filter(cliente=cliente)
+        context["productos"] = productos_qs.filter(activo=True, disponible=True).select_related("categoria")
+        context["categorias"] = productos_qs.filter(
             activo=True, disponible=True, categoria__isnull=False
         ).values_list("categoria__id", "categoria__nombre", "categoria__icono").distinct()
         return context
@@ -99,7 +147,11 @@ class ComandaDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def agregar_item(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
     if comanda.estado not in [Comanda.Estado.ABIERTA, Comanda.Estado.EN_COCINA]:
         messages.error(request, "No se pueden agregar items a una comanda cerrada o cancelada")
         return redirect("comandas:detalle", pk=pk)
@@ -118,7 +170,8 @@ def agregar_item(request, pk):
             messages.error(request, "Selecciona un producto")
             return redirect("comandas:detalle", pk=pk)
 
-        producto = get_object_or_404(Producto, pk=producto_id)
+        producto_qs = Producto.objects.filter(cliente=cliente)
+        producto = get_object_or_404(producto_qs, pk=producto_id)
 
         ComandaItem.objects.create(
             comanda=comanda,
@@ -143,7 +196,11 @@ def agregar_item(request, pk):
 
 @login_required
 def enviar_cocina(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
 
     if comanda.estado != Comanda.Estado.ABIERTA:
         messages.error(request, "La comanda ya fue enviada a cocina o esta cerrada")
@@ -165,7 +222,7 @@ def enviar_cocina(request, pk):
                     "type": "comanda_cocina",
                     "comanda_id": comanda.pk,
                     "codigo": comanda.codigo,
-                    "mesa": comanda.mesa.numero,
+                    "mesa": comanda.mesa.numero if comanda.mesa else "N/A",
                     "prioridad": comanda.prioridad,
                     "items_count": comanda.items.filter(cancelado=False).count(),
                 },
@@ -179,7 +236,11 @@ def enviar_cocina(request, pk):
 
 @login_required
 def marcar_listo_item(request, item_pk):
-    item = get_object_or_404(ComandaItem, pk=item_pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = ComandaItem.objects.all()
+    if cliente:
+        qs = qs.filter(comanda__cliente=cliente)
+    item = get_object_or_404(qs, pk=item_pk)
 
     if item.cancelado or item.listo:
         return redirect("comandas:cocina")
@@ -199,7 +260,11 @@ def marcar_listo_item(request, item_pk):
 
 @login_required
 def marcar_lista(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
 
     if comanda.estado in [Comanda.Estado.CERRADA, Comanda.Estado.CANCELADA, Comanda.Estado.LISTA]:
         messages.error(request, "La comanda ya esta lista o cerrada")
@@ -215,7 +280,11 @@ def marcar_lista(request, pk):
 
 @login_required
 def cancelar_item(request, item_pk):
-    item = get_object_or_404(ComandaItem, pk=item_pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = ComandaItem.objects.all()
+    if cliente:
+        qs = qs.filter(comanda__cliente=cliente)
+    item = get_object_or_404(qs, pk=item_pk)
 
     if item.cancelado:
         return redirect("comandas:detalle", pk=item.comanda.pk)
@@ -228,7 +297,11 @@ def cancelar_item(request, item_pk):
 
 @login_required
 def cerrar_comanda(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
 
     if comanda.estado in [Comanda.Estado.CERRADA, Comanda.Estado.CANCELADA]:
         messages.error(request, "La comanda ya esta cerrada")
@@ -264,7 +337,11 @@ def cerrar_comanda(request, pk):
 
 @login_required
 def reabrir_comanda(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
     comanda.estado = Comanda.Estado.ABIERTA
     comanda.save()
     messages.success(request, f"Comanda {comanda.codigo} reabierta")
@@ -273,7 +350,11 @@ def reabrir_comanda(request, pk):
 
 @login_required
 def eliminar_comanda(request, pk):
-    comanda = get_object_or_404(Comanda, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
 
     if not request.user.is_superuser and not request.user.can_manage_comandas:
         messages.error(request, "No tienes permiso para eliminar comandas")
@@ -295,14 +376,24 @@ def eliminar_comanda(request, pk):
     return redirect("comandas:list")
 
 
-class VistaCocina(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+@login_required
+def imprimir_cocina(request, pk):
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
+    return render(request, "comandas/imprimir_cocina.html", {"comanda": comanda})
+
+
+class VistaCocina(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Comanda
     template_name = "comandas/cocina.html"
     context_object_name = "comandas"
     permission = "can_view_cocina"
 
     def get_queryset(self):
-        return Comanda.objects.filter(
+        return super().get_queryset().filter(
             estado__in=[Comanda.Estado.EN_COCINA, Comanda.Estado.EN_PREPARACION, Comanda.Estado.LISTA]
         ).prefetch_related("items__producto").order_by(
             models.Case(

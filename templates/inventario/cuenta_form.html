@@ -33,7 +33,7 @@
             </div>
 
             <div class="md3-field">
-                <input type="number" name="monto_total" id="id_monto_total" class="md3-input" placeholder=" " value="{{ form.monto_total.value|default:'' }}" step="0.01" min="0.01" required>
+                <input type="number" name="monto_total" id="id_monto_total" class="md3-input" placeholder=" " value="{{ form.monto_total.value|default:'' }}" step="any" min="0.01" required>
                 <label class="md3-label" for="id_monto_total">Monto Total ({{ CURRENCY_SYMBOL }})</label>
                 <div class="md3-input-line"></div>
                 {% if form.monto_total.errors %}<div style="font-size:12px; color:var(--md-sys-color-error); margin-top:4px;">{{ form.monto_total.errors|striptags }}</div>{% endif %}

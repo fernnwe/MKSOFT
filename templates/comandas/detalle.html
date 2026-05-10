@@ -1,29 +1,650 @@
 {% extends 'base.html' %}
 {% block title %}Comanda {{ comanda.codigo }}{% endblock %}
 {% block content %}
-<div class="md3-page-header md3-flex md3-flex-justify-between md3-flex-align-center" style="flex-wrap:wrap; gap:8px;">
-    <div>
-        <h1 class="md3-page-title">{{ comanda.codigo }}</h1>
-        <p class="md3-page-subtitle">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}Sin mesa{% endif %} | {{ comanda.fecha_creacion|date:"d/m/Y H:i" }}</p>
+<style>
+    .comanda-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 20px;
+        padding: 0 12px 60px;
+    }
+
+    @media (max-width: 1024px) {
+        .comanda-wrapper { grid-template-columns: 1fr; }
+    }
+
+    /* Items Panel */
+    .items-panel {
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface-container-lowest);
+    }
+
+    .items-panel-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .items-panel-header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .items-panel-header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--md-sys-color-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .items-panel-header-icon .material-symbols-outlined {
+        font-size: 22px;
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .items-panel-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+    }
+
+    .items-panel-count {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-drawer {
+        position: fixed;
+        top: 0;
+        right: -640px;
+        width: 600px;
+        max-width: 100vw;
+        height: 100vh;
+        background: var(--md-sys-color-surface);
+        z-index: 1001;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+        box-shadow: -8px 0 24px rgba(0,0,0,0.2);
+    }
+
+    .modal-drawer.open {
+        right: 0;
+    }
+
+    @media (max-width: 640px) {
+        .modal-drawer {
+            width: 100vw;
+            right: -100vw;
+        }
+    }
+
+    .modal-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .modal-drawer-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .modal-drawer-title-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-drawer-title-icon .material-symbols-outlined {
+        font-size: 20px;
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .modal-drawer-title h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .modal-drawer-title span {
+        font-size: 13px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .modal-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: none;
+        background: var(--md-sys-color-surface-container);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .modal-close-btn:hover {
+        background: var(--md-sys-color-surface-container-high);
+    }
+
+    /* Modal Search */
+    .modal-search-wrap {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        position: relative;
+    }
+
+    .modal-search-wrap .material-symbols-outlined {
+        position: absolute;
+        left: 34px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: var(--md-sys-color-on-surface-variant);
+        pointer-events: none;
+    }
+
+    .modal-search-input {
+        width: 100%;
+        height: 44px;
+        padding: 0 16px 0 44px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--md-sys-color-on-surface);
+        background: var(--md-sys-color-surface-container-highest);
+        border: none;
+        border-radius: 12px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    /* Modal Tabs */
+    .modal-tabs {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        scrollbar-width: none;
+    }
+
+    .modal-tabs::-webkit-scrollbar { display: none; }
+
+    .modal-tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        user-select: none;
+    }
+
+    .modal-tab:hover {
+        color: var(--md-sys-color-on-surface);
+    }
+
+    .modal-tab.active {
+        color: var(--md-sys-color-primary);
+        border-bottom-color: var(--md-sys-color-primary);
+    }
+
+    /* Modal Body */
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+    }
+
+    .modal-body::-webkit-scrollbar { width: 6px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--md-sys-color-outline); border-radius: 3px; }
+
+    /* Modal Product Cards */
+    .modal-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .modal-product-card {
+        border-radius: 14px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        padding: 14px;
+        transition: all 0.15s;
+        position: relative;
+    }
+
+    .modal-product-card:hover {
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .modal-product-card.cat-hidden,
+    .modal-product-card.search-hidden {
+        display: none;
+    }
+
+    .modal-product-type {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 16px;
+    }
+
+    .modal-product-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 4px;
+        padding-right: 28px;
+        line-height: 1.3;
+    }
+
+    .modal-product-price {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--md-sys-color-primary);
+        margin-bottom: 10px;
+    }
+
+    /* Quantity Controls */
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 10px;
+        background: var(--md-sys-color-surface-container);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md-sys-color-on-surface);
+        transition: background 0.15s;
+    }
+
+    .qty-btn:hover {
+        background: var(--md-sys-color-surface-container-high);
+    }
+
+    .qty-btn:active {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .qty-btn .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .qty-value {
+        flex: 1;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+        min-width: 32px;
+    }
+
+    .modal-product-add-btn {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: none;
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.15s;
+    }
+
+    .modal-product-add-btn:hover {
+        background: var(--md-sys-color-primary);
+        color: white;
+    }
+
+    .modal-product-add-btn .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .modal-product-add-btn.added {
+        background: var(--md-sys-color-success-container);
+        color: var(--md-sys-color-on-success-container);
+    }
+
+    .modal-empty {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .modal-empty .material-symbols-outlined {
+        font-size: 48px;
+        color: var(--md-sys-color-outline);
+    }
+
+    .modal-empty-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+        margin: 12px 0 4px;
+    }
+
+    .modal-empty-text {
+        font-size: 13px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    /* Items Table */
+    .items-table { width: 100%; }
+
+    .items-table .col-producto { min-width: 180px; }
+    .items-table .col-cantidad { width: 70px; text-align: center; }
+    .items-table .col-precio { width: 110px; }
+    .items-table .col-subtotal { width: 120px; text-align: right; }
+    .items-table .col-estado { width: 140px; text-align: center; }
+    .items-table .col-acciones { width: 56px; text-align: center; }
+
+    /* Item Status Badge - Redesigned */
+    .item-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .item-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .item-status-pendiente {
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .item-status-pendiente .item-status-dot {
+        background: var(--md-sys-color-on-surface-variant);
+    }
+
+    .item-status-cocina {
+        background: #FFF3CD;
+        color: #664D03;
+    }
+
+    .item-status-cocina .item-status-dot {
+        background: #FFC107;
+        animation: pulse 1.5s infinite;
+    }
+
+    .item-status-listo {
+        background: #D1E7DD;
+        color: #0F5132;
+    }
+
+    .item-status-listo .item-status-dot {
+        background: #198754;
+    }
+
+    .item-status-cancelado {
+        background: #F8D7DA;
+        color: #842029;
+    }
+
+    .item-status-cancelado .item-status-dot {
+        background: #DC3545;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    /* Row states */
+    .item-row-cancelado {
+        opacity: 0.4;
+    }
+
+    .item-row-cancelado td {
+        text-decoration: line-through;
+    }
+
+    .item-row-cancelado .item-status-cancelado {
+        text-decoration: none;
+    }
+
+    .item-nota {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--md-sys-color-error);
+        font-style: italic;
+    }
+
+    .item-nota .material-symbols-outlined {
+        font-size: 14px;
+        font-style: normal;
+    }
+
+    /* Sidebar */
+    .sidebar-card {
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface-container-lowest);
+        margin-bottom: 16px;
+    }
+
+    .sidebar-card-header {
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-card-header-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-card-header-icon .material-symbols-outlined {
+        font-size: 18px;
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .sidebar-card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+    }
+
+    .sidebar-card-body { padding: 16px 20px; }
+
+    .sidebar-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 13px;
+    }
+
+    .sidebar-row:not(:last-child) {
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .sidebar-row-label { color: var(--md-sys-color-on-surface-variant); }
+    .sidebar-row-value { font-weight: 600; color: var(--md-sys-color-on-surface); }
+
+    .summary-card {
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--md-sys-color-primary-container);
+    }
+
+    .summary-card-body { padding: 20px; }
+
+    .summary-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-primary-container);
+        margin-bottom: 12px;
+    }
+
+    .summary-total {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--md-sys-color-on-primary-container);
+        text-align: right;
+    }
+
+    .summary-note {
+        font-size: 12px;
+        color: var(--md-sys-color-on-primary-container);
+        opacity: 0.7;
+        margin-top: 8px;
+    }
+
+    /* Toast notification */
+    .toast-container {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .toast {
+        background: var(--md-sys-color-inverse-surface);
+        color: var(--md-sys-color-inverse-on-surface);
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: toastIn 0.3s ease, toastOut 0.3s ease 2s forwards;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toastOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(20px); }
+    }
+</style>
+
+<!-- Header -->
+<div style="padding: 0 12px 16px;">
+    <div class="md3-flex md3-flex-align-center" style="gap:10px; margin-bottom:8px;">
+        <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title" style="margin:0;">{{ comanda.codigo }}</h1>
+            <p class="md3-page-subtitle" style="margin:2px 0 0;">
+                Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}Sin mesa{% endif %}
+                &middot; {{ comanda.fecha_creacion|date:"d/m/Y H:i" }}
+            </p>
+        </div>
     </div>
     <div class="md3-flex" style="gap:8px; flex-wrap:wrap;">
         {% if comanda.estado == 'abierta' %}
+        <button class="md3-btn md3-btn-filled" id="openProductModal">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span>Agregar Producto
+        </button>
         <a href="{% url 'comandas:enviar_cocina' comanda.pk %}" class="md3-btn md3-btn-tonal" onclick="return confirm('¿Enviar esta comanda a cocina?')">
             <span class="material-symbols-outlined" style="font-size:18px;">send</span>Enviar a Cocina
         </a>
         {% endif %}
-        {% if comanda.estado == 'en_cocina' %}
-        <span class="md3-chip"><span class="material-symbols-outlined">hourglass_empty</span>En Cocina</span>
-        {% endif %}
-        {% if comanda.estado == 'lista' %}
-        <span class="md3-chip md3-chip-success"><span class="material-symbols-outlined">check_circle</span>Lista para Servir</span>
-        {% endif %}
-        {% if comanda.estado == 'cerrada' %}
-        <span class="md3-chip">Cerrada</span>
+        {% if comanda.estado != 'abierta' and comanda.estado != 'cancelada' %}
+        <a href="{% url 'comandas:imprimir_cocina' comanda.pk %}" class="md3-btn md3-btn-outlined" target="_blank">
+            <span class="material-symbols-outlined" style="font-size:18px;">print</span>Imprimir Cocina
+        </a>
         {% endif %}
         {% if comanda.estado != 'cerrada' and comanda.estado != 'cancelada' %}
         <a href="{% url 'comandas:cerrar' comanda.pk %}" class="md3-btn md3-btn-tonal md3-btn-success" onclick="return confirm('¿Cerrar esta comanda y liberar la mesa?')">
-            <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>Cerrar
+            <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>Cerrar Comanda
         </a>
         {% endif %}
         {% if user.is_superuser or user.is_admin or user.can_manage_comandas %}
@@ -34,220 +655,358 @@
     </div>
 </div>
 
-<div class="px-3 px-md-4">
-    <div class="md3-grid md3-grid-3">
-        <!-- Panel Productos -->
-        <div class="md3-card-outlined" style="grid-column: span 2;">
-            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:space-between; align-items:center;">
-                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
-                    <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
-                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">receipt_long</span>
-                    </div>
-                    <strong>Productos</strong>
+<div class="comanda-wrapper">
+    <!-- Main: Items -->
+    <div class="items-panel">
+        <div class="items-panel-header">
+            <div class="items-panel-header-left">
+                <div class="items-panel-header-icon">
+                    <span class="material-symbols-outlined">receipt_long</span>
                 </div>
-                {% if comanda.estado == 'abierta' %}
-                <button class="md3-btn md3-btn-filled" onclick="document.getElementById('addProductPanel').classList.add('open')">
-                    <span class="material-symbols-outlined" style="font-size:18px;">add</span>Agregar
-                </button>
+                <div>
+                    <div class="items-panel-title">Productos</div>
+                    <div class="items-panel-count">{{ comanda.items.count }} item{{ comanda.items.count|pluralize }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="md3-table-wrapper">
+            <table class="md3-table items-table">
+                <thead>
+                    <tr>
+                        <th class="col-producto">Producto</th>
+                        <th class="col-cantidad">Cant.</th>
+                        <th class="col-precio">P. Unit.</th>
+                        <th class="col-subtotal">Subtotal</th>
+                        <th class="col-estado">Estado</th>
+                        {% if comanda.estado == 'abierta' %}
+                        <th class="col-acciones"></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in comanda.items.all %}
+                    <tr class="item-row{% if item.cancelado %} item-row-cancelado{% endif %}">
+                        <td>
+                            <div style="font-weight:600;">{{ item.producto.nombre }}</div>
+                            {% if item.notas %}
+                            <div class="item-nota">
+                                <span class="material-symbols-outlined">chat_bubble</span>
+                                {{ item.notas }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="col-cantidad" style="font-weight:600;">{{ item.cantidad }}</td>
+                        <td class="col-precio">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|floatformat:2 }}</td>
+                        <td class="col-subtotal" style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                        <td class="col-estado">
+                            {% if item.cancelado %}
+                            <span class="item-status item-status-cancelado">
+                                <span class="item-status-dot"></span>
+                                Cancelado
+                            </span>
+                            {% elif item.listo %}
+                            <span class="item-status item-status-listo">
+                                <span class="item-status-dot"></span>
+                                Listo
+                            </span>
+                            {% elif comanda.estado == 'en_cocina' or comanda.estado == 'en_preparacion' %}
+                            <span class="item-status item-status-cocina">
+                                <span class="item-status-dot"></span>
+                                En Cocina
+                            </span>
+                            {% else %}
+                            <span class="item-status item-status-pendiente">
+                                <span class="item-status-dot"></span>
+                                Pendiente
+                            </span>
+                            {% endif %}
+                        </td>
+                        {% if comanda.estado == 'abierta' %}
+                        <td class="col-acciones">
+                            {% if not item.cancelado %}
+                            <a href="{% url 'comandas:item_cancelar' item.pk %}" class="md3-btn md3-btn-icon md3-btn-text" style="color:var(--md-sys-color-error);" onclick="return confirm('¿Cancelar este item?')">
+                                <span class="material-symbols-outlined">close</span>
+                            </a>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if comanda.estado == 'abierta' %}6{% else %}5{% endif %}">
+                            <div style="text-align:center; padding:60px 24px;">
+                                <span class="material-symbols-outlined" style="font-size:48px; color:var(--md-sys-color-outline);">inbox</span>
+                                <div style="font-size:16px; font-weight:600; margin:12px 0 4px;">No hay productos</div>
+                                <div style="font-size:13px; color:var(--md-sys-color-on-surface-variant);">Presiona "Agregar Producto" para comenzar</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if comanda.items.count > 0 %}
+                <tfoot>
+                    <tr style="background:var(--md-sys-color-surface-container);">
+                        <td colspan="3" style="font-weight:700; text-align:right;">Total:</td>
+                        <td style="font-weight:700; font-size:20px; text-align:right;">
+                            {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
+                        </td>
+                        <td colspan="{% if comanda.estado == 'abierta' %}2{% else %}1{% endif %}"></td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+        <div class="sidebar-card">
+            <div class="sidebar-card-header">
+                <div class="sidebar-card-header-icon">
+                    <span class="material-symbols-outlined">info</span>
+                </div>
+                <div class="sidebar-card-title">Informacion</div>
+            </div>
+            <div class="sidebar-card-body">
+                <div class="sidebar-row">
+                    <span class="sidebar-row-label">Mesa</span>
+                    <span class="sidebar-row-value">{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="sidebar-row">
+                    <span class="sidebar-row-label">Zona</span>
+                    <span class="sidebar-row-value">{% if comanda.mesa %}{{ comanda.mesa.get_zona_display }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="sidebar-row">
+                    <span class="sidebar-row-label">Mesero</span>
+                    <span class="sidebar-row-value">{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}-{% endif %}</span>
+                </div>
+                <div class="sidebar-row">
+                    <span class="sidebar-row-label">Estado</span>
+                    <span class="sidebar-row-value">
+                        {% if comanda.estado == 'abierta' %}<span class="md3-badge md3-badge-primary">Abierta</span>
+                        {% elif comanda.estado == 'en_cocina' %}<span class="md3-badge md3-badge-warning">En Cocina</span>
+                        {% elif comanda.estado == 'lista' %}<span class="md3-badge md3-badge-success">Lista</span>
+                        {% elif comanda.estado == 'cerrada' %}<span class="md3-badge">Cerrada</span>
+                        {% else %}<span class="md3-badge md3-badge-error">Cancelada</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="sidebar-row">
+                    <span class="sidebar-row-label">Prioridad</span>
+                    <span class="sidebar-row-value">
+                        {% if comanda.prioridad == 'urgente' %}<span class="md3-badge md3-badge-error">Urgente</span>
+                        {% elif comanda.prioridad == 'vip' %}<span class="md3-badge md3-badge-warning">VIP</span>
+                        {% else %}<span class="md3-badge">Normal</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if comanda.notas %}
+                <div style="margin-top:12px; padding:10px; background:var(--md-sys-color-surface-container); border-radius:10px; font-size:13px; color:var(--md-sys-color-on-surface-variant);">
+                    <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; color:var(--md-sys-color-primary);">chat</span>
+                    {{ comanda.notas }}
+                </div>
                 {% endif %}
             </div>
-            <div class="md3-table-wrapper">
-                <table class="md3-table">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th style="width:80px; text-align:center;">Cant.</th>
-                            <th style="width:120px;">P. Unit.</th>
-                            <th style="width:120px; text-align:right;">Subtotal</th>
-                            <th style="width:120px; text-align:center;">Estado</th>
-                            {% if comanda.estado == 'abierta' %}
-                            <th style="width:80px; text-align:center;">Acciones</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in comanda.items.all %}
-                        <tr {% if item.cancelado %}style="opacity:0.5; text-decoration:line-through;"{% endif %}>
-                            <td>
-                                {{ item.producto.nombre }}
-                                {% if item.notas %}
-                                <br><small style="color:var(--md-sys-color-error); font-style:italic;">Nota: {{ item.notas }}</small>
-                                {% endif %}
-                            </td>
-                            <td style="text-align:center; font-weight:600;">{{ item.cantidad }}</td>
-                            <td>{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|floatformat:2 }}</td>
-                            <td style="text-align:right; font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
-                            <td style="text-align:center;">
-                                {% if item.cancelado %}
-                                <span class="md3-badge md3-badge-error">Cancelado</span>
-                                {% elif item.listo %}
-                                <span class="md3-badge md3-badge-success">Listo</span>
-                                {% elif comanda.estado == 'en_cocina' or comanda.estado == 'en_preparacion' %}
-                                <span class="md3-badge md3-badge-warning">En Cocina</span>
-                                {% else %}
-                                <span class="md3-badge">Pendiente</span>
-                                {% endif %}
-                            </td>
-                            {% if comanda.estado == 'abierta' %}
-                            <td style="text-align:center;">
-                                {% if not item.cancelado %}
-                                <a href="{% url 'comandas:item_cancelar' item.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-error" onclick="return confirm('¿Cancelar este item?')">
-                                    <span class="material-symbols-outlined">close</span>
-                                </a>
-                                {% endif %}
-                            </td>
-                            {% endif %}
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="{% if comanda.estado == 'abierta' %}6{% else %}5{% endif %}" style="text-align:center; padding:48px 16px;">
-                                <span class="material-symbols-outlined" style="font-size:48px; color:var(--md-sys-color-outline);">inbox</span>
-                                <p style="color:var(--md-sys-color-on-surface-variant); margin-top:8px;">No hay productos en esta comanda</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr style="background:var(--md-sys-color-surface-container);">
-                            <td colspan="3" style="font-weight:700; text-align:right;">Total:</td>
-                            <td colspan="{% if comanda.estado == 'abierta' %}2{% else %}1{% endif %}" style="font-weight:700; font-size:20px; text-align:right;">
-                                {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
         </div>
 
-        <!-- Panel Lateral -->
-        <div>
-            <!-- Informacion -->
-            <div class="md3-card-outlined" style="margin-bottom:16px;">
-                <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
-                        <div style="width:32px; height:32px; border-radius:8px; background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center;">
-                            <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-on-primary-container);">info</span>
-                        </div>
-                        <strong>Informacion</strong>
-                    </div>
+        <div class="summary-card">
+            <div class="summary-card-body">
+                <div class="summary-label">
+                    <span class="material-symbols-outlined">calculate</span>
+                    Resumen
                 </div>
-                <div style="padding:12px 16px;">
-                    <table class="md3-table">
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Mesa:</td><td style="text-align:right; font-weight:500;">{% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}Sin mesa{% endif %}</td></tr>
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Zona:</td><td style="text-align:right;">{% if comanda.mesa %}{{ comanda.mesa.get_zona_display }}{% else %}-{% endif %}</td></tr>
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Mesero:</td><td style="text-align:right;">{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}Sin asignar{% endif %}</td></tr>
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Estado:</td><td style="text-align:right;">
-                            {% if comanda.estado == 'abierta' %}<span class="md3-badge md3-badge-primary">Abierta</span>
-                            {% elif comanda.estado == 'en_cocina' %}<span class="md3-badge md3-badge-warning">En Cocina</span>
-                            {% elif comanda.estado == 'lista' %}<span class="md3-badge md3-badge-success">Lista</span>
-                            {% elif comanda.estado == 'cerrada' %}<span class="md3-badge">Cerrada</span>
-                            {% elif comanda.estado == 'cancelada' %}<span class="md3-badge md3-badge-error">Cancelada</span>
-                            {% endif %}
-                        </td></tr>
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Prioridad:</td><td style="text-align:right;">
-                            {% if comanda.prioridad == 'urgente' %}<span class="md3-badge md3-badge-error">Urgente</span>
-                            {% elif comanda.prioridad == 'vip' %}<span class="md3-badge md3-badge-warning">VIP</span>
-                            {% else %}<span class="md3-badge">Normal</span>
-                            {% endif %}
-                        </td></tr>
-                        <tr><td style="color:var(--md-sys-color-on-surface-variant);">Productos:</td><td style="text-align:right; font-weight:600;">{{ comanda.items_count }}</td></tr>
-                    </table>
-                    {% if comanda.notas %}
-                    <div style="padding:12px 0 0; border-top:1px solid var(--md-sys-color-outline-variant); margin-top:8px;">
-                        <small style="color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle;">chat</span>{{ comanda.notas }}</small>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Resumen -->
-            <div class="md3-card-filled" style="background:var(--md-sys-color-primary-container);">
-                <div style="padding:16px;">
-                    <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:8px;">
-                        <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary-container);">calculate</span>
-                        <strong style="color:var(--md-sys-color-on-primary-container);">Resumen</strong>
-                    </div>
-                    <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-primary-container); text-align:right;">
-                        {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
-                    </div>
-                    <small style="color:var(--md-sys-color-on-primary-container); opacity:0.8;">Impuestos y servicio se agregan al generar la factura.</small>
-                </div>
+                <div class="summary-total">{{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}</div>
+                <div class="summary-note">{{ comanda.items.count }} item{{ comanda.items.count|pluralize }}</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Panel Agregar Producto -->
-<div class="md3-drawer-modal" id="addProductPanel" style="display:none;">
-    <div class="md3-drawer" style="width:400px; max-width:90vw; position:fixed; right:0; top:0; height:100vh; background:var(--md-sys-color-surface); box-shadow:-4px 0 12px rgba(0,0,0,0.2); z-index:1050; overflow-y:auto;">
-        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="margin:0; font-size:18px;"><span class="material-symbols-outlined" style="font-size:20px; vertical-align:middle;">add_circle</span>Agregar Producto</h2>
-            <button class="md3-btn md3-btn-icon md3-btn-text" onclick="document.getElementById('addProductPanel').classList.remove('open')">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-        <div style="padding:12px 16px;">
-            <div class="md3-field">
-                <span class="material-symbols-outlined" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--md-sys-color-on-surface-variant);">search</span>
-                <input type="text" class="md3-input" id="searchProduct" placeholder=" " style="padding-left:44px;">
-                <label class="md3-label" for="searchProduct">Buscar</label>
-                <div class="md3-input-line"></div>
+<!-- Product Selection Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeProductModal()"></div>
+<div class="modal-drawer" id="modalDrawer">
+    <div class="modal-drawer-header">
+        <div class="modal-drawer-title">
+            <div class="modal-drawer-title-icon">
+                <span class="material-symbols-outlined">restaurant_menu</span>
+            </div>
+            <div>
+                <h3>Agregar Producto</h3>
+                <span>{{ productos.count }} producto{{ productos.count|pluralize }}</span>
             </div>
         </div>
-        <div style="padding:0 16px 16px;" id="productList">
-            {% for cat_id, cat_name, cat_icon in categorias %}
-            <div style="margin-top:16px;">
-                <small style="font-size:12px; font-weight:600; color:var(--md-sys-color-on-surface-variant); text-transform:uppercase; letter-spacing:0.5px;">{{ cat_icon }} {{ cat_name }}</small>
-            </div>
+        <button class="modal-close-btn" onclick="closeProductModal()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+
+    <div class="modal-search-wrap">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" class="modal-search-input" id="modalSearch" placeholder="Buscar producto..." autocomplete="off">
+    </div>
+
+    <div class="modal-tabs" id="modalTabs">
+        <div class="modal-tab active" data-cat="all" onclick="filterModalCategory(this, 'all')">
+            <span class="material-symbols-outlined" style="font-size:16px;">grid_view</span>
+            Todos
+        </div>
+        {% for cat_id, cat_name, cat_icon in categorias %}
+        <div class="modal-tab" data-cat="{{ cat_id }}" onclick="filterModalCategory(this, '{{ cat_id }}')">
+            {% if cat_icon %}{{ cat_icon }}{% endif %}
+            {{ cat_name }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="modal-body">
+        <div class="modal-product-grid" id="modalGrid">
             {% for producto in productos %}
-            {% if producto.categoria_id == cat_id %}
-            <form method="post" action="{% url 'comandas:agregar_item' comanda.pk %}" class="md3-list-item product-item" data-name="{{ producto.nombre|lower }}" style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                {% csrf_token %}
-                <div style="flex:1;">
-                    <div style="font-weight:500;">{{ producto.nombre }}</div>
-                    <small style="color:var(--md-sys-color-on-surface-variant);">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</small>
-                </div>
-                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
-                    <input type="hidden" name="producto" value="{{ producto.pk }}">
-                    <input type="number" name="cantidad" value="1" min="1" max="99" class="md3-input" style="width:60px; height:40px;">
-                    <button type="submit" class="md3-btn md3-btn-filled md3-btn-sm">
-                        <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+            <div class="modal-product-card" data-cat="{{ producto.categoria_id|default:'none' }}" data-name="{{ producto.nombre|lower }}">
+                {% if producto.tipo == 'plato' %}
+                <span class="modal-product-type">🍽️</span>
+                {% elif producto.tipo == 'bebida' %}
+                <span class="modal-product-type">🥤</span>
+                {% elif producto.tipo == 'postre' %}
+                <span class="modal-product-type">🍰</span>
+                {% else %}
+                <span class="modal-product-type">📦</span>
+                {% endif %}
+                <div class="modal-product-name">{{ producto.nombre }}</div>
+                <div class="modal-product-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</div>
+                <div class="qty-controls">
+                    <button type="button" class="qty-btn" onclick="changeQty(this, -1)">
+                        <span class="material-symbols-outlined">remove</span>
+                    </button>
+                    <span class="qty-value">1</span>
+                    <button type="button" class="qty-btn" onclick="changeQty(this, 1)">
+                        <span class="material-symbols-outlined">add</span>
                     </button>
                 </div>
-            </form>
-            {% endif %}
-            {% endfor %}
+                <form method="post" action="{% url 'comandas:agregar_item' comanda.pk %}" onsubmit="return addToComanda(this)">
+                    {% csrf_token %}
+                    <input type="hidden" name="producto" value="{{ producto.pk }}">
+                    <input type="hidden" name="cantidad" value="1">
+                    <button type="submit" class="modal-product-add-btn">
+                        <span class="material-symbols-outlined">add</span>
+                        Agregar
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="modal-empty" style="grid-column:1/-1;">
+                <span class="material-symbols-outlined">no_food</span>
+                <div class="modal-empty-title">No hay productos</div>
+                <div class="modal-empty-text">Agrega productos desde la seccion de Productos</div>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
-<div class="md3-drawer-overlay" id="drawerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1040;" onclick="document.getElementById('addProductPanel').classList.remove('open')"></div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const panel = document.getElementById('addProductPanel');
-    const overlay = document.getElementById('drawerOverlay');
-    const observer = new MutationObserver(function() {
-        const isOpen = panel.classList.contains('open');
-        panel.style.display = isOpen ? 'block' : 'none';
-        overlay.style.display = isOpen ? 'block' : 'none';
-    });
-    observer.observe(panel, { attributes: true, attributeFilter: ['class'] });
+let activeModalCat = 'all';
 
-    const searchInput = document.getElementById('searchProduct');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('.product-item').forEach(function(item) {
-                const name = item.getAttribute('data-name') || '';
-                item.style.display = name.includes(query) ? '' : 'none';
-            });
-        });
-    }
+function filterModalCategory(tab, catId) {
+    activeModalCat = catId;
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    applyModalFilters();
+}
+
+function applyModalFilters() {
+    const query = (document.getElementById('modalSearch')?.value || '').toLowerCase().trim();
+    let count = 0;
+
+    document.querySelectorAll('.modal-product-card').forEach(card => {
+        const cat = card.getAttribute('data-cat');
+        const name = card.getAttribute('data-name') || '';
+        const show = (activeModalCat === 'all' || cat === activeModalCat) && (!query || name.includes(query));
+        card.classList.toggle('cat-hidden', activeModalCat !== 'all' && cat !== activeModalCat);
+        card.classList.toggle('search-hidden', query && !name.includes(query));
+        if (show) count++;
+    });
+}
+
+function changeQty(btn, delta) {
+    const controls = btn.closest('.qty-controls');
+    const valueSpan = controls.querySelector('.qty-value');
+    let qty = parseInt(valueSpan.textContent) + delta;
+    if (qty < 1) qty = 1;
+    if (qty > 99) qty = 99;
+    valueSpan.textContent = qty;
+    const form = controls.closest('.modal-product-card').querySelector('form');
+    form.querySelector('input[name="cantidad"]').value = qty;
+}
+
+function openProductModal() {
+    const overlay = document.getElementById('modalOverlay');
+    const drawer = document.getElementById('modalDrawer');
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+        drawer.classList.add('open');
+    });
+    document.getElementById('modalSearch')?.focus();
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProductModal() {
+    const overlay = document.getElementById('modalOverlay');
+    const drawer = document.getElementById('modalDrawer');
+    overlay.classList.remove('show');
+    drawer.classList.remove('open');
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+function addToComanda(form) {
+    const btn = form.querySelector('.modal-product-add-btn');
+    const card = btn.closest('.modal-product-card');
+    const productName = card.querySelector('.modal-product-name').textContent;
+    const qty = parseInt(form.querySelector('input[name="cantidad"]').value) || 1;
+
+    btn.classList.add('added');
+    btn.innerHTML = '<span class="material-symbols-outlined">check</span> Agregado';
+
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(() => {
+        showToast(qty + 'x ' + productName + ' agregado');
+        card.querySelector('.qty-value').textContent = '1';
+        form.querySelector('input[name="cantidad"]').value = '1';
+        setTimeout(() => location.reload(), 400);
+    }).catch(() => {
+        btn.classList.remove('added');
+        btn.innerHTML = '<span class="material-symbols-outlined">add</span> Agregar';
+    });
+    return false;
+}
+
+function showToast(msg) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> ' + msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const openBtn = document.getElementById('openProductModal');
+    if (openBtn) openBtn.addEventListener('click', openProductModal);
+
+    const search = document.getElementById('modalSearch');
+    if (search) search.addEventListener('input', applyModalFilters);
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeProductModal();
+    });
 });
 </script>
-
-<style>
-    .md3-drawer-modal.open ~ .md3-drawer-overlay { display: block !important; }
-</style>
 {% endblock %}

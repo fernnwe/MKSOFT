@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% block title %}Cierre Exitoso{% endblock %}
+{% block content %}
+<style>
+.cierre-exito-container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px;
+}
+.cierre-exito-icon {
+    width: 96px;
+    height: 96px;
+    border-radius: 48px;
+    background: var(--md-sys-color-success-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    animation: scaleIn 0.4s var(--md-sys-motion-easing-emphasized);
+}
+@keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.cierre-exito-icon .material-symbols-outlined {
+    font-size: 48px;
+    color: var(--md-sys-color-on-success-container);
+}
+.cierre-exito-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 8px;
+}
+.cierre-exito-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 32px;
+}
+.cierre-summary-card {
+    border-radius: 16px;
+    background: var(--md-sys-color-surface-container-low);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+.cierre-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+.cierre-summary-row:not(:last-child) {
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.cierre-summary-label {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.cierre-summary-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+.cierre-diferencia {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 12px;
+}
+.cierre-diferencia.positivo {
+    background: var(--md-sys-color-success-container);
+    color: var(--md-sys-color-on-success-container);
+}
+.cierre-diferencia.negativo {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+.cierre-diferencia.neutro {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+.cierre-notas {
+    font-size: 13px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-style: italic;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--md-sys-color-surface-container);
+}
+.cierre-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+}
+.cierre-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-radius: 16px;
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    transition: all 0.2s var(--md-sys-motion-easing-emphasized);
+    cursor: pointer;
+}
+.cierre-action-btn:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.cierre-action-btn .material-symbols-outlined {
+    font-size: 32px;
+}
+.cierre-action-btn.primary-action {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+}
+.cierre-action-btn.primary-action:hover {
+    background: var(--md-sys-color-on-primary);
+    color: var(--md-sys-color-primary);
+}
+.cierre-action-btn span:last-child {
+    font-size: 14px;
+    font-weight: 500;
+}
+.whatsapp-btn {
+    background: #25D366;
+    color: white;
+    border-color: #25D366;
+}
+.whatsapp-btn:hover {
+    background: #128C7E;
+    color: white;
+    border-color: #128C7E;
+}
+.whatsapp-config {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container);
+    display: none;
+}
+.whatsapp-config.show {
+    display: block;
+}
+</style>
+
+<div class="cierre-exito-container">
+    <div class="cierre-exito-icon">
+        <span class="material-symbols-outlined">check</span>
+    </div>
+    <h1 class="cierre-exito-title">Caja Cerrada Exitosamente</h1>
+    <p class="cierre-exito-subtitle">El cierre ha sido registrado correctamente</p>
+
+    {% if caja %}
+    <div class="cierre-summary-card">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">receipt_long</span>
+            <strong>Resumen del Cierre</strong>
+        </div>
+        <div class="cierre-summary-row">
+            <span class="cierre-summary-label">Apertura</span>
+            <span class="cierre-summary-value">{{ caja.fecha_apertura|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="cierre-summary-row">
+            <span class="cierre-summary-label">Cierre</span>
+            <span class="cierre-summary-value">{{ caja.fecha_cierre|date:"H:i" }}</span>
+        </div>
+        <div class="cierre-summary-row">
+            <span class="cierre-summary-label">Monto Inicial</span>
+            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|floatformat:2 }}</span>
+        </div>
+        <div class="cierre-summary-row">
+            <span class="cierre-summary-label">Efectivo Contado</span>
+            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|floatformat:2 }}</span>
+        </div>
+
+        {% with diff=caja.diferencia %}
+        <div class="cierre-diferencia {% if diff < 0 %}negativo{% elif diff > 0 %}positivo{% else %}neutro{% endif %}">
+            {% if diff < 0 %}
+            Faltante: {{ CURRENCY_SYMBOL }}{{ diff|floatformat:2 }}
+            {% elif diff > 0 %}
+            Sobrante: {{ CURRENCY_SYMBOL }}+{{ diff|floatformat:2 }}
+            {% else %}
+            Cuadrado exacto
+            {% endif %}
+        </div>
+        {% endwith %}
+
+        {% if caja.notas %}
+        <div class="cierre-notas">
+            <strong>Notas:</strong> {{ caja.notas }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="cierre-actions">
+        <a href="{% url 'facturacion:cierre_caja' %}" class="cierre-action-btn">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">visibility</span>
+            <span>Ver Resumen Completo</span>
+        </a>
+        <a href="{% url 'facturacion:cierre_pdf' %}{% if caja %}?fecha={{ caja.fecha_cierre|date:'Y-m-d' }}{% endif %}" class="cierre-action-btn">
+            <span class="material-symbols-outlined" style="color:var(--md-sys-color-error);">picture_as_pdf</span>
+            <span>Descargar PDF</span>
+        </a>
+        <button onclick="toggleWhatsapp()" class="cierre-action-btn whatsapp-btn">
+            <span class="material-symbols-outlined">share</span>
+            <span>Enviar por WhatsApp</span>
+        </button>
+        <a href="{% url 'facturacion:apertura' %}" class="cierre-action-btn primary-action">
+            <span class="material-symbols-outlined">lock_open</span>
+            <span>Abrir Nueva Caja</span>
+        </a>
+    </div>
+
+    <div id="whatsappConfig" class="whatsapp-config">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span class="material-symbols-outlined" style="color:#25D366;">share</span>
+            <strong>Enviar Resumen por WhatsApp</strong>
+        </div>
+        <div class="md3-field" style="margin-bottom:12px;">
+            <input type="tel" id="whatsappPhone" class="md3-input" placeholder=" " value="">
+            <label class="md3-label">Numero de telefono (con codigo de pais, ej: 50588888888)</label>
+            <div class="md3-input-line"></div>
+        </div>
+        <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin-bottom:12px;">
+            Se generara un mensaje con el resumen del cierre.
+        </div>
+        <button onclick="sendWhatsapp()" class="md3-btn md3-btn-filled" style="background:#25D366; border:none; width:100%;">
+            <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+            Enviar
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleWhatsapp() {
+    const config = document.getElementById('whatsappConfig');
+    config.classList.toggle('show');
+}
+
+function sendWhatsapp() {
+    const phone = document.getElementById('whatsappPhone').value.trim();
+    if (!phone) {
+        alert('Ingresa un numero de telefono');
+        return;
+    }
+
+    const summary = {
+{% if caja %}
+        fecha: "{{ caja.fecha_apertura|date:'d/m/Y' }}",
+        apertura: "{{ caja.fecha_apertura|date:'H:i' }}",
+        cierre: "{{ caja.fecha_cierre|date:'H:i' }}",
+        monto_inicial: "{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|floatformat:2 }}",
+        efectivo_contado: "{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|floatformat:2 }}",
+        diferencia: "{{ CURRENCY_SYMBOL }}{{ caja.diferencia|floatformat:2 }}",
+{% endif %}
+    };
+
+    let msg = `*Cierre de Caja*%0A`;
+{% if caja %}
+    msg += `Fecha: ${summary.fecha}%0A`;
+    msg += `Apertura: ${summary.apertura} - Cierre: ${summary.cierre}%0A`;
+    msg += `Monto Inicial: ${summary.monto_inicial}%0A`;
+    msg += `Efectivo Contado: ${summary.efectivo_contado}%0A`;
+    msg += `Diferencia: ${summary.diferencia}%0A`;
+{% endif %}
+{% if caja and caja.notas %}
+    msg += `Notas: {{ caja.notas }}%0A`;
+{% endif %}
+    msg += `%0A_Reporte generado por {{ RESTAURANT_NAME }}_`;
+
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+</script>
+{% endblock %}

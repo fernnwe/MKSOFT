@@ -13,15 +13,20 @@ class Ingrediente(models.Model):
         BOLSA = "bolsa", "Bolsa"
         PAQUETE = "paquete", "Paquete"
 
-    nombre = models.CharField(max_length=200, unique=True)
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="ingredientes")
+    nombre = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     categoria = models.CharField(max_length=100, blank=True, help_text="Ej: Lacteos, Carnes, Verduras")
+    activo = models.BooleanField(default=True)
     stock_minimo = models.DecimalField(max_digits=10, decimal_places=3, default=0, help_text="Stock minimo para alerta")
 
     class Meta:
         ordering = ["categoria", "nombre"]
         verbose_name = "Ingrediente"
         verbose_name_plural = "Ingredientes"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "nombre"], name="unique_ingrediente_per_cliente"),
+        ]
 
     def __str__(self):
         return f"{self.nombre}"
@@ -86,8 +91,9 @@ class Compra(models.Model):
         RECIBIDA = "recibida", "Recibida"
         CANCELADA = "cancelada", "Cancelada"
 
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="compras")
     proveedor = models.CharField(max_length=200)
-    folio = models.CharField(max_length=50, unique=True, blank=True)
+    folio = models.CharField(max_length=50, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
     notas = models.TextField(blank=True)
@@ -106,7 +112,7 @@ class Compra(models.Model):
             import uuid
             self.folio = f"COMP-{uuid.uuid4().hex[:8].upper()}"
             for attempt in range(10):
-                if not Compra.objects.filter(folio=self.folio).exists():
+                if not Compra.objects.filter(cliente=self.cliente, folio=self.folio).exists():
                     break
                 self.folio = f"COMP-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
@@ -142,8 +148,9 @@ class CuentaPorPagar(models.Model):
         VENCIDA = "vencida", "Vencida"
         CANCELADA = "cancelada", "Cancelada"
 
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="cuentas_por_pagar")
     proveedor = models.CharField(max_length=200)
-    folio = models.CharField(max_length=50, unique=True, blank=True)
+    folio = models.CharField(max_length=50, blank=True)
     compra = models.ForeignKey(Compra, on_delete=models.SET_NULL, null=True, blank=True, related_name="cuentas_por_pagar")
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
     monto_pagado = models.DecimalField(max_digits=12, decimal_places=2, default=0)

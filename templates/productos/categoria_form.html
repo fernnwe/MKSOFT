@@ -16,33 +16,43 @@
 <div class="px-3 px-md-4">
     <form method="post" class="md3-card-outlined" style="max-width:500px;">
         {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div style="padding:12px 16px; margin:16px 16px 0; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+            <span class="material-symbols-outlined">error</span>
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
         <div style="padding:8px 16px;">
             <div class="md3-field">
-                <input type="text" name="nombre" id="id_nombre" class="md3-input" placeholder=" " required autofocus>
+                <input type="text" name="nombre" id="id_nombre" class="md3-input" placeholder=" " required autofocus value="{{ form.nombre.value|default:'' }}">
                 <label class="md3-label" for="id_nombre">Nombre</label>
                 <div class="md3-input-line"></div>
                 <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Ej: Bebidas, Postres, Entradas...</small>
+                {% if form.nombre.errors %}<small style="font-size:12px; color:var(--md-sys-color-error);">{{ form.nombre.errors }}</small>{% endif %}
             </div>
 
             <div class="md3-field">
-                <input type="text" name="icono" id="id_icono" class="md3-input" placeholder=" ">
+                <input type="text" name="icono" id="id_icono" class="md3-input" placeholder=" " value="{{ form.icono.value|default:'' }}">
                 <label class="md3-label" for="id_icono">Icono (emoji)</label>
                 <div class="md3-input-line"></div>
                 <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Ej: &#x1F354;, &#x1F964;, &#x1F370;. Dejalo vacio para usar el icono por defecto.</small>
+                {% if form.icono.errors %}<small style="font-size:12px; color:var(--md-sys-color-error);">{{ form.icono.errors }}</small>{% endif %}
             </div>
 
             <div class="md3-field">
-                <input type="number" name="orden" id="id_orden" class="md3-input" placeholder=" " value="0" min="0">
+                <input type="number" name="orden" id="id_orden" class="md3-input" placeholder=" " value="{{ form.orden.value|default:0 }}" min="0">
                 <label class="md3-label" for="id_orden">Orden</label>
                 <div class="md3-input-line"></div>
                 <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Las categorias se muestran de menor a mayor orden.</small>
+                {% if form.orden.errors %}<small style="font-size:12px; color:var(--md-sys-color-error);">{{ form.orden.errors }}</small>{% endif %}
             </div>
 
             <div class="md3-field">
-                <textarea name="descripcion" id="id_descripcion" class="md3-input md3-textarea" placeholder=" " rows="2"></textarea>
+                <textarea name="descripcion" id="id_descripcion" class="md3-input md3-textarea" placeholder=" " rows="2">{{ form.descripcion.value|default:'' }}</textarea>
                 <label class="md3-label" for="id_descripcion">Descripcion</label>
                 <div class="md3-input-line"></div>
                 <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Descripcion opcional de la categoria.</small>
+                {% if form.descripcion.errors %}<small style="font-size:12px; color:var(--md-sys-color-error);">{{ form.descripcion.errors }}</small>{% endif %}
             </div>
         </div>
 

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}Historial de Cierres{% endblock %}
+{% block content %}
+<style>
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.historial-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.historial-stat {
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container-low);
+    text-align: center;
+}
+.historial-stat-value {
+    font-size: 24px;
+    font-weight: 600;
+}
+.historial-stat-label {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--md-sys-color-surface-container-low);
+    margin-bottom: 24px;
+}
+.filter-form .md3-field {
+    margin-bottom: 0;
+    min-width: 160px;
+}
+.cierre-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+.cierre-row:last-child {
+    border-bottom: none;
+}
+.cierre-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.cierre-usuario {
+    font-weight: 600;
+    font-size: 14px;
+}
+.cierre-fecha {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.cierre-diferencia {
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+.cierre-diferencia.positivo {
+    background: var(--md-sys-color-success-container);
+    color: var(--md-sys-color-on-success-container);
+}
+.cierre-diferencia.negativo {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+.cierre-diferencia.neutro {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+</style>
+
+<div class="px-3 px-md-4">
+    <div class="historial-header">
+        <div>
+            <h1 class="md3-page-title">Historial de Cierres</h1>
+            <p class="md3-page-subtitle">Registro de todos los cierres de caja</p>
+        </div>
+        <a href="{% url 'facturacion:cierre_caja' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </a>
+    </div>
+
+    <div class="historial-stats">
+        <div class="historial-stat">
+            <div class="historial-stat-value" style="color:var(--md-sys-color-primary);">{{ stats.total_cierres }}</div>
+            <div class="historial-stat-label">Total Cierres</div>
+        </div>
+        <div class="historial-stat">
+            <div class="historial-stat-value" style="color:{% if stats.diferencia_promedio < 0 %}var(--md-sys-color-error){% else %}var(--md-sys-color-success){% endif %};">{{ CURRENCY_SYMBOL }}{{ stats.diferencia_promedio|floatformat:2 }}</div>
+            <div class="historial-stat-label">Diferencia Promedio</div>
+        </div>
+        <div class="historial-stat">
+            <div class="historial-stat-value" style="color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ stats.total_faltante|floatformat:2 }}</div>
+            <div class="historial-stat-label">Total Faltante</div>
+        </div>
+        <div class="historial-stat">
+            <div class="historial-stat-value" style="color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ stats.total_sobrante|floatformat:2 }}</div>
+            <div class="historial-stat-label">Total Sobrante</div>
+        </div>
+    </div>
+
+    <form method="get" class="filter-form">
+        <div class="md3-field">
+            <input type="date" name="fecha_desde" value="{{ fecha_desde }}" class="md3-input" style="padding-top:24px;">
+            <label class="md3-label">Desde</label>
+            <div class="md3-input-line"></div>
+        </div>
+        <div class="md3-field">
+            <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}" class="md3-input" style="padding-top:24px;">
+            <label class="md3-label">Hasta</label>
+            <div class="md3-input-line"></div>
+        </div>
+        <div class="md3-field">
+            <select name="usuario" class="md3-input" style="padding-top:24px;">
+                <option value="">Todos los usuarios</option>
+                {% for u_id, u_first, u_last, u_user in usuarios %}
+                <option value="{{ u_id }}" {% if usuario_filtro == u_id|stringformat:'s' %}selected{% endif %}>
+                    {{ u_first }} {{ u_last }}{% if not u_first and not u_last %} ({{ u_user }}){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            <label class="md3-label">Usuario</label>
+            <div class="md3-input-line"></div>
+        </div>
+        <button type="submit" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined" style="font-size:18px;">filter_list</span>
+            Filtrar
+        </button>
+        <a href="{% url 'facturacion:historial_cierres' %}" class="md3-btn md3-btn-outlined">Limpiar</a>
+    </form>
+
+    {% if cierres %}
+    <div class="md3-card-outlined" style="padding:0; overflow:hidden;">
+        {% for cierre in cierres %}
+        <div class="cierre-row">
+            <div class="cierre-info">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">lock</span>
+                <div>
+                    <div class="cierre-usuario">{{ cierre.usuario_apertura.get_full_name|default:cierre.usuario_apertura.username }}</div>
+                    <div class="cierre-fecha">
+                        {{ cierre.fecha_apertura|date:"d/m/Y H:i" }} - {{ cierre.fecha_cierre|date:"H:i" }}
+                        {% if cierre.usuario_cierre %}
+                        | Cerrado por: {{ cierre.usuario_cierre.get_full_name|default:cierre.usuario_cierre.username }}
+                        {% endif %}
+                    </div>
+                    {% if cierre.notas %}
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant); font-style:italic; margin-top:2px;">
+                        "{{ cierre.notas|truncatechars:60 }}"
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Monto inicial: {{ CURRENCY_SYMBOL }}{{ cierre.monto_inicial|floatformat:2 }}</div>
+                <div class="cierre-diferencia {% if cierre.diferencia < 0 %}negativo{% elif cierre.diferencia > 0 %}positivo{% else %}neutro{% endif %}">
+                    {% if cierre.diferencia < 0 %}Faltante{% elif cierre.diferencia > 0 %}Sobrante{% else %}Exacto{% endif %}: {{ CURRENCY_SYMBOL }}{{ cierre.diferencia|floatformat:2 }}
+                </div>
+                <a href="{% url 'facturacion:cierre_pdf' %}?fecha={{ cierre.fecha_apertura|date:'Y-m-d' }}" class="md3-btn md3-btn-sm md3-btn-outlined" style="margin-top:6px; font-size:11px; padding:2px 8px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">picture_as_pdf</span>
+                    PDF
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; gap:8px; margin-top:16px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}{% if usuario_filtro %}&usuario={{ usuario_filtro }}{% endif %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">chevron_left</span>
+        </a>
+        {% endif %}
+        <span style="padding:8px 16px; font-size:14px;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if fecha_desde %}&fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}&fecha_hasta={{ fecha_hasta }}{% endif %}{% if usuario_filtro %}&usuario={{ usuario_filtro }}{% endif %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">chevron_right</span>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="md3-card-outlined" style="padding:48px; text-align:center;">
+        <span class="material-symbols-outlined" style="font-size:64px; color:var(--md-sys-color-on-surface-variant);">history</span>
+        <p style="margin-top:16px; font-size:16px; color:var(--md-sys-color-on-surface-variant);">No hay cierres registrados</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

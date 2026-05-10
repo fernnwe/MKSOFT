@@ -4,7 +4,10 @@ from django.conf import settings
 def restaurant_context(request):
     try:
         from core.models import ConfigRestaurante
-        config = ConfigRestaurante.get_config()
+        cliente = None
+        if request.user.is_authenticated and hasattr(request.user, 'cliente'):
+            cliente = request.user.cliente
+        config = ConfigRestaurante.get_config(cliente)
         return {
             "RESTAURANT_NAME": config.nombre,
             "RESTAURANT_RFC": config.rfc,

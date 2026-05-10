@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Nueva Comanda{% endblock %}
+{% block title %}Nueva Comanda - {{ RESTAURANT_NAME }}{% endblock %}
 {% block content %}
 <div class="md3-page-header">
-    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+    <div class="md3-flex md3-flex-align-center" style="gap:12px;">
         <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
@@ -13,10 +13,32 @@
     </div>
 </div>
 
-<div class="px-3 px-md-4">
-    <form method="post" class="md3-card-outlined" style="max-width:600px;">
+<div style="padding:0 16px; max-width:640px;">
+    <form method="post" class="md3-card-outlined" style="overflow:hidden;">
         {% csrf_token %}
-        <div style="padding:8px 16px;">
+
+        {% if form.errors %}
+        <div style="margin:16px 16px 0; padding:16px; border-radius:12px; background:var(--md-sys-color-error-container); color:var(--md-sys-color-on-error-container);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span class="material-symbols-outlined">error</span>
+                <strong>Errores en el formulario:</strong>
+            </div>
+            <ul style="margin:0; padding-left:20px; font-size:13px;">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div style="padding:20px 24px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">receipt_long</span>
+                <strong style="font-size:15px;">Detalles de la Comanda</strong>
+            </div>
+
             <div class="md3-field">
                 <select name="mesa" id="id_mesa" class="md3-input" required>
                     <option value="">Seleccionar mesa...</option>
@@ -29,7 +51,7 @@
                 </select>
                 <label class="md3-label" for="id_mesa">Mesa</label>
                 <div class="md3-input-line"></div>
-                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Elige la mesa donde se realizo el pedido.</small>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Elige la mesa donde se realiz&oacute; el pedido.</small>
             </div>
 
             <div class="md3-field">
@@ -52,7 +74,7 @@
                 </select>
                 <label class="md3-label" for="id_prioridad">Prioridad</label>
                 <div class="md3-input-line"></div>
-                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Marca como urgente o VIP si requiere atencion especial.</small>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Marca como urgente o VIP si requiere atenci&oacute;n especial.</small>
             </div>
 
             <div class="md3-field">
@@ -63,7 +85,7 @@
             </div>
         </div>
 
-        <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
+        <div style="padding:16px 24px; border-top:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:flex-end; gap:8px; background:var(--md-sys-color-surface-container-low);">
             <a href="{% url 'comandas:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
             <button type="submit" class="md3-btn md3-btn-filled">
                 <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>

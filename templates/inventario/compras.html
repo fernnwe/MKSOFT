@@ -18,6 +18,10 @@
             <span class="material-symbols-outlined">list</span>
             Movimientos
         </a>
+        <a href="{% url 'inventario:compras_pdf' %}" class="md3-btn md3-btn-outlined">
+            <span class="material-symbols-outlined">picture_as_pdf</span>
+            PDF
+        </a>
         <a href="{% url 'inventario:compra_crear' %}" class="md3-btn md3-btn-filled">
             <span class="material-symbols-outlined">add</span>
             Nueva Compra
@@ -73,7 +77,7 @@
             <div style="margin-top: 1rem;">
                 <div class="md3-flex" style="flex-wrap: wrap; gap: 0.25rem; margin-bottom: 1rem;">
                     {% for item in compra.items.all|slice:":5" %}
-                    <span class="md3-chip">{{ item.cantidad }}x {{ item.ingrediente.nombre }}</span>
+                    <span class="md3-chip">{{ item.cantidad|floatformat:-3 }}x {{ item.ingrediente.nombre }}</span>
                     {% endfor %}
                     {% if compra.items.count > 5 %}
                     <span class="md3-chip md3-chip-outlined">+{{ compra.items.count|add:"-5" }} mas</span>
@@ -120,13 +124,18 @@
 </div>
 {% endif %}
 {% else %}
-<div class="md3-empty-state">
-    <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--md-sys-color-on-surface-variant);">shopping_cart_off</span>
-    <h3>No hay compras registradas</h3>
-    <p>Registra tu primera compra para llevar control de inventario</p>
-    <a href="{% url 'inventario:compra_crear' %}" class="md3-btn md3-btn-filled">
-        <span class="material-symbols-outlined">add</span> Registrar Compra
-    </a>
+<div class="md3-card-outlined" style="max-width:480px; margin:32px auto; text-align:center;">
+    <div style="padding:40px 24px;">
+        <div style="width:80px; height:80px; border-radius:24px; background:var(--md-sys-color-surface-container); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+            <span class="material-symbols-outlined" style="font-size:40px; color:var(--md-sys-color-on-surface-variant);">shopping_cart_off</span>
+        </div>
+        <h3 style="font-size:20px; font-weight:500; margin-bottom:8px; color:var(--md-sys-color-on-surface);">No hay compras registradas</h3>
+        <p style="font-size:14px; color:var(--md-sys-color-on-surface-variant); margin-bottom:24px;">Registra tu primera compra para llevar control de inventario</p>
+        <a href="{% url 'inventario:compra_crear' %}" class="md3-btn md3-btn-filled" style="gap:8px;">
+            <span class="material-symbols-outlined" style="font-size:20px;">add</span>
+            Registrar Compra
+        </a>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

@@ -12,8 +12,17 @@
     {% endif %}
 </div>
 
-<div class="md3-grid md3-grid-4">
-    {% for usuario in usuarios %}
+{% regroup usuarios by cliente.nombre_negocio as negocio_list %}
+{% for negocio in negocio_list %}
+<div style="margin-bottom: 0.5rem; margin-top: {% if forloop.first %}0{% else %}1rem{% endif %}; padding-bottom: 0.5rem; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+    <h3 style="font-size: 0.85rem; color: var(--md-sys-color-primary); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+        <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span>
+        {{ negocio.grouper }}
+        <span class="md3-badge" style="font-size: 0.65rem;">{{ negocio.list|length }} usuario{{ negocio.list|length|pluralize }}</span>
+    </h3>
+</div>
+<div class="md3-grid md3-grid-4" style="margin-bottom: 1.5rem;">
+    {% for usuario in negocio.list %}
     <div style="min-width: 0;">
         <div class="md3-card-elevated" style="height: 100%;">
             <div class="md3-card-body" style="text-align: center; padding: 1rem;">
@@ -23,6 +32,12 @@
                     </div>
                     <h6 style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">{{ usuario.get_full_name|default:usuario.username }}</h6>
                 </a>
+                {% if usuario.cliente %}
+                <div style="font-size: 0.7rem; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.25rem;">
+                    <span class="material-symbols-outlined" style="font-size: 0.75rem; vertical-align: middle;">storefront</span>
+                    {{ usuario.cliente.nombre_negocio }}
+                </div>
+                {% endif %}
                 <span class="md3-badge {% if usuario.role == 'admin' %}md3-badge-error{% elif usuario.role == 'manager' %}md3-badge-warning{% elif usuario.role == 'waiter' %}md3-badge-success{% elif usuario.role == 'cashier' %}md3-badge-primary{% else %}md3-badge-secondary{% endif %}" style="font-size: 0.6rem;">
                     {{ usuario.get_role_display }}
                 </span>
@@ -81,24 +96,28 @@
             </div>
         </div>
     </div>
-    {% empty %}
-    <div class="md3-grid" style="grid-template-columns: 1fr;">
-        <div class="md3-empty-state">
-            <span class="material-symbols-outlined" style="font-size: 3rem;">people</span>
-            <h3>No hay usuarios registrados</h3>
-            <p style="color: var(--md-sys-color-on-surface-variant);">No hay usuarios registrados</p>
-            {% if user.can_delete_users %}
-            <a href="{% url 'core:usuario_crear' %}" class="md3-btn md3-btn-filled">Crear Usuario</a>
-            {% endif %}
-        </div>
-    </div>
     {% endfor %}
 </div>
+{% endfor %}
+
+{% if not negocio_list %}
+<div class="md3-grid" style="grid-template-columns: 1fr;">
+    <div class="md3-empty-state">
+        <span class="material-symbols-outlined" style="font-size: 3rem;">people</span>
+        <h3>No hay usuarios registrados</h3>
+        <p style="color: var(--md-sys-color-on-surface-variant);">No hay usuarios registrados</p>
+        {% if user.can_delete_users %}
+        <a href="{% url 'core:usuario_crear' %}" class="md3-btn md3-btn-filled">Crear Usuario</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 {% if user.can_manage_users %}
-{% for usuario in usuarios %}
+{% for negocio in negocio_list %}
+{% for usuario in negocio.list %}
 {% if usuario.visible_password %}
 <script>
 function togglePass{{ usuario.pk }}() {
@@ -111,6 +130,7 @@ function togglePass{{ usuario.pk }}() {
 }
 </script>
 {% endif %}
+{% endfor %}
 {% endfor %}
 {% endif %}
 {% endblock %}

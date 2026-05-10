@@ -43,6 +43,10 @@ CHANNEL_LAYERS = {
     },
 }
 
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [h for h in CORS_ALLOWED_ORIGINS if h]
+CORS_ALLOW_CREDENTIALS = True
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -58,3 +62,15 @@ LOGGING = {
         "level": "ERROR",
     },
 }
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=0.5,
+        send_default_pii=False,
+    )

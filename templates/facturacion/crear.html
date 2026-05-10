@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 {% block title %}Nueva Factura{% endblock %}
 {% block content %}
 <div class="md3-page-header">
@@ -16,7 +15,70 @@
                 {{ form.non_field_errors }}
             </div>
             {% endif %}
-            <div style="padding:0 16px;">{{ form|crispy }}</div>
+
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-field {% if form.comanda.errors %}md3-field-error{% endif %}">
+                    <select name="comanda" id="id_comanda" class="md3-input" required>
+                        <option value="">---------</option>
+                        {% for c in form.comanda.field.queryset %}
+                        <option value="{{ c.pk }}" {% if form.comanda.value == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.codigo }} - Mesa {{ c.mesa.numero }}</option>
+                        {% endfor %}
+                    </select>
+                    <label class="md3-label" for="id_comanda">Comanda</label>
+                    <div class="md3-input-line"></div>
+                    {% for error in form.comanda.errors %}
+                    <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="md3-field {% if form.cliente_nombre.errors %}md3-field-error{% endif %}">
+                    <input type="text" name="cliente_nombre" id="id_cliente_nombre" class="md3-input" placeholder=" " value="{{ form.cliente_nombre.value|default:'Consumidor Final' }}">
+                    <label class="md3-label" for="id_cliente_nombre">Nombre del Cliente</label>
+                    <div class="md3-input-line"></div>
+                </div>
+
+                <div class="md3-grid md3-grid-2">
+                    <div class="md3-field {% if form.metodo_pago.errors %}md3-field-error{% endif %}">
+                        <select name="metodo_pago" id="id_metodo_pago" class="md3-input" required>
+                            <option value="">---------</option>
+                            <option value="efectivo" {% if form.metodo_pago.value == "efectivo" %}selected{% endif %}>Efectivo</option>
+                            <option value="tarjeta" {% if form.metodo_pago.value == "tarjeta" %}selected{% endif %}>Tarjeta</option>
+                            <option value="transferencia" {% if form.metodo_pago.value == "transferencia" %}selected{% endif %}>Transferencia</option>
+                        </select>
+                        <label class="md3-label" for="id_metodo_pago">Metodo de Pago</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                    <div class="md3-field {% if form.descuento.errors %}md3-field-error{% endif %}">
+                        <input type="number" name="descuento" id="id_descuento" class="md3-input" placeholder=" " value="{{ form.descuento.value|default:0 }}" step="any" min="0">
+                        <label class="md3-label" for="id_descuento">Descuento (C$)</label>
+                        <div class="md3-input-line"></div>
+                        <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Monto fijo en {{ CURRENCY_SYMBOL }}, no porcentaje</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">receipt_long</span>
+                    <strong>Impuestos y Servicio</strong>
+                </div>
+
+                <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                    <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" {% if form.aplicar_iva.value %}checked{% endif %}>
+                    <span>
+                        <strong>Aplicar IVA (15%)</strong>
+                        <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Impuesto sobre el subtotal</small>
+                    </span>
+                </label>
+
+                <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px;">
+                    <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" {% if form.aplicar_servicio.value %}checked{% endif %}>
+                    <span>
+                        <strong>Aplicar servicio (10%)</strong>
+                        <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Propina opcional</small>
+                    </span>
+                </label>
+            </div>
 
             {% if preview %}
             <div class="md3-card-filled" style="margin:16px;">
@@ -26,22 +88,24 @@
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
                     <span>Subtotal:</span>
-                    <span>{{ CURRENCY_SYMBOL }}{{ preview.subtotal|floatformat:2 }}</span>
+                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}{{ preview.subtotal|floatformat:2 }}</span>
                 </div>
-                {% if form.descuento.value %}
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);">
-                    <span>Descuento:</span>
-                    <span>-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|floatformat:2 }}</span>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;" id="previewIvaRow">
+                    <span>IVA (15%):</span>
+                    <span id="previewIva">{{ CURRENCY_SYMBOL }}{{ preview.iva|floatformat:2 }}</span>
                 </div>
-                {% endif %}
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);">
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);" id="previewServicioRow">
                     <span>Servicio (10%):</span>
-                    <span id="servicioMonto">{{ CURRENCY_SYMBOL }}{{ preview.servicio|floatformat:2 }}</span>
+                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}{{ preview.servicio|floatformat:2 }}</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
+                    <span>Descuento:</span>
+                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|default:0|floatformat:2 }}</span>
                 </div>
                 <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:8px 0;"></div>
                 <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:20px;">
                     <span>TOTAL:</span>
-                    <span id="totalMonto">{{ CURRENCY_SYMBOL }}{{ preview.total_con_servicio|floatformat:2 }}</span>
+                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|floatformat:2 }}</span>
                 </div>
             </div>
             {% else %}
@@ -61,4 +125,55 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.md3-checkbox-field input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--md-sys-color-primary); cursor: pointer;
+}
+.md3-checkbox-field { cursor: pointer; padding: 8px; border-radius: 8px; }
+.md3-checkbox-field:hover { background: var(--md-sys-color-surface-container-high); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const previewData = {
+    subtotal: {{ preview.subtotal|default:0 }},
+    iva: {{ preview.iva|default:0 }},
+    servicio: {{ preview.servicio|default:0 }},
+    descuento: {{ preview.descuento|default:0 }},
+    total: {{ preview.total|default:0 }},
+};
+
+function recalcPreview() {
+    const aplicarIva = document.getElementById('id_aplicar_iva').checked;
+    const aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
+    const descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
+    const subtotal = previewData.subtotal;
+    const iva = aplicarIva ? subtotal * 0.15 : 0;
+    const servicio = aplicarServicio ? subtotal * 0.10 : 0;
+    const total = subtotal + iva + servicio - descuentoVal;
+
+    document.getElementById('previewIva').textContent = `{{ CURRENCY_SYMBOL }}${iva.toFixed(2)}`;
+    document.getElementById('previewServicio').textContent = `{{ CURRENCY_SYMBOL }}${servicio.toFixed(2)}`;
+    document.getElementById('previewDescuento').textContent = `-{{ CURRENCY_SYMBOL }}${descuentoVal.toFixed(2)}`;
+    document.getElementById('previewTotal').textContent = `{{ CURRENCY_SYMBOL }}${total.toFixed(2)}`;
+
+    document.getElementById('previewIvaRow').style.display = aplicarIva ? '' : 'none';
+    document.getElementById('previewServicioRow').style.display = aplicarServicio ? '' : 'none';
+    document.getElementById('previewDescuentoRow').style.display = descuentoVal > 0 ? '' : 'none';
+}
+
+document.getElementById('id_comanda').addEventListener('change', function() {
+    if (this.value) {
+        window.location.href = '?comanda=' + this.value;
+    }
+});
+
+document.getElementById('id_descuento').addEventListener('input', recalcPreview);
+document.getElementById('id_aplicar_iva').addEventListener('change', recalcPreview);
+document.getElementById('id_aplicar_servicio').addEventListener('change', recalcPreview);
+</script>
 {% endblock %}

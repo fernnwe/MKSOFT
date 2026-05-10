@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% block title %}Super Admin - Gesti&oacute;n Clientes{% endblock %}
+{% block content %}
+<style>
+    .client-card {
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-sys-shape-corner-large);
+        padding: 20px;
+        transition: all 0.3s var(--md-sys-motion-easing-emphasized);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        background: var(--md-sys-color-surface-container-lowest);
+        animation: md3-fade-in-up 0.4s var(--md-sys-motion-easing-emphasized) both;
+    }
+    .client-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .client-card[data-estado="activo"]::before { background: var(--md-sys-color-success); }
+    .client-card[data-estado="prueba"]::before { background: var(--md-sys-color-warning); }
+    .client-card[data-estado="vencido"]::before { background: var(--md-sys-color-error); }
+    .client-card[data-estado="cancelado"]::before { background: var(--md-sys-color-outline); }
+    .client-card:hover {
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        transform: translateY(-4px);
+    }
+    .client-card:nth-child(1) { animation-delay: 0s; }
+    .client-card:nth-child(2) { animation-delay: 0.05s; }
+    .client-card:nth-child(3) { animation-delay: 0.1s; }
+    .client-card:nth-child(4) { animation-delay: 0.15s; }
+    .client-card:nth-child(5) { animation-delay: 0.2s; }
+    .client-card:nth-child(6) { animation-delay: 0.25s; }
+    .client-card:nth-child(7) { animation-delay: 0.3s; }
+    .client-card:nth-child(8) { animation-delay: 0.35s; }
+    .clients-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 16px;
+    }
+    .client-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .client-info p { font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+    .client-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .client-status { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .client-status.activo { background: var(--md-sys-color-success-container); color: var(--md-sys-color-on-success-container); }
+    .client-status.prueba { background: var(--md-sys-color-warning-container); color: var(--md-sys-color-on-warning-container); }
+    .client-status.vencido { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+    .client-status.cancelado { background: var(--md-sys-color-surface-container-highest); color: var(--md-sys-color-on-surface-variant); }
+    .client-meta { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .client-meta-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+    .client-meta-item .material-symbols-outlined { font-size: 16px; }
+    .subscription-bar { height: 4px; border-radius: 999px; background: var(--md-sys-color-surface-container-highest); margin-bottom: 12px; overflow: hidden; }
+    .subscription-bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s var(--md-sys-motion-easing-emphasized); }
+    .subscription-bar-fill.activo { background: var(--md-sys-color-success); }
+    .subscription-bar-fill.prueba { background: var(--md-sys-color-warning); }
+    .subscription-bar-fill.vencido { background: var(--md-sys-color-error); }
+    .client-subscription-text { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 12px; color: var(--md-sys-color-on-surface-variant); }
+    .client-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .client-action-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 8px; border: none; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface-variant); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; font-family: inherit; }
+    .client-action-btn:hover { background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); }
+    .client-action-btn .material-symbols-outlined { font-size: 16px; }
+    .client-action-btn.primary { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+    .client-action-btn.primary:hover { background: var(--md-sys-color-primary); color: white; }
+    .client-action-btn.danger { color: var(--md-sys-color-error); }
+    .client-action-btn.danger:hover { background: var(--md-sys-color-error-container); }
+    .hidden { display: none !important; }
+    @media (max-width: 768px) {
+        .clients-grid { grid-template-columns: 1fr; }
+        .filter-bar { flex-direction: column; align-items: stretch; }
+        .search-box { min-width: 100%; }
+        .filter-chips-wrapper { display: flex; gap: 6px; flex-wrap: wrap; }
+    }
+</style>
+
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+        <div>
+            <h1 class="md3-page-title">Super Admin</h1>
+            <p class="md3-page-subtitle">Gesti&oacute;n de Clientes y Suscripciones</p>
+        </div>
+        <a href="{% url 'core:superadmin_cliente_crear' %}" class="md3-btn md3-btn-filled">
+            <span class="material-symbols-outlined">add</span>
+            Nuevo Cliente
+        </a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="md3-grid md3-grid-4" style="margin-bottom:20px; padding:0 16px;">
+    <div class="md3-stat-card" onclick="filterBy('todos')">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div style="flex:1;">
+                <div class="md3-stat-card-value">{{ total_clientes }}</div>
+                <div class="md3-stat-card-label">Total Clientes</div>
+            </div>
+            <div class="md3-stat-card-icon" style="background:var(--md-sys-color-primary-container);color:var(--md-sys-color-primary);">
+                <span class="material-symbols-outlined">store</span>
+            </div>
+        </div>
+    </div>
+    <div class="md3-stat-card" onclick="filterBy('activo')">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div style="flex:1;">
+                <div class="md3-stat-card-value">{{ clientes_activos }}</div>
+                <div class="md3-stat-card-label">Activos</div>
+            </div>
+            <div class="md3-stat-card-icon" style="background:var(--md-sys-color-success-container);color:var(--md-sys-color-success);">
+                <span class="material-symbols-outlined">check_circle</span>
+            </div>
+        </div>
+    </div>
+    <div class="md3-stat-card" onclick="filterBy('prueba')">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div style="flex:1;">
+                <div class="md3-stat-card-value">{{ clientes_prueba }}</div>
+                <div class="md3-stat-card-label">En Prueba</div>
+            </div>
+            <div class="md3-stat-card-icon" style="background:var(--md-sys-color-warning-container);color:var(--md-sys-color-warning);">
+                <span class="material-symbols-outlined">hourglass_top</span>
+            </div>
+        </div>
+    </div>
+    <div class="md3-stat-card" onclick="filterBy('vencido')">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div style="flex:1;">
+                <div class="md3-stat-card-value">{{ clientes_vencidos }}</div>
+                <div class="md3-stat-card-label">Vencidos</div>
+            </div>
+            <div class="md3-stat-card-icon" style="background:var(--md-sys-color-error-container);color:var(--md-sys-color-error);">
+                <span class="material-symbols-outlined">error</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Income Summary -->
+<div style="padding:0 16px; margin-bottom:20px;">
+    <div class="md3-card-filled md3-animate-in" style="background:linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%); padding:24px;">
+        <div class="md3-grid md3-grid-2" style="text-align:center;">
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos Totales</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ total_ingresos|floatformat:2 }}</div>
+            </div>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos del Mes</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_mes|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div style="padding:0 16px; margin-bottom:20px;">
+    <div class="filter-bar" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="search-box" style="flex:1; min-width:200px; position:relative;">
+            <span class="material-symbols-outlined" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:20px; color:var(--md-sys-color-on-surface-variant); pointer-events:none;">search</span>
+            <input type="text" id="searchInput" placeholder="Buscar cliente por nombre o admin..." oninput="filterClients()" style="width:100%; padding:10px 16px 10px 40px; border-radius:9999px; border:1px solid var(--md-sys-color-outline-variant); background:var(--md-sys-color-surface-container); color:var(--md-sys-color-on-surface); font-size:14px; font-family:inherit; outline:none; transition:all 0.2s;">
+        </div>
+        <div class="filter-chips-wrapper" style="display:flex; gap:6px; flex-wrap:wrap;">
+            {% for key, label, icon, count in filter_chips %}
+            <button class="md3-chip {% if forloop.first %}active{% endif %}" data-filter="{{ key }}" onclick="filterBy('{{ key }}')">
+                {% if icon %}<span class="material-symbols-outlined" style="font-size:16px;">{{ icon }}</span>{% endif %}
+                {{ label }}
+                {% if count is not None %}<span class="md3-badge md3-badge-secondary" style="margin-left:4px;">{{ count }}</span>{% endif %}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Clients Grid -->
+<div style="padding:0 16px; margin-bottom:24px;">
+    <div class="clients-grid" id="clientsGrid">
+        {% for cliente in clientes %}
+        <div class="client-card" data-estado="{{ cliente.estado }}" data-nombre="{{ cliente.nombre_negocio|lower }}" data-admin="{{ cliente.admin_username|lower }}" onclick="goToDetail('{{ cliente.pk }}')">
+            <div class="client-header">
+                <div class="client-info">
+                    <h3>{{ cliente.nombre_negocio }}</h3>
+                    <p>Plan &Uacute;nico &middot; Admin: {{ cliente.admin_username }}</p>
+                </div>
+                <span class="client-status {{ cliente.estado }}">{{ cliente.get_estado_display }}</span>
+            </div>
+            <div class="client-meta">
+                <div class="client-meta-item">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    Vence: {{ cliente.fecha_pago_proximo|date:"d/m/Y"|default:"—" }}
+                </div>
+                <div class="client-meta-item">
+                    <span class="material-symbols-outlined">phone</span>
+                    {{ cliente.telefono|default:"Sin tel&eacute;fono" }}
+                </div>
+            </div>
+            <div class="subscription-bar">
+                <div class="subscription-bar-fill {{ cliente.estado }}" style="width:{{ cliente.subscription_percent }}%;"></div>
+            </div>
+            <div class="client-subscription-text">
+                <span>{{ cliente.dias_restantes }} d&iacute;as restantes</span>
+                <span>{{ cliente.periodo_dias }} d&iacute;as de ciclo</span>
+            </div>
+            <div class="client-actions" onclick="event.stopPropagation();">
+                <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="client-action-btn primary">
+                    <span class="material-symbols-outlined">visibility</span> Ver
+                </a>
+                <a href="{% url 'core:superadmin_cliente_editar' cliente.pk %}" class="client-action-btn">
+                    <span class="material-symbols-outlined">edit</span> Editar
+                </a>
+                {% if cliente.estado == 'vencido' or cliente.estado == 'cancelado' %}
+                <form method="post" action="{% url 'core:superadmin_cliente_reactivar' cliente.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="client-action-btn" style="color:var(--md-sys-color-success);">
+                        <span class="material-symbols-outlined">refresh</span> Reactivar
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'core:superadmin_cliente_suspender' cliente.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="client-action-btn danger" onclick="return confirm('&iquest;Suspender acceso a {{ cliente.nombre_negocio }}?')">
+                        <span class="material-symbols-outlined">block</span> Suspender
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--md-sys-color-on-surface-variant);">
+            <span class="material-symbols-outlined" style="font-size:64px; opacity:0.3; margin-bottom:16px;">store</span>
+            <p style="font-size:16px; margin-bottom:16px;">No hay clientes registrados</p>
+            <a href="{% url 'core:superadmin_cliente_crear' %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined">add</span>
+                Crear primer cliente
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Payments Table -->
+{% if pagos_recientes %}
+<div style="padding:0 16px; margin-bottom:24px;">
+    <div class="md3-card-outlined" style="overflow:hidden;">
+        <div style="padding:20px 24px 16px;">
+            <h2 style="font-size:16px; font-weight:500; display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined" style="font-size:20px; color:var(--md-sys-color-primary);">receipt_long</span>
+                &Uacute;ltimos Pagos
+            </h2>
+        </div>
+        <div class="md3-table-wrapper">
+            <table class="md3-data-table">
+                <thead>
+                    <tr><th>Cliente</th><th>Monto</th><th>M&eacute;todo</th><th>Fecha</th></tr>
+                </thead>
+                <tbody>
+                    {% for pago in pagos_recientes %}
+                    <tr>
+                        <td><a href="{% url 'core:superadmin_cliente_detalle' pago.cliente.pk %}" style="color:var(--md-sys-color-primary);font-weight:500;">{{ pago.cliente.nombre_negocio }}</a></td>
+                        <td style="font-weight:600;">C$ {{ pago.monto|floatformat:2 }}</td>
+                        <td>{{ pago.get_metodo_display }}</td>
+                        <td style="font-size:13px;">{{ pago.fecha|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+let currentFilter = 'todos';
+function filterBy(estado) {
+    currentFilter = estado;
+    document.querySelectorAll('[data-filter]').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.filter === estado);
+    });
+    filterClients();
+}
+function filterClients() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    document.querySelectorAll('.client-card').forEach(card => {
+        const estado = card.dataset.estado;
+        const nombre = card.dataset.nombre;
+        const admin = card.dataset.admin;
+        const matchEstado = currentFilter === 'todos' || estado === currentFilter;
+        const matchSearch = !search || nombre.includes(search) || admin.includes(search);
+        card.style.display = matchEstado && matchSearch ? '' : 'none';
+    });
+}
+function goToDetail(pk) {
+    window.location.href = `/superadmin/cliente/${pk}/`;
+}
+</script>
+{% endblock %}

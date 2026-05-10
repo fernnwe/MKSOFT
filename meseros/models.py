@@ -3,13 +3,14 @@ from django.conf import settings
 
 
 class Mesero(models.Model):
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="meseros")
     usuario = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="perfil_mesero",
         limit_choices_to={"role__in": ["waiter", "cashier"]},
     )
-    codigo_pin = models.CharField(max_length=6, unique=True, blank=True)
+    codigo_pin = models.CharField(max_length=6, blank=True)
     activo = models.BooleanField(default=True)
     comandas_atendidas = models.PositiveIntegerField(default=0)
     propinas_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)

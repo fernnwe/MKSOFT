@@ -11,7 +11,7 @@
 <div class="md3-card-outlined">
     <div class="md3-card-body" style="padding: 0;">
         <div class="md3-table-wrapper">
-            <table class="md3-table">
+            <table class="md3-data-table">
                 <thead style="background-color: var(--md-sys-color-surface-container-low);">
                     <tr>
                         <th>Fecha</th>
@@ -38,7 +38,7 @@
                             <span class="md3-badge md3-badge-primary">{{ mov.get_tipo_display }}</span>
                             {% endif %}
                         </td>
-                        <td style="font-weight: bold;">{{ mov.cantidad }}</td>
+                        <td style="font-weight: bold;">{{ mov.cantidad|floatformat:-3 }}</td>
                         <td>{{ mov.usuario.get_full_name|default:"Sistema" }}</td>
                         <td style="font-size: 0.875rem;">{{ mov.motivo|default:"-" }}</td>
                     </tr>

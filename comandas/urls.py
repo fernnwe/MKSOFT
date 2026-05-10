@@ -15,5 +15,6 @@ urlpatterns = [
     path("<int:pk>/eliminar/", views.eliminar_comanda, name="eliminar"),
     path("item/<int:item_pk>/listo/", views.marcar_listo_item, name="item_listo"),
     path("item/<int:item_pk>/cancelar/", views.cancelar_item, name="item_cancelar"),
+    path("<int:pk>/imprimir-cocina/", views.imprimir_cocina, name="imprimir_cocina"),
     path("cocina/", views.VistaCocina.as_view(), name="cocina"),
 ]

@@ -95,7 +95,12 @@
                             </span>
                             {% endif %}
                         </div>
-                        <span class="cocina-mesa">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</span>
+                        <div class="md3-flex md3-flex-align-center" style="gap:6px;">
+                            <a href="{% url 'comandas:imprimir_cocina' comanda.pk %}" target="_blank" class="md3-btn md3-btn-icon md3-btn-text" title="Imprimir ticket de cocina">
+                                <span class="material-symbols-outlined" style="font-size:18px;">print</span>
+                            </a>
+                            <span class="cocina-mesa">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</span>
+                        </div>
                     </div>
                     <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="margin-top:4px;">
                         <span class="cocina-tiempo {% if comanda.prioridad == 'urgente' %}tiempo-alto{% endif %}">

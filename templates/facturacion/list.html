@@ -2,42 +2,117 @@
 {% block title %}Facturacion{% endblock %}
 {% block content %}
 <style>
-    .md3-dialog-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-        z-index: 1050; display: none; align-items: center; justify-content: center;
-        animation: fadeIn 0.15s ease;
-    }
-    .md3-dialog-overlay.active { display: flex; }
-    .md3-dialog {
-        background: var(--md-sys-color-surface-container-high);
-        border-radius: 28px;
-        max-width: 400px;
-        width: 90%;
+    .filter-card {
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container-low);
+        border: 1px solid var(--md-sys-color-outline-variant);
         overflow: hidden;
-        animation: dialogIn 0.25s ease;
+        margin-bottom: 16px;
     }
-    .md3-dialog-header {
-        display: flex; align-items: center; gap: 12px;
-        padding: 24px 24px 0 24px;
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s ease;
     }
-    .md3-dialog-icon {
-        width: 48px; height: 48px; border-radius: 12px;
-        background: var(--md-sys-color-error-container);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
+    .filter-header:hover {
+        background: var(--md-sys-color-surface-container);
     }
-    .md3-dialog-icon .material-symbols-outlined { color: var(--md-sys-color-on-error-container); font-size: 24px; }
-    .md3-dialog-title { font-size: 22px; font-weight: 400; color: var(--md-sys-color-on-surface); }
-    .md3-dialog-body { padding: 16px 24px 24px; }
-    .md3-dialog-body p { margin: 0 0 8px; color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.5; }
-    .md3-dialog-body .md3-folio { font-family: monospace; background: var(--md-sys-color-surface-container-highest); padding: 2px 8px; border-radius: 4px; font-size: 13px; }
-    .md3-dialog-body strong { color: var(--md-sys-color-on-surface); }
-    .md3-dialog-actions {
-        display: flex; justify-content: flex-end; gap: 8px;
-        padding: 12px 24px 24px;
+    .filter-header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes dialogIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .filter-header-left .material-symbols-outlined {
+        font-size: 22px;
+        color: var(--md-sys-color-primary);
+    }
+    .filter-header-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface);
+    }
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .filter-chevron {
+        font-size: 24px;
+        color: var(--md-sys-color-on-surface-variant);
+        transition: transform 0.2s ease;
+    }
+    .filter-chevron.open {
+        transform: rotate(180deg);
+    }
+    .filter-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    .filter-body.open {
+        max-height: 200px;
+    }
+    .filter-body-inner {
+        padding: 0 20px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+    }
+    .filter-field {
+        flex: 1;
+        min-width: 130px;
+        max-width: 180px;
+    }
+    .filter-field .md3-field {
+        margin-bottom: 0;
+    }
+    .filter-field select,
+    .filter-field input {
+        width: 100%;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+    }
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 20px 12px;
+    }
+    .active-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 8px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .active-filter-chip .material-symbols-outlined {
+        font-size: 16px;
+        cursor: pointer;
+        opacity: 0.6;
+    }
+    .active-filter-chip .material-symbols-outlined:hover {
+        opacity: 1;
+    }
 </style>
 
 <div class="md3-page-header">
@@ -49,6 +124,118 @@
         <a href="{% url 'facturacion:crear' %}" class="md3-btn md3-btn-filled">
             <span class="material-symbols-outlined" style="font-size:18px;">add</span>Nueva Factura
         </a>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="filter-card">
+        <div class="filter-header" onclick="toggleFilter()">
+            <div class="filter-header-left">
+                <span class="material-symbols-outlined">tune</span>
+                <span class="filter-header-text">Filtros de busqueda</span>
+                {% with active_count=0 %}
+                {% if fecha_desde or fecha_hasta %}{% with active_count=1 %}{% endwith %}{% endif %}
+                {% if estado_actual %}{% with active_count=1 %}{% endwith %}{% endif %}
+                {% if search %}{% with active_count=1 %}{% endwith %}{% endif %}
+                {% if orden_actual != '-fecha_emision' %}{% with active_count=1 %}{% endwith %}{% endif %}
+                {% endwith %}
+                {% if fecha_desde or fecha_hasta or estado_actual or search or orden_actual != '-fecha_emision' %}
+                <div id="filterBadge" class="filter-badge">
+                    {% if fecha_desde or fecha_hasta %}+{% endif %}{% if estado_actual %}+{% endif %}{% if search %}+{% endif %}{% if orden_actual != '-fecha_emision' %}+{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <span class="material-symbols-outlined filter-chevron" id="filterChevron">expand_more</span>
+        </div>
+        <div class="active-filters" id="activeFilters">
+            {% if fecha_desde or fecha_hasta %}
+            <div class="active-filter-chip">
+                <span class="material-symbols-outlined">calendar_today</span>
+                {{ fecha_desde|default:"Inicio" }} → {{ fecha_hasta|default:"Hoy" }}
+                <a href="{% if estado_actual %}estado={{ estado_actual }}{% endif %}{% if search %}{% if estado_actual %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if estado_actual or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+            </div>
+            {% endif %}
+            {% if estado_actual %}
+            <div class="active-filter-chip">
+                <span class="material-symbols-outlined">label</span>
+                {{ estado_actual|title }}
+                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+            </div>
+            {% endif %}
+            {% if search %}
+            <div class="active-filter-chip">
+                <span class="material-symbols-outlined">search</span>
+                "{{ search }}"
+                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+            </div>
+            {% endif %}
+            {% if orden_actual != '-fecha_emision' %}
+            <div class="active-filter-chip">
+                <span class="material-symbols-outlined">sort</span>
+                Orden: {{ orden_actual }}
+                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}search={{ search }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="filter-body" id="filterBody">
+            <form method="get" class="filter-body-inner">
+                <div class="filter-field">
+                    <div class="md3-field">
+                        <input type="date" name="fecha_desde" value="{{ fecha_desde }}" class="md3-input" style="padding-top:24px;">
+                        <label class="md3-label">Desde</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="filter-field">
+                    <div class="md3-field">
+                        <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}" class="md3-input" style="padding-top:24px;">
+                        <label class="md3-label">Hasta</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="filter-field">
+                    <div class="md3-field">
+                        <select name="estado" class="md3-input" style="padding-top:24px;">
+                            <option value="">Todos</option>
+                            {% for key, label in estados %}
+                            <option value="{{ key }}" {% if estado_actual == key %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <label class="md3-label">Estado</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="filter-field">
+                    <div class="md3-field">
+                        <input type="text" name="search" value="{{ search }}" class="md3-input" style="padding-top:24px;" placeholder=" ">
+                        <label class="md3-label">Folio, cliente...</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="filter-field">
+                    <div class="md3-field">
+                        <select name="orden" class="md3-input" style="padding-top:24px;">
+                            <option value="-fecha_emision" {% if orden_actual == '-fecha_emision' %}selected{% endif %}>Mas recientes</option>
+                            <option value="fecha_emision" {% if orden_actual == 'fecha_emision' %}selected{% endif %}>Mas antiguas</option>
+                            <option value="-total_con_impuestos" {% if orden_actual == '-total_con_impuestos' %}selected{% endif %}>Mayor monto</option>
+                            <option value="total_con_impuestos" {% if orden_actual == 'total_con_impuestos' %}selected{% endif %}>Menor monto</option>
+                            <option value="folio" {% if orden_actual == 'folio' %}selected{% endif %}>Folio A-Z</option>
+                            <option value="-folio" {% if orden_actual == '-folio' %}selected{% endif %}>Folio Z-A</option>
+                        </select>
+                        <label class="md3-label">Ordenar</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="md3-btn md3-btn-filled">
+                        <span class="material-symbols-outlined" style="font-size:18px;">filter_list</span>
+                    </button>
+                    <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-outlined">
+                        <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span>
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -71,7 +258,7 @@
 <div class="px-3 px-md-4">
     <div class="md3-card-outlined">
         <div class="md3-table-wrapper">
-            <table class="md3-table">
+            <table class="md3-data-table">
                 <thead>
                     <tr>
                         <th>Folio</th>
@@ -134,10 +321,10 @@
     {% if is_paginated %}
     <div class="md3-flex" style="justify-content:center; margin-top:16px; gap:8px;">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
+        <a href="?page={{ page_obj.previous_page_number }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}&estado={{ estado_actual }}&search={{ search }}&orden={{ orden_actual }}" class="md3-btn md3-btn-outlined md3-btn-sm">Anterior</a>
         {% endif %}
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
+        <a href="?page={{ page_obj.next_page_number }}&fecha_desde={{ fecha_desde }}&fecha_hasta={{ fecha_hasta }}&estado={{ estado_actual }}&search={{ search }}&orden={{ orden_actual }}" class="md3-btn md3-btn-outlined md3-btn-sm">Siguiente</a>
         {% endif %}
     </div>
     {% endif %}
@@ -154,7 +341,7 @@
                 </div>
                 <div class="md3-dialog-title">Eliminar Factura</div>
             </div>
-            <div class="md3-dialog-body">
+            <div class="md3-dialog-content">
                 <p>¿Deseas eliminar la factura <span class="md3-folio" id="deleteFolio"></span>?</p>
                 <p style="color:var(--md-sys-color-error); margin-bottom:0;"><strong>Esta accion no se puede deshacer.</strong></p>
             </div>
@@ -170,13 +357,32 @@
 function openDeleteModal(pk, folio) {
     document.getElementById('deleteForm').action = "/facturacion/" + pk + "/eliminar/";
     document.getElementById('deleteFolio').textContent = folio;
-    document.getElementById('deleteDialog').classList.add('active');
+    document.getElementById('deleteDialog').classList.add('open');
 }
 function closeDeleteModal() {
-    document.getElementById('deleteDialog').classList.remove('active');
+    document.getElementById('deleteDialog').classList.remove('open');
 }
 document.getElementById('deleteDialog').addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
 });
+
+function toggleFilter() {
+    const body = document.getElementById('filterBody');
+    const chevron = document.getElementById('filterChevron');
+    const hasActive = {% if fecha_desde or fecha_hasta or estado_actual or search or orden_actual != '-fecha_emision' %}true{% else %}false{% endif %};
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+    if (hasActive && !body.classList.contains('open')) {
+        body.classList.add('open');
+        chevron.classList.add('open');
+    }
+}
+
+{% if fecha_desde or fecha_hasta or estado_actual or search or orden_actual != '-fecha_emision' %}
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('filterBody').classList.add('open');
+    document.getElementById('filterChevron').classList.add('open');
+});
+{% endif %}
 </script>
 {% endblock %}

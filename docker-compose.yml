@@ -23,12 +23,15 @@ services:
       - RESTAURANT_PHONE=${RESTAURANT_PHONE}
       - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
       - TAX_RATE=${TAX_RATE}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - SENTRY_DSN=${SENTRY_DSN}
     depends_on:
       - db
       - redis
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - backups_volume:/app/backups
     restart: unless-stopped
 
   daphne:
@@ -54,12 +57,15 @@ services:
       - RESTAURANT_PHONE=${RESTAURANT_PHONE}
       - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
       - TAX_RATE=${TAX_RATE}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - SENTRY_DSN=${SENTRY_DSN}
     depends_on:
       - db
       - redis
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - backups_volume:/app/backups
     restart: unless-stopped
 
   db:
@@ -83,3 +89,4 @@ volumes:
   redis_data:
   static_volume:
   media_volume:
+  backups_volume:

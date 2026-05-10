@@ -81,7 +81,7 @@
                             <label class="md3-label" style="font-weight: 600;">Monto a Pagar</label>
                             <div class="md3-field">
                                 <span class="md3-input-line">{{ CURRENCY_SYMBOL }}</span>
-                                <input type="number" name="monto" class="md3-input" step="0.01" min="0.01" max="{{ cuenta.monto_pendiente }}" value="{{ cuenta.monto_pendiente|floatformat:2 }}" required>
+                                <input type="number" name="monto" class="md3-input" step="any" min="0.01" max="{{ cuenta.monto_pendiente }}" value="{{ cuenta.monto_pendiente|floatformat:2 }}" required>
                             </div>
                             <small style="color: var(--md-sys-color-on-surface-variant);">Pendiente: {{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</small>
                         </div>

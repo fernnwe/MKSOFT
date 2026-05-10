@@ -1,144 +1,407 @@
 {% extends 'base.html' %}
 {% block title %}Productos{% endblock %}
 {% block content %}
-<div class="md3-page-header">
-    <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
+<style>
+    .productos-header-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--md-sys-color-surface);
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        padding: 0 12px;
+    }
+
+    .productos-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 0 12px;
+        flex-wrap: wrap;
+    }
+
+    .productos-tabs {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        padding: 0;
+        scrollbar-width: none;
+    }
+
+    .productos-tabs::-webkit-scrollbar { display: none; }
+
+    .productos-tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface-variant);
+        text-decoration: none;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .productos-tab:hover {
+        color: var(--md-sys-color-on-surface);
+        background: var(--md-sys-color-surface-container);
+    }
+
+    .productos-tab.active {
+        color: var(--md-sys-color-primary);
+        border-bottom-color: var(--md-sys-color-primary);
+    }
+
+    .productos-tab-count {
+        font-size: 11px;
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface-variant);
+        padding: 1px 7px;
+        border-radius: 999px;
+    }
+
+    .productos-tab.active .productos-tab-count {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    .productos-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0;
+        flex-wrap: wrap;
+    }
+
+    .productos-search {
+        flex: 1;
+        min-width: 200px;
+        height: 44px;
+        padding: 0 16px 0 44px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--md-sys-color-on-surface);
+        background: var(--md-sys-color-surface-container-highest);
+        border: none;
+        border-radius: 12px;
+        outline: none;
+    }
+
+    .productos-search:focus {
+        background: var(--md-sys-color-surface-container-high);
+    }
+
+    .productos-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .productos-search-wrap .material-symbols-outlined {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: var(--md-sys-color-on-surface-variant);
+        pointer-events: none;
+    }
+
+    .productos-type-chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .type-chip:hover {
+        background: var(--md-sys-color-surface-container);
+        border-color: var(--md-sys-color-outline);
+    }
+
+    .type-chip.active {
+        background: var(--md-sys-color-primary-container);
+        color: var(--md-sys-color-on-primary-container);
+        border-color: var(--md-sys-color-primary);
+    }
+
+    /* Product Groups */
+    .productos-content {
+        padding: 0 12px 60px;
+    }
+
+    .categoria-group {
+        margin-bottom: 24px;
+    }
+
+    .categoria-group-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0 8px;
+        border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        margin-bottom: 12px;
+    }
+
+    .categoria-group-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: var(--md-sys-color-primary-container);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .categoria-group-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--md-sys-color-on-surface);
+    }
+
+    .categoria-group-count {
+        font-size: 12px;
+        color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .productos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
+    }
+
+    .producto-card {
+        border-radius: 16px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        background: var(--md-sys-color-surface);
+        padding: 16px;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .producto-card:hover {
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+
+    .producto-card.card-hidden {
+        display: none;
+    }
+
+    .producto-card-no-disponible {
+        opacity: 0.5;
+    }
+
+    .producto-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .producto-card-info {
+        flex: 1;
+    }
+
+    .producto-card-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+
+    .producto-card-code {
+        font-size: 11px;
+        color: var(--md-sys-color-on-surface-variant);
+        background: var(--md-sys-color-surface-container);
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        font-family: monospace;
+    }
+
+    .producto-card-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--md-sys-color-primary);
+        text-align: right;
+    }
+
+    .producto-card-meta {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .producto-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    /* No category group */
+    .sin-categoria-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface-variant);
+        font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+        .productos-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="productos-header-sticky">
+    <div class="productos-header-top">
         <div>
-            <h1 class="md3-page-title">Productos</h1>
-            <p class="md3-page-subtitle">
-                {% if request.GET.categoria %}
-                <a href="{% url 'productos:list' %}" style="color:var(--md-sys-color-primary); text-decoration:none;">Todos</a>
-                <span class="material-symbols-outlined" style="font-size:14px; vertical-align:middle; margin:0 4px;">chevron_right</span>
-                <strong>{{ categoria_actual }}</strong>
-                {% else %}
-                Menu y platillos del restaurante
-                {% endif %}
-            </p>
+            <h1 class="md3-page-title" style="margin:0;">Productos</h1>
+            <p class="md3-page-subtitle" style="margin:2px 0 0;">{{ productos.paginator.count }} producto{{ productos.paginator.count|pluralize }}</p>
         </div>
-        <div class="md3-flex">
-            <a href="{% url 'productos:categorias' %}" class="md3-btn md3-btn-tonal" style="display:none;">
-                <span class="material-symbols-outlined">sell</span>
+        <div class="md3-flex" style="gap:12px;">
+            <a href="{% url 'productos:categorias' %}" class="md3-btn md3-btn-tonal" style="padding: 0 16px;">
+                <span class="material-symbols-outlined" style="margin-right:6px;">sell</span>
                 Categorias
             </a>
-            <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled">
-                <span class="material-symbols-outlined">add</span>
-                <span style="display:none;">Nuevo Producto</span>
+            <a href="{% url 'productos:productos_pdf' %}" class="md3-btn md3-btn-outlined" style="padding: 0 16px;">
+                <span class="material-symbols-outlined" style="margin-right:6px;">picture_as_pdf</span>
+                PDF
+            </a>
+            <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled" style="padding: 0 20px; font-weight:600;">
+                <span class="material-symbols-outlined" style="margin-right:6px;">add</span>
+                Nuevo Producto
             </a>
         </div>
     </div>
-</div>
 
-<!-- Busqueda y filtros -->
-<div class="px-3 px-md-4" style="margin-bottom:12px;">
-    <div class="md3-grid md3-grid-2" style="margin-bottom:12px;">
-        <div>
-            <form method="get" class="md3-flex" style="gap:8px;">
-                <div class="md3-field" style="flex:1; margin-bottom:0;">
-                    <input type="text" name="search" class="md3-input" placeholder=" " value="{{ request.GET.search|default:'' }}" style="height:44px; font-size:14px; padding-top:16px;">
-                    <label class="md3-label" for="search">Buscar producto...</label>
-                    <div class="md3-input-line"></div>
-                </div>
+    <!-- Category Tabs -->
+    <div class="productos-tabs">
+        <a href="{% url 'productos:list' %}" class="productos-tab {% if not request.GET.categoria %}active{% endif %}">
+            <span class="material-symbols-outlined" style="font-size:16px;">grid_view</span>
+            Todos
+            <span class="productos-tab-count">{{ productos.paginator.count }}</span>
+        </a>
+        {% for cat in categorias %}
+        <a href="?categoria={{ cat.pk }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="productos-tab {% if request.GET.categoria == cat.pk|stringformat:'s' %}active{% endif %}">
+            {% if cat.icono %}{{ cat.icono }}{% endif %}
+            {{ cat.nombre }}
+            <span class="productos-tab-count">{{ cat.productos_count }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Toolbar: Search + Type Chips -->
+    <div class="productos-toolbar">
+        <div class="productos-search-wrap">
+            <span class="material-symbols-outlined">search</span>
+            <form method="get" style="display:flex;">
                 {% if request.GET.categoria %}<input type="hidden" name="categoria" value="{{ request.GET.categoria }}">{% endif %}
                 {% if request.GET.tipo %}<input type="hidden" name="tipo" value="{{ request.GET.tipo }}">{% endif %}
-                <button type="submit" class="md3-btn md3-btn-tonal md3-btn-icon" style="min-width:44px; width:44px; height:44px; margin-top:8px;">
-                    <span class="material-symbols-outlined" style="font-size:20px;">search</span>
-                </button>
+                <input type="text" name="search" class="productos-search" placeholder="Buscar producto..." value="{{ request.GET.search|default:'' }}" id="searchInput">
             </form>
         </div>
-        <div>
-            <div class="md3-flex" style="flex-wrap:wrap; gap:8px;">
-                <a href="{% url 'productos:list' %}" class="md3-chip {% if not request.GET.tipo %}active{% endif %}">Todos</a>
-                {% for valor, nombre in tipos %}
-                <a href="?tipo={{ valor }}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="md3-chip {% if request.GET.tipo == valor %}active{% endif %}">{{ nombre }}</a>
-                {% endfor %}
-            </div>
+        <div class="productos-type-chips">
+            <a href="{% if request.GET.categoria %}?categoria={{ request.GET.categoria }}{% else %}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="type-chip {% if not request.GET.tipo %}active{% endif %}">Todos</a>
+            {% for valor, nombre in tipos %}
+            <a href="?{% if request.GET.categoria %}categoria={{ request.GET.categoria }}&{% endif %}tipo={{ valor }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="type-chip {% if request.GET.tipo == valor %}active{% endif %}">{{ nombre }}</a>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Tabla de productos -->
-<div class="px-3 px-md-4">
-    <div class="md3-card-outlined">
-        <div class="md3-table-wrapper">
-            <table class="md3-table">
-                <thead>
-                    <tr>
-                        <th>Codigo</th>
-                        <th>Nombre</th>
-                        <th>Categoria</th>
-                        <th>Tipo</th>
-                        <th>Precio</th>
-                        <th>Estado</th>
-                        <th style="text-align:right;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for producto in productos %}
-                    <tr style="{% if not producto.disponible %}opacity:0.5;{% endif %}">
-                        <td><code style="font-size:12px; background:var(--md-sys-color-surface-container); padding:2px 8px; border-radius:8px;">{{ producto.codigo }}</code></td>
-                        <td>
-                            <div class="md3-flex md3-flex-align-center" style="gap:8px;">
-                                {% if producto.imagen %}
-                                <img src="{{ producto.imagen.url }}" alt="" style="width:32px; height:32px; object-fit:cover; border-radius:8px;">
-                                {% endif %}
-                                <strong>{{ producto.nombre }}</strong>
-                            </div>
-                        </td>
-                        <td>{{ producto.categoria.nombre|default:"—" }}</td>
-                        <td>
-                            {% if producto.tipo == 'plato' %}
-                            <span class="md3-badge md3-badge-primary">Plato</span>
-                            {% elif producto.tipo == 'bebida' %}
-                            <span class="md3-badge md3-badge-tertiary">Bebida</span>
-                            {% elif producto.tipo == 'postre' %}
-                            <span class="md3-badge md3-badge-success">Postre</span>
-                            {% else %}
-                            <span class="md3-badge md3-badge-secondary">{{ producto.get_tipo_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td style="font-weight:500;">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</td>
-                        <td>
-                            {% if producto.disponible %}
-                            <span class="md3-badge md3-badge-success">Disponible</span>
-                            {% else %}
-                            <span class="md3-badge md3-badge-error">No disponible</span>
-                            {% endif %}
-                        </td>
-                        <td style="text-align:right;">
-                            <div class="md3-flex" style="justify-content:flex-end; gap:4px;">
-                                <a href="{% url 'productos:editar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
-                                    <span class="material-symbols-outlined">edit</span>
-                                </a>
-                                <a href="{% url 'productos:eliminar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar {{ producto.nombre }}?')">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7">
-                            <div class="md3-empty-state">
-                                <span class="material-symbols-outlined">inventory_2</span>
-                                <div class="md3-empty-state-title">No hay productos</div>
-                                <div class="md3-empty-state-text">
-                                    {% if request.GET.categoria %}No hay productos en esta categoria.{% else %}Comienza agregando tu primer producto.{% endif %}
-                                </div>
-                                <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">
-                                    <span class="material-symbols-outlined">add</span>
-                                    Nuevo Producto
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Products Content -->
+<div class="productos-content">
+    {% if categoria_actual %}
+    <div class="categoria-group">
+        <div class="categoria-group-header">
+            <div class="categoria-group-icon">
+                <span class="material-symbols-outlined">restaurant_menu</span>
+            </div>
+            <div>
+                <div class="categoria-group-name">{{ categoria_actual }}</div>
+                <div class="categoria-group-count">{{ productos.paginator.count }} producto{{ productos.paginator.count|pluralize }}</div>
+            </div>
+        </div>
+        <div class="productos-grid">
+            {% for producto in productos %}
+            {% include "productos/_card.html" with producto=producto %}
+            {% empty %}
+            <div class="md3-empty-state" style="grid-column:1/-1;">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <div class="md3-empty-state-title">No hay productos en esta categoria</div>
+                <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">
+                    <span class="material-symbols-outlined" style="font-size:20px;">add</span>
+                    Nuevo Producto
+                </a>
+            </div>
+            {% endfor %}
         </div>
     </div>
+    {% else %}
+    <!-- All categories grouped -->
+    {% regroup productos by categoria as categoria_groups %}
+    {% for group in categoria_groups %}
+    <div class="categoria-group">
+        <div class="categoria-group-header">
+            <div class="categoria-group-icon">
+                {% if group.grouper %}
+                {{ group.grouper.icono|default:'' }}
+                {% else %}
+                <span class="material-symbols-outlined">category</span>
+                {% endif %}
+            </div>
+            <div>
+                <div class="categoria-group-name">
+                    {% if group.grouper %}{{ group.grouper.nombre }}{% else %}<span class="sin-categoria-label">Sin categoria</span>{% endif %}
+                </div>
+                <div class="categoria-group-count">{{ group.list|length }} producto{{ group.list|length|pluralize }}</div>
+            </div>
+        </div>
+        <div class="productos-grid">
+            {% for producto in group.list %}
+            {% include "productos/_card.html" with producto=producto %}
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="md3-empty-state">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <div class="md3-empty-state-title">No hay productos</div>
+        <div class="md3-empty-state-text">Comienza agregando tu primer producto.</div>
+            <a href="{% url 'productos:crear' %}" class="md3-btn md3-btn-filled" style="margin-top:16px;">
+                <span class="material-symbols-outlined" style="font-size:20px;">add</span>
+                Nuevo Producto
+            </a>
+    </div>
+    {% endfor %}
+    {% endif %}
 
     {% if is_paginated %}
-    <div class="md3-flex md3-flex-justify-center" style="margin-top:16px; gap:8px;">
+    <div class="md3-flex md3-flex-justify-center" style="margin-top:24px; gap:8px;">
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="md3-btn md3-btn-outlined md3-btn-sm">
             <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span>

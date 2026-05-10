@@ -23,6 +23,9 @@ docker-compose run --rm web python manage.py collectstatic --no-input
 echo "[6/6] Iniciando aplicacion..."
 docker-compose up -d web daphne
 
+echo "[7/7] Configurando backup automatico..."
+docker-compose exec -d db sh -c "echo '0 3 * * * root /app/backup.sh' > /etc/cron.d/db_backup"
+
 echo ""
 echo "========================================"
 echo "  Despliegue completado!"
@@ -31,6 +34,9 @@ echo ""
 echo "Servicios disponibles:"
 echo "  Web (Gunicorn): http://localhost:8000"
 echo "  WebSockets (Daphne): http://localhost:8001"
+echo "  Health Check: http://localhost:8000/health/"
+echo ""
+echo "Backups: /app/backups/ (diarios a las 3am, retencion 7 dias)"
 echo ""
 echo "Para crear un superusuario:"
 echo "  docker-compose run --rm web python manage.py createsuperuser"

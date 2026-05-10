@@ -1,14 +1,16 @@
+from django.db.models import Q
+from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib import messages
-from core.views import PermissionRequiredMixin
+from core.views import ClienteScopeMixin, PermissionRequiredMixin
 from .models import Mesa
 
 
-class MesaListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+class MesaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Mesa
     template_name = "mesas/list.html"
     context_object_name = "mesas"
@@ -25,7 +27,7 @@ class MesaListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
         return qs
 
 
-class MesaCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+class MesaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Mesa
     template_name = "mesas/form.html"
     fields = ["numero", "zona", "capacidad", "estado", "descripcion"]
@@ -33,11 +35,15 @@ class MesaCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     permission = "can_view_mesas"
 
     def form_valid(self, form):
-        messages.success(self.request, "Mesa creada exitosamente")
-        return super().form_valid(form)
+        try:
+            messages.success(self.request, "Mesa creada exitosamente")
+            return super().form_valid(form)
+        except IntegrityError:
+            messages.error(self.request, f"Ya existe una mesa con el número '{form.instance.numero}'")
+            return self.form_invalid(form)
 
 
-class MesaUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+class MesaUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Mesa
     template_name = "mesas/form.html"
     fields = ["numero", "zona", "capacidad", "estado", "descripcion"]
@@ -45,11 +51,15 @@ class MesaUpdateView(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
     permission = "can_view_mesas"
 
     def form_valid(self, form):
-        messages.success(self.request, "Mesa actualizada exitosamente")
-        return super().form_valid(form)
+        try:
+            messages.success(self.request, "Mesa actualizada exitosamente")
+            return super().form_valid(form)
+        except IntegrityError:
+            messages.error(self.request, f"Ya existe una mesa con el número '{form.instance.numero}'")
+            return self.form_invalid(form)
 
 
-class MesaDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+class MesaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Mesa
     success_url = reverse_lazy("mesas:list")
     permission = "can_view_mesas"
@@ -71,17 +81,18 @@ class MesaDeleteView(PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
         return redirect(self.success_url)
 
 
-class MesaPlanoView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
+class MesaPlanoView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Mesa
     template_name = "mesas/plano.html"
     context_object_name = "mesas"
     permission = "can_view_mesas"
 
     def get_queryset(self):
+        qs = super().get_queryset()
         zona = self.request.GET.get("zona")
         if zona:
-            return Mesa.objects.filter(zona=zona)
-        return Mesa.objects.all()
+            qs = qs.filter(zona=zona)
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -90,7 +101,11 @@ class MesaPlanoView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
 
 
 def cambiar_estado_mesa(request, pk, estado):
-    mesa = get_object_or_404(Mesa, pk=pk)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Mesa.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    mesa = get_object_or_404(qs, pk=pk)
     if not request.user.has_perm("can_view_mesas"):
         messages.error(request, "No tienes permiso")
         return redirect("core:dashboard")
