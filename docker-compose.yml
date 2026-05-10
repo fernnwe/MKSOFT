@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   web:
     build: .
@@ -26,6 +24,7 @@ services:
       - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
       - TAX_RATE=${TAX_RATE}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - USE_SSL=${USE_SSL}
       - SENTRY_DSN=${SENTRY_DSN}
     depends_on:
       - db
@@ -62,6 +61,7 @@ services:
       - CURRENCY_SYMBOL=${CURRENCY_SYMBOL}
       - TAX_RATE=${TAX_RATE}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - USE_SSL=${USE_SSL}
       - SENTRY_DSN=${SENTRY_DSN}
     depends_on:
       - db
