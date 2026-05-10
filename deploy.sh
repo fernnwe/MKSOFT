@@ -1,30 +1,62 @@
 #!/bin/bash
 set -e
 
+REPO_URL="https://github.com/fernnwe/MKSOFT.git"
+APP_DIR="/opt/mksoft"
+
 echo "========================================"
 echo "  Despliegue - Sistema de Restaurante"
 echo "========================================"
 
-echo "[1/6] Construyendo imagenes..."
-docker-compose build
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "ERROR: Ejecuta como root (sudo)."
+    exit 1
+fi
 
-echo "[2/6] Iniciando servicios..."
-docker-compose up -d db redis
+# Clone or pull repo
+if [ -d "$APP_DIR" ]; then
+    echo "[1/9] Actualizando repositorio..."
+    cd "$APP_DIR"
+    git pull
+else
+    echo "[1/9] Clonando repositorio..."
+    git clone "$REPO_URL" "$APP_DIR"
+    cd "$APP_DIR"
+fi
 
-echo "[3/6] Esperando a que la base de datos este lista..."
+# Copy .env.production as .env if not exists
+if [ ! -f ".env" ]; then
+    echo "[2/9] Creando .env desde .env.production..."
+    cp .env.production .env
+    echo "IMPORTANTE: Edita .env con tus credenciales reales antes de continuar."
+    echo "  nano .env"
+    exit 1
+fi
+
+# Export env vars for docker compose
+export $(grep -v '^\s*#' .env | grep -v '^\s*$' | xargs)
+
+echo "[3/9] Construyendo imagenes..."
+docker compose build
+
+echo "[4/9] Iniciando servicios (db, redis)..."
+docker compose up -d db redis
+
+echo "[5/9] Esperando base de datos..."
 sleep 10
 
-echo "[4/6] Ejecutando migraciones..."
-docker-compose run --rm web python manage.py migrate --no-input
+echo "[6/9] Ejecutando migraciones..."
+docker compose run --rm web python manage.py migrate --no-input
 
-echo "[5/6] Recopilando archivos estaticos..."
-docker-compose run --rm web python manage.py collectstatic --no-input
+echo "[7/9] Recopilando estaticos..."
+docker compose run --rm web python manage.py collectstatic --no-input
 
-echo "[6/6] Iniciando aplicacion..."
-docker-compose up -d web daphne
+echo "[8/9] Iniciando aplicacion..."
+docker compose up -d web daphne
 
-echo "[7/7] Configurando backup automatico..."
-docker-compose exec -d db sh -c "echo '0 3 * * * root /app/backup.sh' > /etc/cron.d/db_backup"
+echo "[9/9] Configurando backup automatico (crontab)..."
+(crontab -l 2>/dev/null || true; echo "0 3 * * * cd $APP_DIR && docker compose exec -T db pg_dump -U restaurante restaurante_db | gzip > $APP_DIR/backups/backup_\$(date +\"%Y%m%d_%H%M%S\").sql.gz && find $APP_DIR/backups -name 'backup_*.sql.gz' -mtime +7 -delete") | crontab -
 
 echo ""
 echo "========================================"
@@ -32,14 +64,11 @@ echo "  Despliegue completado!"
 echo "========================================"
 echo ""
 echo "Servicios disponibles:"
-echo "  Web (Gunicorn): http://localhost:8000"
+echo "  Web: http://localhost:8000"
 echo "  WebSockets (Daphne): http://localhost:8001"
 echo "  Health Check: http://localhost:8000/health/"
 echo ""
-echo "Backups: /app/backups/ (diarios a las 3am, retencion 7 dias)"
+echo "Backups: $APP_DIR/backups/ (3am, retencion 7 dias)"
 echo ""
 echo "Para crear un superusuario:"
-echo "  docker-compose run --rm web python manage.py createsuperuser"
-echo ""
-echo "Para cargar datos de demo:"
-echo "  docker-compose run --rm web python manage.py load_demo_data"
+echo "  cd $APP_DIR && docker compose run --rm web python manage.py createsuperuser"
