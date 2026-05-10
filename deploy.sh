@@ -35,7 +35,9 @@ if [ ! -f ".env" ]; then
 fi
 
 # Export env vars for docker compose
-export $(grep -v '^\s*#' .env | grep -v '^\s*$' | xargs)
+set -a
+source .env
+set +a
 
 echo "[3/9] Construyendo imagenes..."
 docker compose build
