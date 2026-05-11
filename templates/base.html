@@ -20,7 +20,7 @@
             <div class="md3-nav-drawer-icon-wrap">
                 <span class="material-symbols-outlined">restaurant</span>
             </div>
-            <div class="md3-nav-drawer-title">{{ RESTAURANT_NAME }}</div>
+            <div class="md3-nav-drawer-title">{% block nav_title %}{{ RESTAURANT_NAME }}{% endblock %}</div>
             <div class="md3-nav-drawer-subtitle">Sistema de gestion para Comiderias o Restaurantes</div>
         </div>
 
@@ -216,7 +216,7 @@
                     <span class="material-symbols-outlined">restaurant</span>
                 </div>
                 <div class="md3-top-app-bar-text">
-                    <h1 class="md3-top-app-bar-title">{{ RESTAURANT_NAME }}</h1>
+                    <h1 class="md3-top-app-bar-title">{% block appbar_title %}{{ RESTAURANT_NAME }}{% endblock %}</h1>
                     <span class="md3-top-app-bar-subtitle">Sistema de gestion</span>
                 </div>
             </div>
