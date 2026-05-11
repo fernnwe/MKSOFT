@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import hashlib
+import decimal
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -157,7 +158,7 @@ def crear_respaldo(request):
                             item["fields"][field.name] = value
                         data.append(item)
                 with open(backup_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False)
+                    json.dump(data, f, indent=2, ensure_ascii=False, default=lambda o: float(o) if isinstance(o, decimal.Decimal) else str(o))
 
             backup.archivo.name = os.path.relpath(backup_path, settings.MEDIA_ROOT).replace("\\", "/")
             backup.estado = DatabaseBackup.Estado.EXITOSO
