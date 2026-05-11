@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load perm_tags %}
 {% block title %}Super Admin - Gesti&oacute;n Clientes{% endblock %}
 {% block content %}
 <style>
@@ -139,10 +140,14 @@
 <!-- Income Summary -->
 <div style="padding:0 16px; margin-bottom:20px;">
     <div class="md3-card-filled md3-animate-in" style="background:linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, var(--md-sys-color-tertiary-container) 100%); padding:24px;">
-        <div class="md3-grid md3-grid-2" style="text-align:center;">
+        <div class="md3-grid md3-grid-3" style="text-align:center;">
             <div>
-                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos Totales</div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Total Generado</div>
                 <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ total_ingresos|floatformat:2 }}</div>
+            </div>
+            <div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos del Año</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_anio|floatformat:2 }}</div>
             </div>
             <div>
                 <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos del Mes</div>
@@ -198,7 +203,9 @@
             </div>
             <div class="client-subscription-text">
                 <span>{{ cliente.dias_restantes }} d&iacute;as restantes</span>
-                <span>{{ cliente.periodo_dias }} d&iacute;as de ciclo</span>
+                {% with total_cliente=totales_por_cliente|get_item:cliente.pk %}
+                <span>Pagado: C$ {{ total_cliente|default:"0.00"|floatformat:2 }}</span>
+                {% endwith %}
             </div>
             <div class="client-actions" onclick="event.stopPropagation();">
                 <a href="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" class="client-action-btn primary">

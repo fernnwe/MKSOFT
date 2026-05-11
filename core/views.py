@@ -822,6 +822,7 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from django.utils import timezone
+        from django.db.models import Sum, OuterRef, Subquery
         clientes = Cliente.objects.all()
         context["clientes"] = clientes
         context["total_clientes"] = clientes.count()
@@ -832,10 +833,14 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
         context["total_ingresos"] = total_ingresos
         ingresos_mes = PagoCliente.objects.filter(fecha__month=timezone.now().month, fecha__year=timezone.now().year).aggregate(total=Sum("monto"))["total"] or 0
         context["ingresos_mes"] = ingresos_mes
+        ingresos_anio = PagoCliente.objects.filter(fecha__year=timezone.now().year).aggregate(total=Sum("monto"))["total"] or 0
+        context["ingresos_anio"] = ingresos_anio
         pagos_recientes = PagoCliente.objects.select_related("cliente").order_by("-fecha")[:10]
         context["pagos_recientes"] = pagos_recientes
         clientes_por_vencer = clientes.filter(fecha_pago_proximo__isnull=False).order_by("fecha_pago_proximo")[:5]
         context["clientes_por_vencer"] = clientes_por_vencer
+        totales_por_cliente = dict(PagoCliente.objects.values("cliente").annotate(total=Sum("monto")).values_list("cliente", "total"))
+        context["totales_por_cliente"] = totales_por_cliente
         return context
 
 
