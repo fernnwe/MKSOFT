@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cierre de Caja {{ fecha_seleccionada|date:"d/m/Y" }}</title>
+    <style>
+        @page { size: 80mm 297mm; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            background: #fff; color: #000;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 11px; line-height: 1.3; font-weight: 700;
+            width: 80mm; overflow-x: hidden;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .ticket { padding: 3px; width: 100%; }
+        .center { text-align: center; }
+        .bold { font-weight: 900; }
+        hr { border: none; border-top: 1px solid #000; margin: 4px 0; }
+        .row { display: flex; justify-content: space-between; margin: 2px 0; }
+        .indent { padding-left: 8px; }
+        .total-row { font-weight: 900; border-top: 1px solid #000; padding-top: 3px; }
+        .grand-total { font-size: 13px; font-weight: 900; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
+        .section-title { font-weight: 900; text-transform: uppercase; margin: 5px 0 3px; font-size: 11px; letter-spacing: 0.5px; }
+        .subsection { font-weight: 700; margin: 3px 0 2px; }
+        .error { color: #B3261E; font-weight: 700; }
+        .header-title { font-size: 15px; font-weight: 900; letter-spacing: 0.5px; }
+        .footer { text-align: center; margin-top: 8px; }
+        @media print {
+            html, body { width: 80mm; font-size: 10px; }
+            .ticket { padding: 2px; }
+            .grand-total { font-size: 12px; }
+        }
+        @media print and (max-width: 58mm) {
+            @page { size: 58mm 297mm; }
+            html, body { width: 58mm; font-size: 9px; }
+            .ticket { font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="center" style="margin-bottom:4px;">
+            <div class="header-title">{{ RESTAURANT_NAME }}</div>
+            <p>{{ RESTAURANT_ADDRESS }}</p>
+            <p>Tel: {{ RESTAURANT_PHONE }} | RUC: {{ RESTAURANT_RFC }}</p>
+            <hr>
+            <div class="section-title" style="font-size:13px;">Cierre de Caja</div>
+            <p>{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
+            <p>Usuario: {{ user.get_full_name|default:user.username }}</p>
+            <hr>
+        </div>
+
+        <div class="section-title">RESUMEN DE VENTAS</div>
+        <div class="row"><span>Facturas pagadas:</span><span>{{ facturas_pagadas_count }}</span></div>
+        <div class="row"><span>Facturas canceladas:</span><span>{{ facturas_canceladas_count }}</span></div>
+        <div class="row"><span>Comandas cerradas:</span><span>{{ comandas_cerradas_count }}</span></div>
+        <hr>
+
+        <div class="section-title">TIPOS DE PAGO</div>
+        {% for item in ventas_por_metodo %}
+        <div class="row"><span>{{ item.metodo }} ({{ item.count }})</span><span>{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</span></div>
+        {% endfor %}
+        <div class="row total-row"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span></div>
+        <hr>
+
+        {% if total_iva > 0 or total_servicio > 0 or total_descuentos > 0 %}
+        <div class="section-title">DESGLOSE</div>
+        {% if total_iva > 0 %}
+        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_servicio > 0 %}
+        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_descuentos > 0 %}
+        <div class="row error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span></div>
+        {% endif %}
+        {% endif %}
+        <hr>
+
+        <div class="section-title">COMPRAS DEL DIA</div>
+        <div class="row"><span>Compras recibidas:</span><span>{{ compras_recibidas_count }}</span></div>
+        <div class="row"><span>Compras pendientes:</span><span>{{ compras_pendientes_count }}</span></div>
+        <div class="row"><span>Compras canceladas:</span><span>{{ compras_canceladas_count }}</span></div>
+        <div class="row total-row"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span></div>
+        {% if total_gastos_mov > 0 %}
+        <div class="row"><span>Gastos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_retiros_mov > 0 %}
+        <div class="row"><span>Retiros:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
+        {% endif %}
+        <hr>
+
+        {% if compras_detalladas %}
+        <div class="section-title">DETALLE DE COMPRAS</div>
+        {% for compra in compras_detalladas %}
+        <div class="subsection">{{ compra.folio }} - {{ compra.proveedor }}</div>
+        {% for item in compra.items.all %}
+        <div class="row indent"><span>{{ item.ingrediente.nombre }} x{{ item.cantidad }}</span><span>{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</span></div>
+        {% endfor %}
+        {% endfor %}
+        <hr>
+        {% endif %}
+
+        {% if movimientos %}
+        <div class="section-title">GASTOS Y RETIROS</div>
+        {% for mov in movimientos %}
+        <div class="row indent"><span>{{ mov.get_tipo_display }}: {{ mov.descripcion }}</span><span>-{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}</span></div>
+        {% endfor %}
+        <hr>
+        <div class="row total-row"><span>Total Gastos:</span><span>{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
+        <div class="row total-row"><span>Total Retiros:</span><span>{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
+        <hr>
+        {% endif %}
+
+        <div class="row grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span></div>
+        <hr>
+
+        {% if aperturas_dia %}
+        <div class="section-title">APERTURAS DEL DIA</div>
+        {% for apertura in aperturas_dia %}
+        <div class="subsection">{{ apertura.fecha_apertura|date:"H:i" }} - {{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
+        <div class="row indent"><span>Monto inicial:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</span></div>
+        {% if apertura.estado == "cerrada" %}
+        <div class="row indent"><span>Cierre:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_cierre_efectivo|floatformat:2 }}</span></div>
+        <div class="row indent{% if apertura.diferencia < 0 %} error{% endif %}"><span>Diferencia:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}</span></div>
+        {% else %}
+        <div class="row indent"><span>Estado:</span><span>ABIERTA</span></div>
+        {% endif %}
+        {% endfor %}
+        <hr>
+        {% endif %}
+
+        <div class="footer">
+            <p>Gracias por su preferencia</p>
+            <p style="font-size:9px;">{{ RESTAURANT_NAME }}</p>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>

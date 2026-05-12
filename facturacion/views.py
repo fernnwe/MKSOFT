@@ -530,6 +530,103 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         return response
 
 
+class CierreTicketView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
+    template_name = "facturacion/cierre_ticket.html"
+    permission = "can_view_facturacion"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        fecha_str = self.request.GET.get("fecha")
+        if fecha_str:
+            from datetime import datetime
+            hoy = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        else:
+            hoy = timezone.localtime(timezone.now()).date()
+
+        start = timezone.make_aware(timezone.datetime.combine(hoy, timezone.datetime.min.time()))
+        end = timezone.make_aware(timezone.datetime.combine(hoy, timezone.datetime.max.time()))
+
+        cliente = self.get_cliente()
+        facturas_qs = Factura.objects.all()
+        comandas_qs = Comanda.objects.all()
+        compras_qs = Compra.objects.all()
+        cajas_qs = CajaApertura.objects.all()
+        if cliente:
+            facturas_qs = facturas_qs.filter(cliente=cliente)
+            comandas_qs = comandas_qs.filter(cliente=cliente)
+            compras_qs = compras_qs.filter(cliente=cliente)
+            cajas_qs = cajas_qs.filter(cliente=cliente)
+
+        context["caja_abierta"] = cajas_qs.filter(estado=CajaApertura.Estado.ABIERTA).first()
+        facturas_dia = facturas_qs.filter(fecha_emision__gte=start, fecha_emision__lte=end)
+        context["fecha_seleccionada"] = hoy
+        context["fecha_cierre"] = timezone.now()
+
+        facturas_pagadas = facturas_dia.filter(estado=Factura.Estado.PAGADA)
+        facturas_canceladas = facturas_dia.filter(estado=Factura.Estado.CANCELADA)
+        context["facturas_pagadas_count"] = facturas_pagadas.count()
+        context["facturas_canceladas_count"] = facturas_canceladas.count()
+
+        total_ventas = facturas_pagadas.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+        total_iva = facturas_pagadas.aggregate(iva=Sum("impuestos"))["iva"] or 0
+        total_servicio = facturas_pagadas.aggregate(servicio=Sum("propina"))["servicio"] or 0
+        total_descuentos = facturas_pagadas.aggregate(descuento=Sum("descuento"))["descuento"] or 0
+        context["total_ventas"] = total_ventas
+        context["total_iva"] = total_iva
+        context["total_servicio"] = total_servicio
+        context["total_descuentos"] = total_descuentos
+
+        efectivo = facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.EFECTIVO).aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+        tarjeta = facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.TARJETA).aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+        transferencia = facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.TRANSFERENCIA).aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+
+        ventas_por_metodo = [
+            {"metodo": "Efectivo", "total": efectivo, "count": facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.EFECTIVO).count()},
+            {"metodo": "Tarjeta", "total": tarjeta, "count": facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.TARJETA).count()},
+            {"metodo": "Transferencia", "total": transferencia, "count": facturas_pagadas.filter(metodo_pago=Factura.MetodoPago.TRANSFERENCIA).count()},
+        ]
+        context["ventas_por_metodo"] = ventas_por_metodo
+
+        comandas_cerradas = comandas_qs.filter(fecha_cierre__gte=start, fecha_cierre__lte=end)
+        context["comandas_cerradas_count"] = comandas_cerradas.count()
+
+        compras_dia = compras_qs.filter(fecha__gte=start, fecha__lte=end)
+        compras_recibidas = compras_dia.filter(estado=Compra.Estado.RECIBIDA)
+        compras_pendientes = compras_dia.filter(estado=Compra.Estado.PENDIENTE)
+        compras_canceladas = compras_dia.filter(estado=Compra.Estado.CANCELADA)
+        total_compras = sum(c.total for c in compras_recibidas)
+        context["compras_recibidas_count"] = compras_recibidas.count()
+        context["compras_pendientes_count"] = compras_pendientes.count()
+        context["compras_canceladas_count"] = compras_canceladas.count()
+        context["total_compras"] = total_compras
+        context["compras_detalladas"] = compras_recibidas.prefetch_related("items").order_by("fecha")
+        context["balance_neto"] = total_ventas - total_compras
+
+        caja_abierta = cajas_qs.filter(estado=CajaApertura.Estado.ABIERTA).first()
+        movimientos = CajaMovimiento.objects.none()
+        total_gastos_mov = 0
+        total_retiros_mov = 0
+        if caja_abierta:
+            movimientos = caja_abierta.movimientos.select_related("usuario").order_by("-fecha")
+            total_gastos_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
+            total_retiros_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
+        else:
+            cajas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end)
+            for caja in cajas_dia:
+                movs = caja.movimientos.select_related("usuario").all()
+                movimientos = movimientos | movs
+                total_gastos_mov += movs.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
+                total_retiros_mov += movs.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
+            movimientos = movimientos.order_by("-fecha")
+        context["movimientos"] = movimientos
+        context["total_gastos_mov"] = total_gastos_mov
+        context["total_retiros_mov"] = total_retiros_mov
+
+        aperturas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end).select_related("usuario_apertura")
+        context["aperturas_dia"] = aperturas_dia
+        return context
+
+
 class HistorialCierresView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = CajaApertura
     template_name = "facturacion/historial_cierres.html"

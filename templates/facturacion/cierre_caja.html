@@ -38,10 +38,10 @@
                     <div class="md3-input-line"></div>
                 </div>
             </form>
-            <button onclick="window.print()" class="md3-btn md3-btn-filled">
+            <a href="{% url 'facturacion:cierre_ticket' %}" target="_blank" class="md3-btn md3-btn-filled">
                 <span class="material-symbols-outlined">print</span>
-                <span style="display:none;">Imprimir Ticket</span>
-            </button>
+                Imprimir Ticket
+            </a>
         </div>
     </div>
 </div>
@@ -345,147 +345,5 @@
     </div>
 </div>
 
-<!-- Ticket para impresion -->
-<div id="cierre-box" class="ticket-container">
-    <div class="ticket">
-        <div class="ticket-header">
-            <h2 class="ticket-title">{{ RESTAURANT_NAME }}</h2>
-            <p class="ticket-info">{{ RESTAURANT_ADDRESS }}</p>
-            <p class="ticket-info">Tel: {{ RESTAURANT_PHONE }} | RUC: {{ RESTAURANT_RFC }}</p>
-            <div class="ticket-divider"></div>
-            <h3 class="ticket-section">Cierre de Caja</h3>
-            <p class="ticket-info">{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
-            <p class="ticket-info">Usuario: {{ user.get_full_name|default:user.username }}</p>
-            <div class="ticket-divider"></div>
-        </div>
 
-        <div class="ticket-section-title">RESUMEN DE VENTAS</div>
-        <div class="ticket-row"><span>Facturas pagadas:</span><span>{{ facturas_pagadas_count }}</span></div>
-        <div class="ticket-row"><span>Facturas canceladas:</span><span>{{ facturas_canceladas_count }}</span></div>
-        <div class="ticket-row"><span>Comandas cerradas:</span><span>{{ comandas_cerradas_count }}</span></div>
-        <div class="ticket-divider"></div>
-
-        <div class="ticket-section-title">TIPOS DE PAGO</div>
-        {% for item in ventas_por_metodo %}
-        <div class="ticket-row"><span>{{ item.metodo }} ({{ item.count }})</span><span>{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</span></div>
-        {% endfor %}
-        <div class="ticket-row ticket-total"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span></div>
-        <div class="ticket-divider"></div>
-
-        {% if total_iva > 0 or total_servicio > 0 or total_descuentos > 0 %}
-        <div class="ticket-section-title">DESGLOSE</div>
-        {% if total_iva > 0 %}
-        <div class="ticket-row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span></div>
-        {% endif %}
-        {% if total_servicio > 0 %}
-        <div class="ticket-row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span></div>
-        {% endif %}
-        {% if total_descuentos > 0 %}
-        <div class="ticket-row ticket-error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span></div>
-        {% endif %}
-        {% endif %}
-        <div class="ticket-divider"></div>
-
-        <div class="ticket-section-title">COMPRAS DEL DIA</div>
-        <div class="ticket-row"><span>Compras recibidas:</span><span>{{ compras_recibidas_count }}</span></div>
-        <div class="ticket-row"><span>Compras pendientes:</span><span>{{ compras_pendientes_count }}</span></div>
-        <div class="ticket-row"><span>Compras canceladas:</span><span>{{ compras_canceladas_count }}</span></div>
-        <div class="ticket-row ticket-total"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span></div>
-        {% if total_gastos_mov > 0 %}
-        <div class="ticket-row"><span>Gastos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
-        {% endif %}
-        {% if total_retiros_mov > 0 %}
-        <div class="ticket-row"><span>Retiros:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
-        {% endif %}
-        <div class="ticket-divider"></div>
-
-        {% if compras_detalladas %}
-        <div class="ticket-section-title">DETALLE DE COMPRAS</div>
-        {% for compra in compras_detalladas %}
-        <div class="ticket-subsection">{{ compra.folio }} - {{ compra.proveedor }}</div>
-        {% for item in compra.items.all %}
-        <div class="ticket-row ticket-indent"><span>{{ item.ingrediente.nombre }} x{{ item.cantidad }}</span><span>{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</span></div>
-        {% endfor %}
-        {% endfor %}
-        <div class="ticket-divider"></div>
-        {% endif %}
-
-        {% if movimientos %}
-        <div class="ticket-section-title">GASTOS Y RETIROS</div>
-        {% for mov in movimientos %}
-        <div class="ticket-row ticket-indent"><span>{{ mov.get_tipo_display }}: {{ mov.descripcion }}</span><span>-{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}</span></div>
-        {% endfor %}
-        <div class="ticket-divider"></div>
-
-        <div class="ticket-row ticket-total"><span>Total Gastos:</span><span>{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
-        <div class="ticket-row ticket-total"><span>Total Retiros:</span><span>{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
-        <div class="ticket-divider"></div>
-        {% endif %}
-
-        <div class="ticket-row ticket-grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span></div>
-        <div class="ticket-divider"></div>
-
-        {% if aperturas_dia %}
-        <div class="ticket-section-title">APERTURAS DEL DIA</div>
-        {% for apertura in aperturas_dia %}
-        <div class="ticket-subsection">{{ apertura.fecha_apertura|date:"H:i" }} - {{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
-        <div class="ticket-row ticket-indent"><span>Monto inicial:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</span></div>
-        {% if apertura.estado == "cerrada" %}
-        <div class="ticket-row ticket-indent"><span>Cierre:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_cierre_efectivo|floatformat:2 }}</span></div>
-        <div class="ticket-row ticket-indent"><span>Diferencia:</span><span class="{% if apertura.diferencia < 0 %}ticket-error{% endif %}">{{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}</span></div>
-        {% else %}
-        <div class="ticket-row ticket-indent"><span>Estado:</span><span>ABIERTA</span></div>
-        {% endif %}
-        {% endfor %}
-        <div class="ticket-divider"></div>
-        {% endif %}
-
-        <div class="ticket-footer">
-            <p class="ticket-footer-text">Gracias por su preferencia</p>
-            <p class="ticket-footer-small">{{ RESTAURANT_NAME }}</p>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.ticket-container { display: none; }
-@media print {
-    body * { visibility: hidden !important; }
-    .no-print { display: none !important; }
-    .ticket-container, .ticket-container * { visibility: visible !important; }
-    .ticket-container { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 80mm; margin: 0 auto; }
-    @page { size: 80mm auto; margin: 0; }
-    .ticket { padding: 3px; font-size: 10px; font-weight: 700; }
-    .ticket-title { font-size: 15px; font-weight: 900; }
-    .ticket-info { font-weight: 700; }
-    .ticket-row { font-weight: 700; }
-    .ticket-total { font-weight: 900; }
-    .ticket-grand-total { font-weight: 900; }
-    .ticket-section-title { font-weight: 900; }
-}
-@media print and (max-width: 58mm) {
-    @page { size: 58mm auto; margin: 0; }
-    .ticket-container { max-width: 58mm; }
-    .ticket { font-size: 9px; padding: 2px; font-weight: 700; }
-}
-
-.ticket { font-family: 'Courier New', monospace; font-size: 11px; color: #000; line-height: 1.3; padding: 6px; font-weight: 700; }
-.ticket-header { text-align: center; }
-.ticket-title { font-size: 16px; font-weight: 900; margin: 0 0 4px; letter-spacing: 0.5px; }
-.ticket-info { margin: 0; font-size: 10px; font-weight: 700; }
-.ticket-divider { border-top: 1px solid #000; margin: 6px 0; }
-.ticket-section { font-size: 13px; font-weight: 900; text-align: center; margin: 4px 0; }
-.ticket-section-title { font-weight: 900; text-transform: uppercase; margin: 6px 0 4px; font-size: 11px; letter-spacing: 0.5px; }
-.ticket-subsection { font-weight: 700; margin: 4px 0 2px; font-size: 10px; }
-.ticket-row { display: flex; justify-content: space-between; margin: 2px 0; font-weight: 700; }
-.ticket-indent { padding-left: 10px; }
-.ticket-total { font-weight: 900; border-top: 1px solid #000; padding-top: 4px; }
-.ticket-grand-total { font-size: 13px; font-weight: 900; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
-.ticket-error { color: #B3261E; font-weight: 700; }
-.ticket-footer { text-align: center; margin-top: 10px; }
-.ticket-footer-text { margin: 0; font-size: 12px; font-weight: 700; }
-.ticket-footer-small { margin: 0; font-size: 9px; font-weight: 700; }
-</style>
 {% endblock %}

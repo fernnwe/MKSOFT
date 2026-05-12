@@ -13,6 +13,7 @@ urlpatterns = [
     path("cierre-caja/", views.CierreCajaView.as_view(), name="cierre_caja"),
     path("cierre-caja/confirmar/", views.CierreCajaConfirmView.as_view(), name="cierre_confirm"),
     path("cierre-caja/exitoso/", views.CierreExitosoView.as_view(), name="cierre_exitoso"),
+    path("cierre-caja/ticket/", views.CierreTicketView.as_view(), name="cierre_ticket"),
     path("cierre-caja/pdf/", views.CierreCajaPdfView.as_view(), name="cierre_pdf"),
     path("cierres/historial/", views.HistorialCierresView.as_view(), name="historial_cierres"),
     path("caja/movimiento/", views.CajaMovimientoCreateView.as_view(), name="caja_movimiento"),
