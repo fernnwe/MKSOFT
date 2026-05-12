@@ -367,7 +367,7 @@ def generate_productos_pdf(productos_qs, restaurant_name, currency_symbol):
     return buffer
 
 
-def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas, compras_recibidas, ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos, balance_neto, restaurant_name, currency_symbol, fecha):
+def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas, compras_recibidas, ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos, balance_neto, restaurant_name, currency_symbol, fecha, movimientos=None, total_gastos_mov=0, total_retiros_mov=0):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -533,6 +533,38 @@ def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas,
         ("TEXTCOLOR", (0, -1), (-1, -1), COLORS["primary"]),
     ]))
     elements.append(compras_table)
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("Gastos y Retiros", styles["CardTitle"]))
+    gastos_data = [["Tipo", "Descripcion", "Usuario", "Monto"]]
+    if movimientos:
+        for mov in movimientos:
+            gastos_data.append([
+                mov.get_tipo_display(),
+                mov.descripcion[:40],
+                mov.usuario.get_full_name() if mov.usuario and mov.usuario.get_full_name() else (mov.usuario.username if mov.usuario else "-"),
+                f"-{currency_symbol}{mov.monto:.2f}",
+            ])
+    gastos_data.append(["", "", "TOTAL GASTOS:", f"{currency_symbol}{total_gastos_mov:.2f}"])
+    gastos_data.append(["", "", "TOTAL RETIROS:", f"{currency_symbol}{total_retiros_mov:.2f}"])
+    gastos_table = Table(gastos_data, colWidths=[25*mm, 60*mm, 45*mm, 40*mm])
+    gastos_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), COLORS["header_bg"]),
+        ("TEXTCOLOR", (0, 0), (-1, 0), COLORS["header_text"]),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("ALIGN", (3, 0), (-1, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.5, COLORS["outline_variant"]),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -3), [COLORS["row_alt"], COLORS["white"]]),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("FONTNAME", (0, -2), (-1, -1), "Helvetica-Bold"),
+        ("BACKGROUND", (0, -2), (-1, -1), COLORS["primary_light"]),
+        ("TEXTCOLOR", (0, -2), (-1, -1), COLORS["primary"]),
+        ("TEXTCOLOR", (3, 1), (3, -3), COLORS["error"]),
+    ]))
+    elements.append(gastos_table)
     elements.append(Spacer(1, 12))
 
     elements.append(Paragraph("Detalle de Facturas Pagadas", styles["CardTitle"]))

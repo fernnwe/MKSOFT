@@ -505,10 +505,15 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         aperturas_cerradas = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end, estado=CajaApertura.Estado.CERRADA).first()
         config = ConfigRestaurante.get_config(cliente)
 
+        movimientos = CajaMovimiento.objects.filter(caja__in=cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end))
+        total_gastos_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
+        total_retiros_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
+
         buffer = generate_cierre_pdf(
             aperturas_cerradas, facturas_pagadas, facturas_canceladas, compras_recibidas,
             ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos,
-            total_ventas - total_compras, config.nombre, config.simbolo_moneda, hoy
+            total_ventas - total_compras, config.nombre, config.simbolo_moneda, hoy,
+            movimientos=movimientos, total_gastos_mov=total_gastos_mov, total_retiros_mov=total_retiros_mov
         )
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="cierre_{hoy.strftime("%Y%m%d")}.pdf"'
