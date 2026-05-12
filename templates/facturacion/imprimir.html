@@ -1,122 +1,110 @@
-{% extends 'base.html' %}
-{% block title %}Imprimir Factura {{ factura.folio }}{% endblock %}
-{% block extra_css %}
-<style>
-    @page { size: 58mm 297mm; margin: 0; }
-    body { margin: 0; padding: 0; background: #fff; }
-    .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
-    .messages-wrap, .md3-fab, .md3-nav-drawer-overlay,
-    header, nav { display: none !important; }
-    .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-    #factura-print { padding: 2mm 1.5mm; color: #000 !important; font-size: 13px !important; line-height: 1.2; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-shadow: 0 0 0.5px #000; }
-    #factura-print hr { border-color: #000 !important; margin: 4px 0; border-width: 1px; }
-    #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 13px !important; font-weight: 900; }
-    #factura-print table { width: 100%; border-collapse: collapse; }
-    #factura-print td, #factura-print th { padding: 3px 0; }
-    @media print {
-        .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
-        .messages-wrap, .md3-fab, header, nav { display: none !important; }
-        .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-        body { background: white !important; margin: 0; padding: 0; }
-        #factura-print { padding: 1.5mm; color: #000 !important; font-size: 12px !important; line-height: 1.15; font-weight: 900; text-shadow: 0 0 0.5px #000; }
-        #factura-print hr { border-color: #000 !important; margin: 3px 0; border-width: 2px; }
-        #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 12px !important; font-weight: 900; }
-    }
-</style>
-{% endblock %}
-{% block content %}
-<div id="factura-print" style="max-width:58mm; margin:0; font-family:'Courier New', monospace;">
-    <div style="text-align:center; margin-bottom:8px;">
-        <h4 style="font-weight:700; margin:0;">{{ RESTAURANT_NAME }}</h4>
-        <p style="margin:2px 0;">{{ RESTAURANT_ADDRESS }}</p>
-        <p style="margin:2px 0;">Tel: {{ RESTAURANT_PHONE }}</p>
-        <p style="margin:2px 0 0;">RUC: {{ RESTAURANT_RFC }}</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Imprimir {{ factura.folio }}</title>
+    {% load static %}
+    <style>
+        @page { size: 58mm 297mm; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            background: #fff; color: #000;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 12px; line-height: 1.15; font-weight: 700;
+            width: 58mm; overflow-x: hidden;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        #factura-print { padding: 1.5mm; width: 100%; }
+        .center { text-align: center; }
+        .bold { font-weight: 900; }
+        hr { border: none; border-top: 2px solid #000; margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { padding: 1px 0; vertical-align: top; }
+        .row { display: flex; justify-content: space-between; }
+        .total { font-weight: 900; font-size: 13px; }
+        .header-title { font-size: 14px; font-weight: 900; }
+        @media print {
+            html, body { width: 58mm; font-size: 11px; }
+            #factura-print { padding: 1mm; }
+        }
+    </style>
+</head>
+<body>
+    <div id="factura-print">
+        <div class="center" style="margin-bottom:6px;">
+            <div class="header-title">{{ RESTAURANT_NAME }}</div>
+            <p>{{ RESTAURANT_ADDRESS }}</p>
+            <p>Tel: {{ RESTAURANT_PHONE }}</p>
+            <p>RUC: {{ RESTAURANT_RFC }}</p>
+        </div>
+
+        <hr>
+
+        <p><span class="bold">Folio:</span> {{ factura.folio }}</p>
+        <p><span class="bold">Comanda:</span> {{ factura.comanda.codigo }}</p>
+        <p><span class="bold">Mesa:</span> {{ factura.comanda.mesa.numero }}</p>
+        <p><span class="bold">Fecha:</span> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
+
+        {% if factura.cliente_nombre %}
+        <hr>
+        <p><span class="bold">Cliente:</span> {{ factura.cliente_nombre }}</p>
+        {% if factura.cliente_rfc %}<p><span class="bold">RUC:</span> {{ factura.cliente_rfc }}</p>{% endif %}
+        {% endif %}
+
+        <hr>
+
+        <table>
+            <thead><tr><th style="text-align:left;">Cant</th><th style="text-align:left;">Concepto</th><th style="text-align:right;">Total</th></tr></thead>
+            <tbody>
+                {% for item in factura.comanda.items.all %}
+                {% if not item.cancelado %}
+                <tr>
+                    <td style="white-space:nowrap;">{{ item.cantidad }}</td>
+                    <td style="width:100%;">{{ item.producto.nombre }}</td>
+                    <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <hr>
+
+        <div class="row"><span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span></div>
+        {% if factura.impuestos > 0 %}
+        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if factura.descuento > 0 %}
+        <div class="row"><span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if factura.propina > 0 %}
+        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span></div>
+        {% endif %}
+
+        <hr>
+        <div class="row total"><span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span></div>
+
+        <div class="row"><span>Pago:</span><span>{{ factura.get_metodo_pago_display }}</span></div>
+        {% if factura.monto_recibido %}
+        <div class="row"><span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if factura.cambio and factura.cambio > 0 %}
+        <div class="row"><span>Cambio:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if factura.divisa_nombre %}
+        <div class="row"><span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|floatformat:2 }}</span></div>
+        {% if factura.divisa_tasa %}
+        <div class="row"><span>Tasa:</span><span>1 = {{ factura.divisa_tasa|floatformat:4 }}</span></div>
+        {% endif %}
+        {% endif %}
+
+        <hr>
+        <p class="center">Gracias por su preferencia!</p>
     </div>
 
-    <hr>
-
-    <p style="margin:2px 0;"><strong>Folio:</strong> {{ factura.folio }}</p>
-    <p style="margin:2px 0;"><strong>Comanda:</strong> {{ factura.comanda.codigo }}</p>
-    <p style="margin:2px 0;"><strong>Mesa:</strong> {{ factura.comanda.mesa.numero }}</p>
-    <p style="margin:2px 0;"><strong>Fecha:</strong> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
-
-    {% if factura.cliente_nombre %}
-    <hr>
-    <p style="margin:2px 0;"><strong>Cliente:</strong> {{ factura.cliente_nombre }}</p>
-    {% if factura.cliente_rfc %}<p style="margin:2px 0;"><strong>RUC:</strong> {{ factura.cliente_rfc }}</p>{% endif %}
-    {% endif %}
-
-    <hr>
-
-    <table>
-        <thead><tr><th style="text-align:left;">Cant</th><th style="text-align:left;">Concepto</th><th style="text-align:right;">Total</th></tr></thead>
-        <tbody>
-            {% for item in factura.comanda.items.all %}
-            {% if not item.cancelado %}
-            <tr>
-                <td>{{ item.cantidad }}</td>
-                <td>{{ item.producto.nombre }}</td>
-                <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <hr>
-
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span>
-    </div>
-    {% if factura.impuestos > 0 %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span>
-    </div>
-    {% endif %}
-    {% if factura.descuento > 0 %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span>
-    </div>
-    {% endif %}
-    {% if factura.propina > 0 %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span>
-    </div>
-    {% endif %}
-    <hr>
-    <div style="display:flex; justify-content:space-between; font-weight:700; font-size:11px !important;">
-        <span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Pago:</span><span>{{ factura.get_metodo_pago_display }}</span>
-    </div>
-    {% if factura.monto_recibido %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</span>
-    </div>
-    {% endif %}
-    {% if factura.cambio and factura.cambio > 0 %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Cambio:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</span>
-    </div>
-    {% endif %}
-    {% if factura.divisa_nombre %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|floatformat:2 }}</span>
-    </div>
-    {% if factura.divisa_tasa %}
-    <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Tasa:</span><span>1 = {{ factura.divisa_tasa|floatformat:4 }}</span>
-    </div>
-    {% endif %}
-    {% endif %}
-
-    <hr>
-    <p style="text-align:center; margin:2px 0;">Gracias por su preferencia!</p>
-</div>
-
-<script>
-    window.onload = function() { window.print(); };
-</script>
-{% endblock %}
+    <script>
+        window.onload = function() { window.print(); };
+    </script>
+</body>
+</html>
