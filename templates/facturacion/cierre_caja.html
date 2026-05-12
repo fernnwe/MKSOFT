@@ -189,6 +189,24 @@
                     </div>
                     <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span>
                 </div>
+                {% if total_gastos_mov > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-error);">money_off</span>
+                        <span>Gastos</span>
+                    </div>
+                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if total_retiros_mov > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-tertiary);">account_balance</span>
+                        <span>Retiros</span>
+                    </div>
+                    <span style="font-weight:600; color:var(--md-sys-color-tertiary);">{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span>
+                </div>
+                {% endif %}
                 <div style="height:1px; background:var(--md-sys-color-outline); margin:8px 0;"></div>
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; font-weight:700; font-size:18px;">
                     <span>Balance Neto</span>
@@ -234,6 +252,98 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Gastos y Retiros -->
+<div class="px-3 px-md-4 no-print" style="margin-bottom:16px;">
+    <div class="md3-grid md3-grid-2">
+        <div class="md3-card-outlined">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">receipt</span>
+                    <strong>Registrar Movimiento</strong>
+                </div>
+            </div>
+            {% if caja_abierta %}
+            <form method="post" action="{% url 'facturacion:caja_movimiento' %}" style="padding:16px;">
+                {% csrf_token %}
+                <input type="hidden" name="caja_id" value="{{ caja_abierta.pk }}">
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <div class="md3-field" style="flex:1; min-width:120px;">
+                        <select name="tipo" class="md3-input" style="padding-top:24px;" id="mov-tipo">
+                            <option value="gasto">Gasto</option>
+                            <option value="retiro">Retiro</option>
+                        </select>
+                        <label class="md3-label" for="mov-tipo">Tipo</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                    <div class="md3-field" style="flex:1; min-width:120px;">
+                        <input type="number" step="0.01" min="0.01" name="monto" class="md3-input" style="padding-top:24px;" id="mov-monto" required>
+                        <label class="md3-label" for="mov-monto">Monto</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+                <div class="md3-field" style="margin-top:8px;">
+                    <input type="text" name="descripcion" class="md3-input" style="padding-top:24px;" id="mov-desc" required maxlength="255">
+                    <label class="md3-label" for="mov-desc">Descripcion</label>
+                    <div class="md3-input-line"></div>
+                </div>
+                <button type="submit" class="md3-btn md3-btn-filled" style="margin-top:12px; width:100%; justify-content:center;">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Registrar
+                </button>
+            </form>
+            {% else %}
+            <div style="padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant);">
+                <span class="material-symbols-outlined" style="font-size:32px; display:block; margin-bottom:8px;">lock</span>
+                Abre la caja para registrar gastos y retiros
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="md3-card-outlined">
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center md3-flex-justify-between">
+                    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+                        <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">receipt_long</span>
+                        <strong>Movimientos del dia</strong>
+                    </div>
+                    <div style="display:flex; gap:16px; font-size:12px;">
+                        <span><span style="color:var(--md-sys-color-error); font-weight:600;">Gastos:</span> {{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span>
+                        <span><span style="color:var(--md-sys-color-tertiary); font-weight:600;">Retiros:</span> {{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:0;">
+                {% for mov in movimientos %}
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 16px; {% if not forloop.last %}border-bottom:1px solid var(--md-sys-color-outline-variant);{% endif %}">
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                        <span class="material-symbols-outlined" style="font-size:20px; color:{% if mov.tipo == 'gasto' %}var(--md-sys-color-error){% else %}var(--md-sys-color-tertiary){% endif %};">
+                            {% if mov.tipo == 'gasto' %}money_off{% else %}account_balance{% endif %}
+                        </span>
+                        <div style="min-width:0;">
+                            <div style="font-weight:500; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ mov.descripcion }}</div>
+                            <div style="font-size:11px; color:var(--md-sys-color-on-surface-variant);">
+                                {{ mov.usuario.get_full_name|default:mov.usuario.username }} &middot; {{ mov.fecha|date:"H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:right; flex-shrink:0; margin-left:12px;">
+                        <div style="font-weight:700; font-size:15px; color:{% if mov.tipo == 'gasto' %}var(--md-sys-color-error){% else %}var(--md-sys-color-tertiary){% endif %};">
+                            -{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}
+                        </div>
+                        <div style="font-size:10px; color:var(--md-sys-color-on-surface-variant); text-transform:uppercase;">{{ mov.get_tipo_display }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="padding:24px; text-align:center; color:var(--md-sys-color-on-surface-variant);">
+                    <span class="material-symbols-outlined" style="font-size:28px; display:block; margin-bottom:4px;">receipt_long</span>
+                    Sin movimientos registrados hoy
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Ticket para impresion -->
 <div id="cierre-box" class="ticket-container">
@@ -281,6 +391,12 @@
         <div class="ticket-row"><span>Compras pendientes:</span><span>{{ compras_pendientes_count }}</span></div>
         <div class="ticket-row"><span>Compras canceladas:</span><span>{{ compras_canceladas_count }}</span></div>
         <div class="ticket-row ticket-total"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span></div>
+        {% if total_gastos_mov > 0 %}
+        <div class="ticket-row"><span>Gastos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if total_retiros_mov > 0 %}
+        <div class="ticket-row"><span>Retiros:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
+        {% endif %}
         <div class="ticket-divider"></div>
 
         {% if compras_detalladas %}
@@ -294,15 +410,15 @@
         <div class="ticket-divider"></div>
         {% endif %}
 
-        {% if facturas_detalladas %}
-        <div class="ticket-section-title">DETALLE DE FACTURAS</div>
-        {% for factura in facturas_detalladas %}
-        <div class="ticket-subsection">{{ factura.folio }} - {{ factura.comanda.codigo }}</div>
-        <div class="ticket-row ticket-indent"><span>{{ factura.get_metodo_pago_display }} | {{ factura.usuario.get_full_name|default:factura.usuario.username }}</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</span></div>
-        {% if factura.cliente_nombre %}
-        <div class="ticket-row ticket-indent"><span>Cliente: {{ factura.cliente_nombre }}</span></div>
-        {% endif %}
+        {% if movimientos %}
+        <div class="ticket-section-title">GASTOS Y RETIROS</div>
+        {% for mov in movimientos %}
+        <div class="ticket-row ticket-indent"><span>{{ mov.get_tipo_display }}: {{ mov.descripcion }}</span><span>-{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}</span></div>
         {% endfor %}
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-row ticket-total"><span>Total Gastos:</span><span>{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
+        <div class="ticket-row ticket-total"><span>Total Retiros:</span><span>{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
         <div class="ticket-divider"></div>
         {% endif %}
 

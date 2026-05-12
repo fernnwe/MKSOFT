@@ -437,6 +437,25 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
         aperturas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end).select_related("usuario_apertura")
         context["aperturas_dia"] = aperturas_dia
 
+        movimientos = CajaMovimiento.objects.none()
+        total_gastos = 0
+        total_retiros = 0
+        if caja_abierta:
+            movimientos = caja_abierta.movimientos.select_related("usuario").order_by("-fecha")
+            total_gastos = movimientos.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
+            total_retiros = movimientos.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
+        else:
+            cajas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end)
+            for caja in cajas_dia:
+                movs = caja.movimientos.select_related("usuario").all()
+                movimientos = movimientos | movs
+                total_gastos += movs.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
+                total_retiros += movs.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
+            movimientos = movimientos.order_by("-fecha")
+        context["movimientos"] = movimientos
+        context["total_gastos_mov"] = total_gastos
+        context["total_retiros_mov"] = total_retiros
+
         return context
 
 
