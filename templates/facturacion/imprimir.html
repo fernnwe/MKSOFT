@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Imprimir {{ factura.folio }}</title>
     {% load static %}
+    {% load currency_tags %}
     <style>
         @page { size: 58mm 297mm; margin: 2mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +69,7 @@
                 <tr>
                     <td style="white-space:nowrap;">{{ item.cantidad }}</td>
                     <td style="width:100%;">{{ item.producto.nombre }}</td>
-                    <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                    <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
                 </tr>
                 {% endif %}
                 {% endfor %}
@@ -77,29 +78,29 @@
 
         <hr>
 
-        <div class="row"><span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span></div>
+        <div class="row"><span>Subtotal:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|currency }}</span></div>
         {% if factura.impuestos > 0 %}
-        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span></div>
+        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|currency }}</span></div>
         {% endif %}
         {% if factura.descuento > 0 %}
-        <div class="row"><span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span></div>
+        <div class="row"><span>Descuento:</span><span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|currency }}</span></div>
         {% endif %}
         {% if factura.propina > 0 %}
-        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span></div>
+        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ factura.propina|currency }}</span></div>
         {% endif %}
 
         <hr>
-        <div class="row total"><span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span></div>
+        <div class="row total"><span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|currency }}</span></div>
 
         <div class="row"><span>Pago:</span><span>{{ factura.get_metodo_pago_display }}</span></div>
         {% if factura.monto_recibido %}
-        <div class="row"><span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</span></div>
+        <div class="row"><span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|currency }}</span></div>
         {% endif %}
         {% if factura.cambio and factura.cambio > 0 %}
-        <div class="row"><span>Cambio:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</span></div>
+        <div class="row"><span>Cambio:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.cambio|currency }}</span></div>
         {% endif %}
         {% if factura.divisa_nombre %}
-        <div class="row"><span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|floatformat:2 }}</span></div>
+        <div class="row"><span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|currency }}</span></div>
         {% if factura.divisa_tasa %}
         <div class="row"><span>Tasa:</span><span>1 = {{ factura.divisa_tasa|floatformat:4 }}</span></div>
         {% endif %}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cierre de Caja {{ fecha_seleccionada|date:"d/m/Y" }}</title>
+{% load currency_tags %}
     <style>
         @page { size: 80mm 297mm; margin: 2mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,21 +65,21 @@
 
         <div class="section-title">TIPOS DE PAGO</div>
         {% for item in ventas_por_metodo %}
-        <div class="row"><span>{{ item.metodo }} ({{ item.count }})</span><span>{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</span></div>
+        <div class="row"><span>{{ item.metodo }} ({{ item.count }})</span><span>{{ CURRENCY_SYMBOL }}{{ item.total|currency }}</span></div>
         {% endfor %}
-        <div class="row total-row"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span></div>
+        <div class="row total-row"><span>TOTAL VENTAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</span></div>
         <hr>
 
         {% if total_iva > 0 or total_servicio > 0 or total_descuentos > 0 %}
         <div class="section-title">DESGLOSE</div>
         {% if total_iva > 0 %}
-        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span></div>
+        <div class="row"><span>IVA (15%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_iva|currency }}</span></div>
         {% endif %}
         {% if total_servicio > 0 %}
-        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span></div>
+        <div class="row"><span>Servicio (10%):</span><span>{{ CURRENCY_SYMBOL }}{{ total_servicio|currency }}</span></div>
         {% endif %}
         {% if total_descuentos > 0 %}
-        <div class="row error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span></div>
+        <div class="row error"><span>Descuentos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_descuentos|currency }}</span></div>
         {% endif %}
         {% endif %}
         <hr>
@@ -87,12 +88,12 @@
         <div class="row"><span>Compras recibidas:</span><span>{{ compras_recibidas_count }}</span></div>
         <div class="row"><span>Compras pendientes:</span><span>{{ compras_pendientes_count }}</span></div>
         <div class="row"><span>Compras canceladas:</span><span>{{ compras_canceladas_count }}</span></div>
-        <div class="row total-row"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span></div>
+        <div class="row total-row"><span>TOTAL COMPRAS</span><span>{{ CURRENCY_SYMBOL }}{{ total_compras|currency }}</span></div>
         {% if total_gastos_mov > 0 %}
-        <div class="row"><span>Gastos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
+        <div class="row"><span>Gastos:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|currency }}</span></div>
         {% endif %}
         {% if total_retiros_mov > 0 %}
-        <div class="row"><span>Retiros:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
+        <div class="row"><span>Retiros:</span><span>-{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|currency }}</span></div>
         {% endif %}
         <hr>
 
@@ -101,7 +102,7 @@
         {% for compra in compras_detalladas %}
         <div class="subsection">{{ compra.folio }} - {{ compra.proveedor }}</div>
         {% for item in compra.items.all %}
-        <div class="row indent"><span>{{ item.ingrediente.nombre }} x{{ item.cantidad }}</span><span>{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</span></div>
+        <div class="row indent"><span>{{ item.ingrediente.nombre }} x{{ item.cantidad }}</span><span>{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</span></div>
         {% endfor %}
         {% endfor %}
         <hr>
@@ -110,25 +111,25 @@
         {% if movimientos %}
         <div class="section-title">GASTOS Y RETIROS</div>
         {% for mov in movimientos %}
-        <div class="row indent"><span>{{ mov.get_tipo_display }}: {{ mov.descripcion }}</span><span>-{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}</span></div>
+        <div class="row indent"><span>{{ mov.get_tipo_display }}: {{ mov.descripcion }}</span><span>-{{ CURRENCY_SYMBOL }}{{ mov.monto|currency }}</span></div>
         {% endfor %}
         <hr>
-        <div class="row total-row"><span>Total Gastos:</span><span>{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span></div>
-        <div class="row total-row"><span>Total Retiros:</span><span>{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span></div>
+        <div class="row total-row"><span>Total Gastos:</span><span>{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|currency }}</span></div>
+        <div class="row total-row"><span>Total Retiros:</span><span>{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|currency }}</span></div>
         <hr>
         {% endif %}
 
-        <div class="row grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span></div>
+        <div class="row grand-total"><span>BALANCE NETO</span><span>{{ CURRENCY_SYMBOL }}{{ balance_neto|currency }}</span></div>
         <hr>
 
         {% if aperturas_dia %}
         <div class="section-title">APERTURAS DEL DIA</div>
         {% for apertura in aperturas_dia %}
         <div class="subsection">{{ apertura.fecha_apertura|date:"H:i" }} - {{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
-        <div class="row indent"><span>Monto inicial:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</span></div>
+        <div class="row indent"><span>Monto inicial:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|currency }}</span></div>
         {% if apertura.estado == "cerrada" %}
-        <div class="row indent"><span>Cierre:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_cierre_efectivo|floatformat:2 }}</span></div>
-        <div class="row indent{% if apertura.diferencia < 0 %} error{% endif %}"><span>Diferencia:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}</span></div>
+        <div class="row indent"><span>Cierre:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.monto_cierre_efectivo|currency }}</span></div>
+        <div class="row indent{% if apertura.diferencia < 0 %} error{% endif %}"><span>Diferencia:</span><span>{{ CURRENCY_SYMBOL }}{{ apertura.diferencia|currency }}</span></div>
         {% else %}
         <div class="row indent"><span>Estado:</span><span>ABIERTA</span></div>
         {% endif %}

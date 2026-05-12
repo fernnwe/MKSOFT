@@ -27,7 +27,7 @@
                 {% endif %}
                 <div style="margin-top: 1rem; font-size: 0.875rem;">
                     <p style="margin-bottom: 0.25rem;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">description</span>{{ mesero.comandas_atendidas }} comandas</p>
-                    <p style="margin-bottom: 0;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">payments</span>{{ CURRENCY_SYMBOL }}{{ mesero.propinas_total|floatformat:2 }} propinas</p>
+                    <p style="margin-bottom: 0;"><span class="material-symbols-outlined" style="margin-right: 0.25rem; font-size: 0.9rem;">payments</span>{{ CURRENCY_SYMBOL }}{{ mesero.propinas_total|currency }} propinas</p>
                 </div>
             </div>
             <div class="md3-card-body" style="border-top: 1px solid var(--md-sys-color-outline-variant); padding: 0.75rem;">

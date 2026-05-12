@@ -37,15 +37,15 @@
                     </tr>
                     <tr>
                         <td style="color: var(--md-sys-color-on-surface-variant);">Monto Total</td>
-                        <td style="text-align: end; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|floatformat:2 }}</td>
+                        <td style="text-align: end; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|currency }}</td>
                     </tr>
                     <tr>
                         <td style="color: var(--md-sys-color-on-surface-variant);">Monto Pagado</td>
-                        <td style="text-align: end; color: var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|floatformat:2 }}</td>
+                        <td style="text-align: end; color: var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|currency }}</td>
                     </tr>
                     <tr>
                         <td style="color: var(--md-sys-color-on-surface-variant);">Pendiente</td>
-                        <td style="text-align: end; font-weight: bold; color: var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</td>
+                        <td style="text-align: end; font-weight: bold; color: var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|currency }}</td>
                     </tr>
                     <tr>
                         <td style="color: var(--md-sys-color-on-surface-variant);">Vencimiento</td>
@@ -83,7 +83,7 @@
                                 <span class="md3-input-line">{{ CURRENCY_SYMBOL }}</span>
                                 <input type="number" name="monto" class="md3-input" step="any" min="0.01" max="{{ cuenta.monto_pendiente }}" value="{{ cuenta.monto_pendiente|floatformat:2 }}" required>
                             </div>
-                            <small style="color: var(--md-sys-color-on-surface-variant);">Pendiente: {{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</small>
+                            <small style="color: var(--md-sys-color-on-surface-variant);">Pendiente: {{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|currency }}</small>
                         </div>
                         <button type="submit" class="md3-btn md3-btn-success" style="width: 100%;">
                             <span class="material-symbols-outlined">check</span> Registrar Pago

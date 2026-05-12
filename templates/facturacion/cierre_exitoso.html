@@ -178,19 +178,19 @@
         </div>
         <div class="cierre-summary-row">
             <span class="cierre-summary-label">Monto Inicial</span>
-            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|floatformat:2 }}</span>
+            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|currency }}</span>
         </div>
         <div class="cierre-summary-row">
             <span class="cierre-summary-label">Efectivo Contado</span>
-            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|floatformat:2 }}</span>
+            <span class="cierre-summary-value">{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|currency }}</span>
         </div>
 
         {% with diff=caja.diferencia %}
         <div class="cierre-diferencia {% if diff < 0 %}negativo{% elif diff > 0 %}positivo{% else %}neutro{% endif %}">
             {% if diff < 0 %}
-            Faltante: {{ CURRENCY_SYMBOL }}{{ diff|floatformat:2 }}
+            Faltante: {{ CURRENCY_SYMBOL }}{{ diff|currency }}
             {% elif diff > 0 %}
-            Sobrante: {{ CURRENCY_SYMBOL }}+{{ diff|floatformat:2 }}
+            Sobrante: {{ CURRENCY_SYMBOL }}+{{ diff|currency }}
             {% else %}
             Cuadrado exacto
             {% endif %}
@@ -264,9 +264,9 @@ function sendWhatsapp() {
         fecha: "{{ caja.fecha_apertura|date:'d/m/Y' }}",
         apertura: "{{ caja.fecha_apertura|date:'H:i' }}",
         cierre: "{{ caja.fecha_cierre|date:'H:i' }}",
-        monto_inicial: "{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|floatformat:2 }}",
-        efectivo_contado: "{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|floatformat:2 }}",
-        diferencia: "{{ CURRENCY_SYMBOL }}{{ caja.diferencia|floatformat:2 }}",
+        monto_inicial: "{{ CURRENCY_SYMBOL }}{{ caja.monto_inicial|currency }}",
+        efectivo_contado: "{{ CURRENCY_SYMBOL }}{{ caja.monto_cierre_efectivo|currency }}",
+        diferencia: "{{ CURRENCY_SYMBOL }}{{ caja.diferencia|currency }}",
 {% endif %}
     };
 

@@ -696,8 +696,8 @@
                             {% endif %}
                         </td>
                         <td class="col-cantidad" style="font-weight:600;">{{ item.cantidad }}</td>
-                        <td class="col-precio">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|floatformat:2 }}</td>
-                        <td class="col-subtotal" style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                        <td class="col-precio">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|currency }}</td>
+                        <td class="col-subtotal" style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
                         <td class="col-estado">
                             {% if item.cancelado %}
                             <span class="item-status item-status-cancelado">
@@ -748,7 +748,7 @@
                     <tr style="background:var(--md-sys-color-surface-container);">
                         <td colspan="3" style="font-weight:700; text-align:right;">Total:</td>
                         <td style="font-weight:700; font-size:20px; text-align:right;">
-                            {{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}
+                            {{ CURRENCY_SYMBOL }}{{ comanda.total|currency }}
                         </td>
                         <td colspan="{% if comanda.estado == 'abierta' %}2{% else %}1{% endif %}"></td>
                     </tr>
@@ -815,7 +815,7 @@
                     <span class="material-symbols-outlined">calculate</span>
                     Resumen
                 </div>
-                <div class="summary-total">{{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}</div>
+                <div class="summary-total">{{ CURRENCY_SYMBOL }}{{ comanda.total|currency }}</div>
                 <div class="summary-note">{{ comanda.items.count }} item{{ comanda.items.count|pluralize }}</div>
             </div>
         </div>
@@ -872,7 +872,7 @@
                 <span class="modal-product-type">📦</span>
                 {% endif %}
                 <div class="modal-product-name">{{ producto.nombre }}</div>
-                <div class="modal-product-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</div>
+                <div class="modal-product-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|currency }}</div>
                 <div class="qty-controls">
                     <button type="button" class="qty-btn" onclick="changeQty(this, -1)">
                         <span class="material-symbols-outlined">remove</span>

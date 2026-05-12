@@ -147,7 +147,7 @@
                         <td><strong>{{ factura.folio }}</strong></td>
                         <td>{{ factura.comanda.codigo }}</td>
                         <td>{% if factura.comanda.mesa %}{{ factura.comanda.mesa.numero }}{% else %}&mdash;{% endif %}</td>
-                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|currency }}</td>
                     </tr>
                     {% empty %}
                     <tr>

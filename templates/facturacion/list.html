@@ -249,7 +249,7 @@
                     </div>
                     <span style="font-size:14px; color:var(--md-sys-color-on-primary-container);">Total Ventas</span>
                 </div>
-                <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-primary-container);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</div>
+                <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-primary-container);">{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</div>
             </div>
         </div>
     </div>
@@ -277,7 +277,7 @@
                         <td><code style="font-size:12px; background:var(--md-sys-color-surface-container); padding:2px 8px; border-radius:8px;">{{ factura.folio }}</code></td>
                         <td>{{ factura.comanda.codigo }}</td>
                         <td>{{ factura.cliente_nombre|default:"—" }}</td>
-                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|currency }}</td>
                         <td>{{ factura.get_metodo_pago_display|default:"—" }}</td>
                         <td>
                             {% if factura.estado == 'pagada' %}

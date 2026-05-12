@@ -105,15 +105,15 @@
             <div class="historial-stat-label">Total Cierres</div>
         </div>
         <div class="historial-stat">
-            <div class="historial-stat-value" style="color:{% if stats.diferencia_promedio < 0 %}var(--md-sys-color-error){% else %}var(--md-sys-color-success){% endif %};">{{ CURRENCY_SYMBOL }}{{ stats.diferencia_promedio|floatformat:2 }}</div>
+            <div class="historial-stat-value" style="color:{% if stats.diferencia_promedio < 0 %}var(--md-sys-color-error){% else %}var(--md-sys-color-success){% endif %};">{{ CURRENCY_SYMBOL }}{{ stats.diferencia_promedio|currency }}</div>
             <div class="historial-stat-label">Diferencia Promedio</div>
         </div>
         <div class="historial-stat">
-            <div class="historial-stat-value" style="color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ stats.total_faltante|floatformat:2 }}</div>
+            <div class="historial-stat-value" style="color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ stats.total_faltante|currency }}</div>
             <div class="historial-stat-label">Total Faltante</div>
         </div>
         <div class="historial-stat">
-            <div class="historial-stat-value" style="color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ stats.total_sobrante|floatformat:2 }}</div>
+            <div class="historial-stat-value" style="color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ stats.total_sobrante|currency }}</div>
             <div class="historial-stat-label">Total Sobrante</div>
         </div>
     </div>
@@ -170,9 +170,9 @@
                 </div>
             </div>
             <div style="text-align:right;">
-                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Monto inicial: {{ CURRENCY_SYMBOL }}{{ cierre.monto_inicial|floatformat:2 }}</div>
+                <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Monto inicial: {{ CURRENCY_SYMBOL }}{{ cierre.monto_inicial|currency }}</div>
                 <div class="cierre-diferencia {% if cierre.diferencia < 0 %}negativo{% elif cierre.diferencia > 0 %}positivo{% else %}neutro{% endif %}">
-                    {% if cierre.diferencia < 0 %}Faltante{% elif cierre.diferencia > 0 %}Sobrante{% else %}Exacto{% endif %}: {{ CURRENCY_SYMBOL }}{{ cierre.diferencia|floatformat:2 }}
+                    {% if cierre.diferencia < 0 %}Faltante{% elif cierre.diferencia > 0 %}Sobrante{% else %}Exacto{% endif %}: {{ CURRENCY_SYMBOL }}{{ cierre.diferencia|currency }}
                 </div>
                 <a href="{% url 'facturacion:cierre_pdf' %}?fecha={{ cierre.fecha_apertura|date:'Y-m-d' }}" class="md3-btn md3-btn-sm md3-btn-outlined" style="margin-top:6px; font-size:11px; padding:2px 8px;">
                     <span class="material-symbols-outlined" style="font-size:14px;">picture_as_pdf</span>

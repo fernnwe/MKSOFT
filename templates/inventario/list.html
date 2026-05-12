@@ -403,8 +403,8 @@
                         <td style="font-weight: bold;">{{ inv.cantidad_actual|floatformat:-3 }}</td>
                         <td>{{ inv.ingrediente.stock_minimo|floatformat:-3 }}</td>
                         <td>{{ inv.get_unidad_display }}</td>
-                        <td>{{ CURRENCY_SYMBOL }}{{ inv.costo_unitario|floatformat:2 }}</td>
-                        <td>{{ CURRENCY_SYMBOL }}{{ inv.valor_total|floatformat:2 }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ inv.costo_unitario|currency }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ inv.valor_total|currency }}</td>
                         <td>
                             {% if inv.bajo_stock %}
                             <span class="md3-badge md3-badge-error">Bajo Stock</span>

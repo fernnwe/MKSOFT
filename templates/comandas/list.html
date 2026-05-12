@@ -63,7 +63,7 @@
                         <td>{% if comanda.mesa %}Mesa {{ comanda.mesa.numero }}{% else %}&mdash;{% endif %}</td>
                         <td>{% if comanda.mesero %}{{ comanda.mesero.get_full_name|default:comanda.mesero.username }}{% else %}&mdash;{% endif %}</td>
                         <td><span class="md3-badge md3-badge-secondary">{{ comanda.items_count }}</span></td>
-                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ comanda.total|floatformat:2 }}</td>
+                        <td style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ comanda.total|currency }}</td>
                         <td>
                             {% if comanda.estado == 'abierta' %}
                             <span class="md3-badge md3-badge-primary">Abierta</span>

@@ -28,17 +28,17 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
                     <div class="md3-card-filled" style="padding:12px; border-radius:12px;">
                         <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Monto inicial</div>
-                        <div style="font-size:18px; font-weight:600; color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}{{ monto_inicial|floatformat:2 }}</div>
+                        <div style="font-size:18px; font-weight:600; color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}{{ monto_inicial|currency }}</div>
                     </div>
                     <div class="md3-card-filled" style="padding:12px; border-radius:12px;">
                         <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Ventas efectivo</div>
-                        <div style="font-size:18px; font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ facturas_efectivo|floatformat:2 }}</div>
+                        <div style="font-size:18px; font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ facturas_efectivo|currency }}</div>
                     </div>
                 </div>
 
                 <div class="md3-card-filled" style="padding:12px; border-radius:12px; margin-bottom:20px; background:var(--md-sys-color-secondary-container);">
                     <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Efectivo esperado en caja</div>
-                    <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-secondary-container);">{{ CURRENCY_SYMBOL }}{{ efectivo_esperado|floatformat:2 }}</div>
+                    <div style="font-size:24px; font-weight:700; color:var(--md-sys-color-on-secondary-container);">{{ CURRENCY_SYMBOL }}{{ efectivo_esperado|currency }}</div>
                 </div>
 
                 <div class="md3-field {% if form.monto_cierre_efectivo.errors %}md3-field-error{% endif %}">

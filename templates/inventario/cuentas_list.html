@@ -237,7 +237,7 @@
                 <span class="material-symbols-outlined" style="color: var(--md-sys-color-error); font-size: 2rem;">error</span>
                 <div>
                     <small style="color: var(--md-sys-color-on-surface-variant);">Total Pendiente</small>
-                    <h4 style="margin-bottom: 0; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ total_pendiente|floatformat:2 }}</h4>
+                    <h4 style="margin-bottom: 0; font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ total_pendiente|currency }}</h4>
                 </div>
             </div>
         </div>
@@ -287,9 +287,9 @@
                     <tr style="{% if cuenta.vencida %}background-color: var(--md-sys-color-error-container);{% endif %}">
                         <td><strong>{{ cuenta.folio }}</strong></td>
                         <td>{{ cuenta.proveedor }}</td>
-                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|floatformat:2 }}</td>
-                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|floatformat:2 }}</td>
-                        <td style="font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|floatformat:2 }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_total|currency }}</td>
+                        <td>{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pagado|currency }}</td>
+                        <td style="font-weight: bold;">{{ CURRENCY_SYMBOL }}{{ cuenta.monto_pendiente|currency }}</td>
                         <td>{{ cuenta.fecha_vencimiento|date:"d/m/Y" }}</td>
                         <td>
                             {% if cuenta.estado == "pagada" %}

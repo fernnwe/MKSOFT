@@ -4,7 +4,7 @@
             <div class="producto-card-name">{{ producto.nombre }}</div>
             <span class="producto-card-code">{{ producto.codigo }}</span>
         </div>
-        <div class="producto-card-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|floatformat:2 }}</div>
+        <div class="producto-card-price">{{ CURRENCY_SYMBOL }}{{ producto.precio|currency }}</div>
     </div>
     <div class="producto-card-meta">
         {% if producto.tipo == 'plato' %}

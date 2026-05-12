@@ -86,18 +86,18 @@
                 </div>
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">Recibido</small>
-                    <div style="font-size:14px; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</div>
+                    <div style="font-size:14px; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|currency }}</div>
                 </div>
                 {% if factura.cambio and factura.cambio > 0 %}
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">Cambio</small>
-                    <div style="font-size:14px; font-weight:500; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</div>
+                    <div style="font-size:14px; font-weight:500; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ factura.cambio|currency }}</div>
                 </div>
                 {% endif %}
                 {% if factura.divisa_nombre %}
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">{{ factura.divisa_nombre }}</small>
-                    <div style="font-size:14px; font-weight:500;">{{ factura.divisa_monto|floatformat:2 }} @ {{ factura.divisa_tasa|floatformat:4 }}</div>
+                    <div style="font-size:14px; font-weight:500;">{{ factura.divisa_monto|currency }} @ {{ factura.divisa_tasa|floatformat:4 }}</div>
                 </div>
                 {% endif %}
             </div>
@@ -113,7 +113,7 @@
                     {% if not item.cancelado %}
                     <tr>
                         <td>{{ item.cantidad }}x {{ item.producto.nombre }}</td>
-                        <td style="text-align:right; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                        <td style="text-align:right; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -125,30 +125,30 @@
         <div style="padding:16px;">
             <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
                 <span style="color:var(--md-sys-color-on-surface-variant);">Subtotal:</span>
-                <span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|floatformat:2 }}</span>
+                <span>{{ CURRENCY_SYMBOL }}{{ factura.subtotal|currency }}</span>
             </div>
             {% if factura.impuestos > 0 %}
             <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
                 <span>IVA (15%):</span>
-                <span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|floatformat:2 }}</span>
+                <span>{{ CURRENCY_SYMBOL }}{{ factura.impuestos|currency }}</span>
             </div>
             {% endif %}
             {% if factura.descuento > 0 %}
             <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);">
                 <span>Descuento:</span>
-                <span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|floatformat:2 }}</span>
+                <span>-{{ CURRENCY_SYMBOL }}{{ factura.descuento|currency }}</span>
             </div>
             {% endif %}
             {% if factura.propina > 0 %}
             <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);">
                 <span>Servicio (10%):</span>
-                <span>{{ CURRENCY_SYMBOL }}{{ factura.propina|floatformat:2 }}</span>
+                <span>{{ CURRENCY_SYMBOL }}{{ factura.propina|currency }}</span>
             </div>
             {% endif %}
             <div style="height:1px; background:var(--md-sys-color-outline); margin:8px 0;"></div>
             <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:24px;">
                 <span>TOTAL:</span>
-                <span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
+                <span>{{ CURRENCY_SYMBOL }}{{ factura.total|currency }}</span>
             </div>
         </div>
     </div>

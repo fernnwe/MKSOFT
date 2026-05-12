@@ -77,7 +77,7 @@
         <div class="md3-stat-card-icon" style="background:var(--md-sys-color-success-container);color:var(--md-sys-color-on-success-container);">
             <span class="material-symbols-outlined">payments</span>
         </div>
-        <div class="md3-stat-card-value">C$ {{ total_pagado|default:"0.00"|floatformat:2 }}</div>
+        <div class="md3-stat-card-value">C$ {{ total_pagado|default:"0.00"|currency }}</div>
         <div class="md3-stat-card-label">Total pagado · {{ pagos.count }} pagos</div>
     </div>
 </div>
@@ -101,7 +101,7 @@
             </div>
             <div style="text-align:center;">
                 <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ventas Totales</div>
-                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">C$ {{ ventas_total|floatformat:2 }}</div>
+                <div style="font-size:20px; font-weight:500; color:var(--md-sys-color-on-primary-container);">C$ {{ ventas_total|currency }}</div>
                 <div style="font-size:11px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">{{ total_facturas }} facturas</div>
             </div>
             <div style="text-align:center;">
@@ -388,7 +388,7 @@
                     {% for pago in pagos %}
                     <tr>
                         <td>{{ pago.fecha|date:"d/m/Y H:i" }}</td>
-                        <td>C$ {{ pago.monto|floatformat:2 }}</td>
+                        <td>C$ {{ pago.monto|currency }}</td>
                         <td>{{ pago.get_metodo_display }}</td>
                         <td>{{ pago.notas|default:"-" }}</td>
                     </tr>
@@ -401,7 +401,7 @@
                 <tfoot>
                     <tr style="font-weight:700; background:var(--md-sys-color-surface-container);">
                         <td style="text-align:right; padding:12px 16px;">Total generado:</td>
-                        <td style="padding:12px 16px; color:var(--md-sys-color-primary);">C$ {{ total_pagado|default:"0.00"|floatformat:2 }}</td>
+                        <td style="padding:12px 16px; color:var(--md-sys-color-primary);">C$ {{ total_pagado|default:"0.00"|currency }}</td>
                         <td colspan="2" style="padding:12px 16px;">{{ pagos.count }} pago{{ pagos.count|pluralize }}</td>
                     </tr>
                 </tfoot>

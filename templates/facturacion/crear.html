@@ -88,24 +88,24 @@
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
                     <span>Subtotal:</span>
-                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}{{ preview.subtotal|floatformat:2 }}</span>
+                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}{{ preview.subtotal|currency }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;" id="previewIvaRow">
                     <span>IVA (15%):</span>
-                    <span id="previewIva">{{ CURRENCY_SYMBOL }}{{ preview.iva|floatformat:2 }}</span>
+                    <span id="previewIva">{{ CURRENCY_SYMBOL }}{{ preview.iva|currency }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);" id="previewServicioRow">
                     <span>Servicio (10%):</span>
-                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}{{ preview.servicio|floatformat:2 }}</span>
+                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}{{ preview.servicio|currency }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
                     <span>Descuento:</span>
-                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|default:0|floatformat:2 }}</span>
+                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|default:0|currency }}</span>
                 </div>
                 <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:8px 0;"></div>
                 <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:20px;">
                     <span>TOTAL:</span>
-                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|floatformat:2 }}</span>
+                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|currency }}</span>
                 </div>
             </div>
 

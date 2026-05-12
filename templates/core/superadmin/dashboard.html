@@ -145,15 +145,15 @@
         <div class="md3-grid md3-grid-3" style="text-align:center;">
             <div>
                 <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Total Generado</div>
-                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ total_ingresos|floatformat:2 }}</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ total_ingresos|currency }}</div>
             </div>
             <div>
                 <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos del Año</div>
-                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_anio|floatformat:2 }}</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_anio|currency }}</div>
             </div>
             <div>
                 <div style="font-size:12px; color:var(--md-sys-color-on-primary-container); opacity:0.7;">Ingresos del Mes</div>
-                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_mes|floatformat:2 }}</div>
+                <div style="font-size:28px; font-weight:700; color:var(--md-sys-color-on-primary-container);">C$ {{ ingresos_mes|currency }}</div>
             </div>
         </div>
     </div>
@@ -206,7 +206,7 @@
             <div class="client-subscription-text">
                 <span>{{ cliente.dias_restantes }} d&iacute;as restantes</span>
                 {% with total_cliente=totales_por_cliente|get_item:cliente.pk %}
-                <span>Pagado: C$ {{ total_cliente|default:"0.00"|floatformat:2 }}</span>
+                <span>Pagado: C$ {{ total_cliente|default:"0.00"|currency }}</span>
                 {% endwith %}
             </div>
             <div class="client-actions" onclick="event.stopPropagation();">
@@ -265,7 +265,7 @@
                     {% for pago in pagos_recientes %}
                     <tr>
                         <td><a href="{% url 'core:superadmin_cliente_detalle' pago.cliente.pk %}" style="color:var(--md-sys-color-primary);font-weight:500;">{{ pago.cliente.nombre_negocio }}</a></td>
-                        <td style="font-weight:600;">C$ {{ pago.monto|floatformat:2 }}</td>
+                        <td style="font-weight:600;">C$ {{ pago.monto|currency }}</td>
                         <td>{{ pago.get_metodo_display }}</td>
                         <td style="font-size:13px;">{{ pago.fecha|date:"d/m/Y H:i" }}</td>
                     </tr>

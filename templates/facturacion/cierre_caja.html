@@ -58,7 +58,7 @@
                     <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Facturas Pagadas</div>
                 </div>
             </div>
-            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</div>
+            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</div>
         </div>
 
         <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
@@ -81,7 +81,7 @@
                     <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Compras Recibidas</div>
                 </div>
             </div>
-            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</div>
+            <div style="margin-top:12px; font-size:18px; font-weight:600; color:var(--md-sys-color-primary);">{{ CURRENCY_SYMBOL }}{{ total_compras|currency }}</div>
         </div>
 
         <div class="md3-card-elevated" style="position:relative; overflow:hidden;">
@@ -89,7 +89,7 @@
             <div style="display:flex; align-items:center; gap:12px;">
                 <span class="material-symbols-outlined" style="font-size:32px; {% if balance_color == 'success' %}color:var(--md-sys-color-success){% else %}color:var(--md-sys-color-error){% endif %};">account_balance_wallet</span>
                 <div>
-                    <div style="font-size:24px; font-weight:500; color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</div>
+                    <div style="font-size:24px; font-weight:500; color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|currency }}</div>
                     <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Balance Neto</div>
                 </div>
             </div>
@@ -115,12 +115,12 @@
                         <div style="font-weight:500;">{{ item.metodo }}</div>
                         <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ item.count }} transaccion{{ item.count|pluralize:"es" }}</div>
                     </div>
-                    <div style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.total|floatformat:2 }}</div>
+                    <div style="font-weight:600;">{{ CURRENCY_SYMBOL }}{{ item.total|currency }}</div>
                 </div>
                 {% endfor %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; font-weight:700; border-top:2px solid var(--md-sys-color-outline); margin-top:8px;">
                     <span>Total Cobrado</span>
-                    <span>{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</span>
                 </div>
             </div>
         </div>
@@ -162,24 +162,24 @@
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-success);">north_east</span>
                         <span>Ventas</span>
                     </div>
-                    <span style="font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|floatformat:2 }}</span>
+                    <span style="font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</span>
                 </div>
                 {% if total_iva > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
                     <span>IVA 15%</span>
-                    <span>{{ CURRENCY_SYMBOL }}{{ total_iva|floatformat:2 }}</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_iva|currency }}</span>
                 </div>
                 {% endif %}
                 {% if total_servicio > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
                     <span>Servicio 10%</span>
-                    <span>{{ CURRENCY_SYMBOL }}{{ total_servicio|floatformat:2 }}</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ total_servicio|currency }}</span>
                 </div>
                 {% endif %}
                 {% if total_descuentos > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
                     <span>Descuentos</span>
-                    <span style="color:var(--md-sys-color-error);">-{{ CURRENCY_SYMBOL }}{{ total_descuentos|floatformat:2 }}</span>
+                    <span style="color:var(--md-sys-color-error);">-{{ CURRENCY_SYMBOL }}{{ total_descuentos|currency }}</span>
                 </div>
                 {% endif %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
@@ -187,7 +187,7 @@
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-error);">south_west</span>
                         <span>Compras</span>
                     </div>
-                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_compras|floatformat:2 }}</span>
+                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_compras|currency }}</span>
                 </div>
                 {% if total_gastos_mov > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0;">
@@ -195,7 +195,7 @@
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-error);">money_off</span>
                         <span>Gastos</span>
                     </div>
-                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span>
+                    <span style="font-weight:600; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ total_gastos_mov|currency }}</span>
                 </div>
                 {% endif %}
                 {% if total_retiros_mov > 0 %}
@@ -204,13 +204,13 @@
                         <span class="material-symbols-outlined" style="font-size:18px; color:var(--md-sys-color-tertiary);">account_balance</span>
                         <span>Retiros</span>
                     </div>
-                    <span style="font-weight:600; color:var(--md-sys-color-tertiary);">{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span>
+                    <span style="font-weight:600; color:var(--md-sys-color-tertiary);">{{ CURRENCY_SYMBOL }}{{ total_retiros_mov|currency }}</span>
                 </div>
                 {% endif %}
                 <div style="height:1px; background:var(--md-sys-color-outline); margin:8px 0;"></div>
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; font-weight:700; font-size:18px;">
                     <span>Balance Neto</span>
-                    <span style="color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|floatformat:2 }}</span>
+                    <span style="color:{% if balance_color == 'success' %}var(--md-sys-color-success){% else %}var(--md-sys-color-error){% endif %};">{{ CURRENCY_SYMBOL }}{{ balance_neto|currency }}</span>
                 </div>
             </div>
         </div>
@@ -232,14 +232,14 @@
                 </span>
                 <div>
                     <div style="font-weight:600; font-size:14px;">{{ apertura.usuario_apertura.get_full_name|default:apertura.usuario_apertura.username }}</div>
-                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ apertura.fecha_apertura|date:"H:i" }} — Inicial: {{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|floatformat:2 }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ apertura.fecha_apertura|date:"H:i" }} — Inicial: {{ CURRENCY_SYMBOL }}{{ apertura.monto_inicial|currency }}</div>
                 </div>
             </div>
             <div style="text-align:right;">
                 {% if apertura.estado == 'cerrada' %}
                 <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">Cerró {{ apertura.fecha_cierre|date:"H:i" }}</div>
                 <div style="font-weight:600; color:{% if apertura.diferencia < 0 %}var(--md-sys-color-error){% elif apertura.diferencia > 0 %}var(--md-sys-color-tertiary){% else %}var(--md-sys-color-success){% endif %};">
-                    Dif: {{ CURRENCY_SYMBOL }}{{ apertura.diferencia|floatformat:2 }}
+                    Dif: {{ CURRENCY_SYMBOL }}{{ apertura.diferencia|currency }}
                 </div>
                 {% else %}
                 <span style="padding:4px 10px; border-radius:12px; background:var(--md-sys-color-success-container); color:var(--md-sys-color-on-success-container); font-size:12px; font-weight:600;">Abierta</span>
@@ -308,8 +308,8 @@
                         <strong>Movimientos del dia</strong>
                     </div>
                     <div style="display:flex; gap:16px; font-size:12px;">
-                        <span><span style="color:var(--md-sys-color-error); font-weight:600;">Gastos:</span> {{ CURRENCY_SYMBOL }}{{ total_gastos_mov|floatformat:2 }}</span>
-                        <span><span style="color:var(--md-sys-color-tertiary); font-weight:600;">Retiros:</span> {{ CURRENCY_SYMBOL }}{{ total_retiros_mov|floatformat:2 }}</span>
+                        <span><span style="color:var(--md-sys-color-error); font-weight:600;">Gastos:</span> {{ CURRENCY_SYMBOL }}{{ total_gastos_mov|currency }}</span>
+                        <span><span style="color:var(--md-sys-color-tertiary); font-weight:600;">Retiros:</span> {{ CURRENCY_SYMBOL }}{{ total_retiros_mov|currency }}</span>
                     </div>
                 </div>
             </div>
@@ -329,7 +329,7 @@
                     </div>
                     <div style="text-align:right; flex-shrink:0; margin-left:12px;">
                         <div style="font-weight:700; font-size:15px; color:{% if mov.tipo == 'gasto' %}var(--md-sys-color-error){% else %}var(--md-sys-color-tertiary){% endif %};">
-                            -{{ CURRENCY_SYMBOL }}{{ mov.monto|floatformat:2 }}
+                            -{{ CURRENCY_SYMBOL }}{{ mov.monto|currency }}
                         </div>
                         <div style="font-size:10px; color:var(--md-sys-color-on-surface-variant); text-transform:uppercase;">{{ mov.get_tipo_display }}</div>
                     </div>

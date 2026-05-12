@@ -84,7 +84,7 @@
                     {% endif %}
                 </div>
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center">
-                    <span style="font-weight: bold; font-size: 1.25rem;">{{ CURRENCY_SYMBOL }}{{ compra.total|floatformat:2 }}</span>
+                    <span style="font-weight: bold; font-size: 1.25rem;">{{ CURRENCY_SYMBOL }}{{ compra.total|currency }}</span>
                     <div class="md3-flex" style="gap: 0.5rem;">
                         <a href="{% url 'inventario:compra_detalle' compra.pk %}" class="md3-btn md3-btn-sm md3-btn-outlined md3-btn-primary">
                             <span class="material-symbols-outlined">visibility</span> Ver

@@ -150,7 +150,7 @@
                         {% for factura in facturas_recientes %}
                         <tr>
                             <td>{{ factura.folio }}</td>
-                            <td>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|floatformat:2 }}</td>
+                            <td>{{ CURRENCY_SYMBOL }}{{ factura.total_con_impuestos|currency }}</td>
                             <td>
                                 <span class="md3-badge {% if factura.estado == factura.Estado.PAGADA %}md3-badge-success{% elif factura.estado == factura.Estado.CANCELADA %}md3-badge-error{% else %}md3-badge-warning{% endif %}">
                                     {{ factura.get_estado_display }}
