@@ -129,6 +129,8 @@ def crear_respaldo(request):
                         qs = model.objects.filter(cliente=cliente)
                     else:
                         filter_lookups = {
+                            "Receta": "producto__cliente",
+                            "CajaMovimiento": "caja__cliente",
                             "Inventario": "ingrediente__cliente",
                             "MovimientoInventario": "inventario__ingrediente__cliente",
                             "CompraItem": "compra__cliente",
@@ -228,17 +230,17 @@ def restaurar_respaldo(request, backup_id):
             else:
                 with transaction.atomic():
                     cliente = backup.cliente
-                    from facturacion.models import Factura, CajaApertura
+                    from facturacion.models import Factura, CajaApertura, CajaMovimiento
                     from comandas.models import Comanda, ComandaItem
                     from mesas.models import Mesa
                     from productos.models import Producto, Categoria
                     from meseros.models import Mesero
-                    from inventario.models import Ingrediente, Compra, CompraItem, CuentaPorPagar, Inventario, MovimientoInventario
+                    from inventario.models import Ingrediente, Compra, CompraItem, CuentaPorPagar, Inventario, MovimientoInventario, Receta
 
                     delete_order = [
-                        ComandaItem, Factura, Comanda, Mesa,
+                        ComandaItem, CajaMovimiento, Factura, Comanda, Mesa,
                         Mesero, CuentaPorPagar, MovimientoInventario,
-                        CompraItem, Compra, Inventario, Ingrediente,
+                        CompraItem, Compra, Inventario, Receta, Ingrediente,
                         Producto, Categoria, CajaApertura,
                     ]
                     for model in delete_order:
@@ -247,6 +249,8 @@ def restaurar_respaldo(request, backup_id):
                         else:
                             delete_lookups = {
                                 "ComandaItem": "comanda__cliente",
+                                "CajaMovimiento": "caja__cliente",
+                                "Receta": "producto__cliente",
                                 "MovimientoInventario": "inventario__ingrediente__cliente",
                                 "CompraItem": "compra__cliente",
                                 "Inventario": "ingrediente__cliente",
@@ -270,6 +274,7 @@ def restaurar_respaldo(request, backup_id):
                         "inventario.Inventario",
                         "meseros.Mesero",
                         "productos.Producto",
+                        "inventario.Receta",
                         "comandas.Comanda",
                         "inventario.Compra",
                         "comandas.ComandaItem",
@@ -277,6 +282,7 @@ def restaurar_respaldo(request, backup_id):
                         "inventario.MovimientoInventario",
                         "facturacion.Factura",
                         "facturacion.CajaApertura",
+                        "facturacion.CajaMovimiento",
                         "inventario.CuentaPorPagar",
                     ]
 

@@ -18,6 +18,7 @@ TENANT_APPS = [
     "inventario.Ingrediente",
     "inventario.Inventario",
     "inventario.MovimientoInventario",
+    "inventario.Receta",
     "inventario.Compra",
     "inventario.CompraItem",
     "inventario.CuentaPorPagar",
@@ -25,6 +26,7 @@ TENANT_APPS = [
     "comandas.ComandaItem",
     "facturacion.Factura",
     "facturacion.CajaApertura",
+    "facturacion.CajaMovimiento",
     "meseros.Mesero",
 ]
 
