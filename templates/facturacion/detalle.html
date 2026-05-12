@@ -59,8 +59,50 @@
                     <div style="font-size:14px;">{{ factura.cliente_nombre }}</div>
                 </div>
                 {% endif %}
+                {% if factura.cliente_rfc %}
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">RUC</small>
+                    <div style="font-size:14px;">{{ factura.cliente_rfc }}</div>
+                </div>
+                {% endif %}
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">Mesa</small>
+                    <div style="font-size:14px;">{{ factura.comanda.mesa.numero }}</div>
+                </div>
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">Atendido por</small>
+                    <div style="font-size:14px;">{{ factura.usuario.get_full_name|default:factura.usuario.username }}</div>
+                </div>
             </div>
         </div>
+
+        {% if factura.monto_recibido %}
+        <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <strong style="font-size:14px;">Pago</strong>
+            <div class="md3-grid md3-grid-2" style="margin-top:8px;">
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">M&eacute;todo</small>
+                    <div style="font-size:14px; font-weight:500;">{{ factura.get_metodo_pago_display }}</div>
+                </div>
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">Recibido</small>
+                    <div style="font-size:14px; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</div>
+                </div>
+                {% if factura.cambio and factura.cambio > 0 %}
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">Cambio</small>
+                    <div style="font-size:14px; font-weight:500; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</div>
+                </div>
+                {% endif %}
+                {% if factura.divisa_nombre %}
+                <div>
+                    <small style="color:var(--md-sys-color-on-surface-variant);">{{ factura.divisa_nombre }}</small>
+                    <div style="font-size:14px; font-weight:500;">{{ factura.divisa_monto|floatformat:2 }} @ {{ factura.divisa_tasa|floatformat:4 }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Items -->
         <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">

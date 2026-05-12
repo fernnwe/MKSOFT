@@ -37,6 +37,7 @@
 
     <p style="margin:2px 0;"><strong>Folio:</strong> {{ factura.folio }}</p>
     <p style="margin:2px 0;"><strong>Comanda:</strong> {{ factura.comanda.codigo }}</p>
+    <p style="margin:2px 0;"><strong>Mesa:</strong> {{ factura.comanda.mesa.numero }}</p>
     <p style="margin:2px 0;"><strong>Fecha:</strong> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
 
     {% if factura.cliente_nombre %}
@@ -87,6 +88,9 @@
         <span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
     </div>
 
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>Pago:</span><span>{{ factura.get_metodo_pago_display }}</span>
+    </div>
     {% if factura.monto_recibido %}
     <div style="display:flex; justify-content:space-between; margin:2px 0;">
         <span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</span>
@@ -98,13 +102,12 @@
     </div>
     {% endif %}
     {% if factura.divisa_nombre %}
-    <hr>
     <div style="display:flex; justify-content:space-between; margin:2px 0;">
         <span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|floatformat:2 }}</span>
     </div>
     {% if factura.divisa_tasa %}
     <div style="display:flex; justify-content:space-between; margin:2px 0;">
-        <span>Tasa:</span><span>{{ factura.divisa_tasa|floatformat:4 }}</span>
+        <span>Tasa:</span><span>1 = {{ factura.divisa_tasa|floatformat:4 }}</span>
     </div>
     {% endif %}
     {% endif %}
