@@ -5,48 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cierre de Caja {{ fecha_seleccionada|date:"d/m/Y" }}</title>
     <style>
-        @page { size: 80mm 297mm; margin: 0; }
+        @page { size: 80mm 297mm; margin: 2mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
-            font-size: 11px; line-height: 1.3; font-weight: 700;
-            width: 80mm; overflow-x: hidden;
+            font-size: 10px; line-height: 1.25; font-weight: 700;
+            width: 76mm; overflow-x: hidden;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        .ticket { padding: 3px; width: 100%; }
+        .ticket { padding: 1px; width: 100%; }
         .center { text-align: center; }
-        .bold { font-weight: 900; }
-        hr { border: none; border-top: 1px solid #000; margin: 4px 0; }
-        .row { display: flex; justify-content: space-between; margin: 2px 0; }
-        .indent { padding-left: 8px; }
-        .total-row { font-weight: 900; border-top: 1px solid #000; padding-top: 3px; }
-        .grand-total { font-size: 13px; font-weight: 900; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
-        .section-title { font-weight: 900; text-transform: uppercase; margin: 5px 0 3px; font-size: 11px; letter-spacing: 0.5px; }
-        .subsection { font-weight: 700; margin: 3px 0 2px; }
+        hr { border: none; border-top: 1px solid #000; margin: 3px 0; }
+        .row { display: flex; justify-content: space-between; margin: 1px 0; gap: 4px; }
+        .row > span:last-child { text-align: right; white-space: nowrap; flex-shrink: 0; }
+        .row > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+        .indent { padding-left: 6px; }
+        .total-row { font-weight: 900; border-top: 1px solid #000; padding-top: 2px; }
+        .grand-total { font-size: 11px; font-weight: 900; border-top: 2px solid #000; padding-top: 3px; margin-top: 3px; }
+        .section-title { font-weight: 900; text-transform: uppercase; margin: 4px 0 2px; font-size: 10px; letter-spacing: 0.3px; }
+        .subsection { font-weight: 700; margin: 2px 0 1px; }
         .error { color: #B3261E; font-weight: 700; }
-        .header-title { font-size: 15px; font-weight: 900; letter-spacing: 0.5px; }
-        .footer { text-align: center; margin-top: 8px; }
+        .header-title { font-size: 13px; font-weight: 900; letter-spacing: 0.3px; }
+        .footer { text-align: center; margin-top: 6px; }
         @media print {
-            html, body { width: 80mm; font-size: 10px; }
-            .ticket { padding: 2px; }
-            .grand-total { font-size: 12px; }
+            @page { size: 80mm 297mm; margin: 2mm; }
+            html, body { width: 76mm; font-size: 9px; }
+            .grand-total { font-size: 10px; }
+            .header-title { font-size: 12px; }
         }
         @media print and (max-width: 58mm) {
-            @page { size: 58mm 297mm; }
-            html, body { width: 58mm; font-size: 9px; }
-            .ticket { font-size: 9px; }
+            @page { size: 58mm 297mm; margin: 2mm; }
+            html, body { width: 54mm; font-size: 8px; }
+            .ticket { padding: 0; }
+            .grand-total { font-size: 9px; }
+            .section-title { font-size: 8px; }
         }
     </style>
 </head>
 <body>
     <div class="ticket">
-        <div class="center" style="margin-bottom:4px;">
+        <div class="center" style="margin-bottom:3px;">
             <div class="header-title">{{ RESTAURANT_NAME }}</div>
             <p>{{ RESTAURANT_ADDRESS }}</p>
             <p>Tel: {{ RESTAURANT_PHONE }} | RUC: {{ RESTAURANT_RFC }}</p>
             <hr>
-            <div class="section-title" style="font-size:13px;">Cierre de Caja</div>
+            <div class="section-title" style="font-size:11px;">Cierre de Caja</div>
             <p>{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
             <p>Usuario: {{ user.get_full_name|default:user.username }}</p>
             <hr>
@@ -134,7 +138,7 @@
 
         <div class="footer">
             <p>Gracias por su preferencia</p>
-            <p style="font-size:9px;">{{ RESTAURANT_NAME }}</p>
+            <p style="font-size:8px;">{{ RESTAURANT_NAME }}</p>
         </div>
     </div>
 
