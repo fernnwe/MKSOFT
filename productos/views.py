@@ -107,6 +107,7 @@ class ProductoUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequir
 
 class ProductoDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Producto
+    template_name = "productos/producto_confirm_delete.html"
     success_url = reverse_lazy("productos:list")
     permission = "can_manage_productos"
 
