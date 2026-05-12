@@ -26,6 +26,9 @@
         {% endif %}
     </div>
     <div class="producto-card-actions">
+        <a href="{% url 'productos:recetas' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" title="Receta">
+            <span class="material-symbols-outlined">restaurant</span>
+        </a>
         <a href="{% url 'productos:editar' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
             <span class="material-symbols-outlined">edit</span>
         </a>

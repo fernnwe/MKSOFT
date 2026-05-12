@@ -108,6 +108,44 @@
                     <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|floatformat:2 }}</span>
                 </div>
             </div>
+
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
+                    <strong>Pago</strong>
+                </div>
+
+                <div class="md3-field {% if form.monto_recibido.errors %}md3-field-error{% endif %}">
+                    <input type="number" name="monto_recibido" id="id_monto_recibido" class="md3-input" placeholder=" " value="{{ form.monto_recibido.value|default:'' }}" step="0.01" min="0">
+                    <label class="md3-label" for="id_monto_recibido">Monto recibido ({{ CURRENCY_SYMBOL }})</label>
+                    <div class="md3-input-line"></div>
+                    <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Con cuanto paga el cliente en efectivo</small>
+                </div>
+
+                <div id="cambioRow" class="md3-flex md3-flex-justify-between" style="padding:8px 0; display:none;">
+                    <span>Cambio:</span>
+                    <span id="previewCambio" style="font-weight:700; color:var(--md-sys-color-error);">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+
+                <div class="md3-grid md3-grid-3" style="margin-top:12px;">
+                    <div class="md3-field {% if form.divisa_nombre.errors %}md3-field-error{% endif %}">
+                        <input type="text" name="divisa_nombre" id="id_divisa_nombre" class="md3-input" placeholder=" " value="{{ form.divisa_nombre.value|default:'' }}" maxlength="10" style="text-transform:uppercase;">
+                        <label class="md3-label" for="id_divisa_nombre">Moneda alt.</label>
+                        <div class="md3-input-line"></div>
+                        <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Ej: USD</small>
+                    </div>
+                    <div class="md3-field {% if form.divisa_monto.errors %}md3-field-error{% endif %}">
+                        <input type="number" name="divisa_monto" id="id_divisa_monto" class="md3-input" placeholder=" " value="{{ form.divisa_monto.value|default:'' }}" step="0.01" min="0">
+                        <label class="md3-label" for="id_divisa_monto">Equivalente</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                    <div class="md3-field {% if form.divisa_tasa.errors %}md3-field-error{% endif %}">
+                        <input type="number" name="divisa_tasa" id="id_divisa_tasa" class="md3-input" placeholder=" " value="{{ form.divisa_tasa.value|default:'' }}" step="0.0001" min="0">
+                        <label class="md3-label" for="id_divisa_tasa">Tasa de cambio</label>
+                        <div class="md3-input-line"></div>
+                    </div>
+                </div>
+            </div>
             {% else %}
             <div style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
                 <span class="material-symbols-outlined">info</span>
@@ -164,6 +202,21 @@ function recalcPreview() {
     document.getElementById('previewIvaRow').style.display = aplicarIva ? '' : 'none';
     document.getElementById('previewServicioRow').style.display = aplicarServicio ? '' : 'none';
     document.getElementById('previewDescuentoRow').style.display = descuentoVal > 0 ? '' : 'none';
+
+    recalcCambio(total);
+}
+
+function recalcCambio(total) {
+    const montoRecibido = parseFloat(document.getElementById('id_monto_recibido').value) || 0;
+    const cambioRow = document.getElementById('cambioRow');
+    const previewCambio = document.getElementById('previewCambio');
+    if (montoRecibido > 0) {
+        const cambio = montoRecibido - total;
+        previewCambio.textContent = `{{ CURRENCY_SYMBOL }}${cambio.toFixed(2)}`;
+        cambioRow.style.display = 'flex';
+    } else {
+        cambioRow.style.display = 'none';
+    }
 }
 
 document.getElementById('id_comanda').addEventListener('change', function() {
@@ -175,5 +228,9 @@ document.getElementById('id_comanda').addEventListener('change', function() {
 document.getElementById('id_descuento').addEventListener('input', recalcPreview);
 document.getElementById('id_aplicar_iva').addEventListener('change', recalcPreview);
 document.getElementById('id_aplicar_servicio').addEventListener('change', recalcPreview);
+document.getElementById('id_monto_recibido').addEventListener('input', function() {
+    const total = parseFloat(document.getElementById('previewTotal').textContent.replace(/[^0-9.-]/g, '')) || 0;
+    recalcCambio(total);
+});
 </script>
 {% endblock %}

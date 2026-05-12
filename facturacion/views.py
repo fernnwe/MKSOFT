@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView, FormView
+from django.views.generic.base import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum, Exists, OuterRef, Q
 from django import forms
+from decimal import Decimal
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
-from .models import Factura, CajaApertura
+from .models import Factura, CajaApertura, CajaMovimiento
+from core.models import ConfigRestaurante
 from comandas.models import Comanda
 from inventario.models import Compra, CuentaPorPagar
 
@@ -75,20 +78,16 @@ class FacturaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredM
 
 
 class FacturaForm(forms.ModelForm):
-    aplicar_iva = forms.BooleanField(
-        label="Aplicar IVA (15%)",
-        initial=True,
-        required=False
-    )
-    aplicar_servicio = forms.BooleanField(
-        label="Aplicar servicio (10%)",
-        initial=True,
-        required=False
-    )
+    aplicar_iva = forms.BooleanField(label="Aplicar IVA", initial=True, required=False)
+    aplicar_servicio = forms.BooleanField(label="Aplicar servicio", initial=True, required=False)
+    monto_recibido = forms.DecimalField(label="Monto recibido", max_digits=10, decimal_places=2, required=False, help_text="Con cuanto paga el cliente (efectivo)")
+    divisa_nombre = forms.CharField(label="Moneda alternativa", max_length=10, required=False, help_text="Ej: USD")
+    divisa_monto = forms.DecimalField(label="Equivalente", max_digits=10, decimal_places=2, required=False)
+    divisa_tasa = forms.DecimalField(label="Tasa de cambio", max_digits=10, decimal_places=4, required=False)
 
     class Meta:
         model = Factura
-        fields = ["comanda", "cliente_nombre", "metodo_pago", "descuento"]
+        fields = ["comanda", "cliente_nombre", "cliente_rfc", "metodo_pago", "descuento", "notas"]
 
 
 class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
@@ -121,6 +120,11 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
+        config = ConfigRestaurante.get_config(cliente)
+        tasa_iva = config.tasa_impuesto
+        tasa_servicio = config.porcentaje_servicio
+        context["tasa_iva"] = tasa_iva
+        context["tasa_servicio"] = tasa_servicio
         comandas_qs = Comanda.objects.all()
         if cliente:
             comandas_qs = comandas_qs.filter(cliente=cliente)
@@ -129,8 +133,8 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
             comanda = comandas_qs.filter(id=comanda_id).first()
             if comanda:
                 subtotal = comanda.total
-                iva = subtotal * 15 / 100
-                servicio = subtotal * 10 / 100
+                iva = subtotal * tasa_iva
+                servicio = subtotal * tasa_servicio
                 context["preview"] = {
                     "subtotal": subtotal,
                     "iva": iva,
@@ -146,11 +150,16 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         aplicar_servicio = form.cleaned_data.get("aplicar_servicio", False)
         descuento = form.cleaned_data.get("descuento", 0)
 
-        subtotal = comanda.total
-        iva = subtotal * 15 / 100 if aplicar_iva else 0
-        servicio = subtotal * 10 / 100 if aplicar_servicio else 0
+        cliente_obj = comanda.cliente
+        config = ConfigRestaurante.get_config(cliente_obj)
+        tasa_iva = config.tasa_impuesto
+        tasa_servicio = config.porcentaje_servicio
 
-        form.instance.cliente = comanda.cliente
+        subtotal = comanda.total
+        iva = subtotal * tasa_iva if aplicar_iva else 0
+        servicio = subtotal * tasa_servicio if aplicar_servicio else 0
+
+        form.instance.cliente = cliente_obj
         form.instance.subtotal = subtotal
         form.instance.impuestos = iva
         form.instance.total_sin_impuestos = subtotal - descuento
@@ -160,6 +169,17 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         form.instance.usuario = self.request.user
         form.instance.estado = Factura.Estado.PAGADA
         form.instance.fecha_pago = timezone.now()
+
+        monto_recibido = form.cleaned_data.get("monto_recibido")
+        if monto_recibido:
+            form.instance.monto_recibido = monto_recibido
+            form.instance.cambio = monto_recibido - form.instance.total_con_impuestos
+
+        divisa_nombre = form.cleaned_data.get("divisa_nombre")
+        if divisa_nombre:
+            form.instance.divisa_nombre = divisa_nombre
+            form.instance.divisa_monto = form.cleaned_data.get("divisa_monto")
+            form.instance.divisa_tasa = form.cleaned_data.get("divisa_tasa")
 
         response = super().form_valid(form)
         messages.success(self.request, f"Factura {form.instance.folio} generada")
@@ -534,3 +554,40 @@ class CierreExitosoView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         if caja_id:
             context["caja"] = CajaApertura.objects.filter(pk=caja_id).select_related("usuario_apertura", "usuario_cierre").first()
         return context
+
+
+class CajaMovimientoCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, View):
+    permission = "can_create_facturas"
+
+    def post(self, request):
+        caja_id = request.POST.get("caja_id")
+        tipo = request.POST.get("tipo", CajaMovimiento.Tipo.GASTO)
+        monto = request.POST.get("monto", "0")
+        descripcion = request.POST.get("descripcion", "")
+
+        if not descripcion:
+            messages.error(request, "La descripcion es obligatoria")
+            return redirect("facturacion:cierre_caja")
+
+        from decimal import Decimal
+        try:
+            monto_dec = Decimal(monto)
+        except Exception:
+            messages.error(request, "Monto no valido")
+            return redirect("facturacion:cierre_caja")
+
+        if monto_dec <= 0:
+            messages.error(request, "El monto debe ser mayor a cero")
+            return redirect("facturacion:cierre_caja")
+
+        caja = get_object_or_404(CajaApertura, pk=caja_id, estado=CajaApertura.Estado.ABIERTA)
+        CajaMovimiento.objects.create(
+            caja=caja,
+            tipo=tipo,
+            monto=monto_dec,
+            descripcion=descripcion,
+            usuario=request.user,
+        )
+        msg = "Gasto registrado" if tipo == CajaMovimiento.Tipo.GASTO else "Retiro registrado"
+        messages.success(request, f"{msg}: {descripcion} ({monto_dec})")
+        return redirect("facturacion:cierre_caja")

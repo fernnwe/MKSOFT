@@ -7,6 +7,7 @@ from django.db import IntegrityError, models
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
 from .models import Producto, Categoria
 from comandas.models import ComandaItem
+from inventario.models import Receta, Ingrediente, Inventario, MovimientoInventario
 
 
 def _limpiar_huerfanos(cliente):
@@ -179,3 +180,95 @@ def productos_pdf(request):
     response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="productos.pdf"'
     return response
+
+
+class RecetaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
+    model = Receta
+    template_name = "productos/receta_list.html"
+    context_object_name = "recetas"
+    permission = "can_manage_productos"
+
+    def get_queryset(self):
+        self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
+        return Receta.objects.filter(producto=self.producto).select_related("ingrediente")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["producto"] = self.producto
+        context["ingredientes_disponibles"] = Ingrediente.objects.filter(
+            cliente=self.get_cliente(), activo=True
+        ).exclude(
+            id__in=self.object_list.values("ingrediente_id")
+        )
+        return context
+
+
+class RecetaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Receta
+    template_name = "productos/receta_form.html"
+    fields = ["ingrediente", "cantidad", "unidad"]
+    permission = "can_manage_productos"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        cliente = self.get_cliente()
+        form.fields["ingrediente"].queryset = Ingrediente.objects.filter(
+            cliente=cliente, activo=True
+        ).exclude(
+            id__in=Receta.objects.filter(producto=self.producto).values("ingrediente_id")
+        )
+        return form
+
+    def form_valid(self, form):
+        form.instance.producto = self.producto
+        messages.success(self.request, f"Ingrediente agregado a la receta de {self.producto.nombre}")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("productos:recetas", kwargs={"producto_pk": self.producto.pk})
+
+
+class RecetaUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Receta
+    template_name = "productos/receta_form.html"
+    fields = ["cantidad", "unidad"]
+    permission = "can_manage_productos"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["producto"] = self.producto
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, "Receta actualizada")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("productos:recetas", kwargs={"producto_pk": self.producto.pk})
+
+
+class RecetaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Receta
+    permission = "can_manage_productos"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        nombre = self.object.ingrediente.nombre
+        self.object.delete()
+        messages.success(request, f"Ingrediente '{nombre}' eliminado de la receta")
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("productos:recetas", kwargs={"producto_pk": self.producto.pk})

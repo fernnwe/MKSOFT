@@ -199,3 +199,18 @@ class CuentaPorPagar(models.Model):
             self.estado = self.Estado.PARCIAL
         self.save()
 
+
+class Receta(models.Model):
+    producto = models.ForeignKey("productos.Producto", on_delete=models.CASCADE, related_name="receta_ingredientes")
+    ingrediente = models.ForeignKey(Ingrediente, on_delete=models.CASCADE, related_name="recetas")
+    cantidad = models.DecimalField(max_digits=10, decimal_places=3)
+    unidad = models.CharField(max_length=20, choices=Ingrediente.Unidad.choices, default=Ingrediente.Unidad.UNIDAD)
+
+    class Meta:
+        verbose_name = "Receta"
+        verbose_name_plural = "Recetas"
+        unique_together = [["producto", "ingrediente"]]
+
+    def __str__(self):
+        return f"{self.cantidad} {self.unidad} de {self.ingrediente.nombre} para {self.producto.nombre}"
+

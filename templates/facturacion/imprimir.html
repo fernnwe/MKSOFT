@@ -87,6 +87,28 @@
         <span>TOTAL:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.total|floatformat:2 }}</span>
     </div>
 
+    {% if factura.monto_recibido %}
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>Recibido:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.monto_recibido|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+    {% if factura.cambio and factura.cambio > 0 %}
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>Cambio:</span><span>{{ CURRENCY_SYMBOL }}{{ factura.cambio|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+    {% if factura.divisa_nombre %}
+    <hr>
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>{{ factura.divisa_nombre }}:</span><span>{{ factura.divisa_monto|floatformat:2 }}</span>
+    </div>
+    {% if factura.divisa_tasa %}
+    <div style="display:flex; justify-content:space-between; margin:2px 0;">
+        <span>Tasa:</span><span>{{ factura.divisa_tasa|floatformat:4 }}</span>
+    </div>
+    {% endif %}
+    {% endif %}
+
     <hr>
     <p style="text-align:center; margin:2px 0;">Gracias por su preferencia!</p>
 </div>

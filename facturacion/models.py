@@ -39,7 +39,13 @@ class CajaApertura(models.Model):
             estado=Factura.Estado.PAGADA,
             metodo_pago=Factura.MetodoPago.EFECTIVO
         ).aggregate(total=Sum("total_con_impuestos"))["total"] or 0
-        efectivo_esperado = self.monto_inicial + facturas_efectivo
+        total_gastos = self.movimientos.filter(
+            tipo=CajaMovimiento.Tipo.GASTO
+        ).aggregate(total=Sum("monto"))["total"] or 0
+        total_retiros = self.movimientos.filter(
+            tipo=CajaMovimiento.Tipo.RETIRO
+        ).aggregate(total=Sum("monto"))["total"] or 0
+        efectivo_esperado = self.monto_inicial + facturas_efectivo - total_gastos - total_retiros
         self.diferencia = monto_cierre - efectivo_esperado
         self.save()
 
@@ -73,6 +79,13 @@ class Factura(models.Model):
     metodo_pago = models.CharField(max_length=20, choices=MetodoPago.choices, blank=True)
     notas = models.TextField(blank=True)
 
+    monto_recibido = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Monto recibido del cliente en efectivo")
+    cambio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Cambio a devolver al cliente")
+
+    divisa_nombre = models.CharField(max_length=10, blank=True, help_text="Ej: USD, EUR")
+    divisa_monto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Equivalente en otra moneda")
+    divisa_tasa = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="Tasa de cambio usada")
+
     fecha_emision = models.DateTimeField(auto_now_add=True)
     fecha_pago = models.DateTimeField(null=True, blank=True)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
@@ -100,3 +113,26 @@ class Factura(models.Model):
     @property
     def total(self):
         return self.total_con_impuestos or 0
+
+
+class CajaMovimiento(models.Model):
+    class Tipo(models.TextChoices):
+        INGRESO = "ingreso", "Ingreso"
+        GASTO = "gasto", "Gasto"
+        RETIRO = "retiro", "Retiro"
+
+    caja = models.ForeignKey(CajaApertura, on_delete=models.CASCADE, related_name="movimientos")
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    descripcion = models.CharField(max_length=255)
+    fecha = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    factura = models.ForeignKey(Factura, on_delete=models.SET_NULL, null=True, blank=True, related_name="movimientos_caja")
+
+    class Meta:
+        verbose_name = "Movimiento de Caja"
+        verbose_name_plural = "Movimientos de Caja"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.monto} ({self.descripcion})"

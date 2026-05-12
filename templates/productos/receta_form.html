@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}{{ object.pk|yesno:"Editar,Nuevo" }} Ingrediente - {{ producto.nombre }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-align-center" style="gap:12px;">
+        <a href="{% url 'productos:recetas' producto.pk %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title">{{ object.pk|yesno:"Editar,Agregar" }} Ingrediente</h1>
+            <p class="md3-page-subtitle">Receta de: {{ producto.nombre }}</p>
+        </div>
+    </div>
+</div>
+
+<div style="padding:0 16px; max-width:480px;">
+    <form method="post" class="md3-card-outlined" style="overflow:hidden;">
+        {% csrf_token %}
+        <div style="padding:20px 24px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">restaurant</span>
+                <strong style="font-size:15px;">Informaci&oacute;n del Ingrediente</strong>
+            </div>
+            {{ form|crispy }}
+        </div>
+        <div style="padding:16px 24px; border-top:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:flex-end; gap:8px; background:var(--md-sys-color-surface-container-low);">
+            <a href="{% url 'productos:recetas' producto.pk %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+            <button type="submit" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined" style="font-size:18px;">save</span>
+                {{ object.pk|yesno:"Guardar Cambios,Agregar" }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

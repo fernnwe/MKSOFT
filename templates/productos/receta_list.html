@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Receta: {{ producto.nombre }}{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-align-center" style="gap:12px;">
+        <a href="{% url 'productos:list' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title">Receta: {{ producto.nombre }}</h1>
+            <p class="md3-page-subtitle">{{ recetas|length }} ingrediente{{ recetas|length|pluralize }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined" style="max-width:640px; overflow:hidden;">
+        {% if recetas %}
+        <div style="padding:8px 16px;">
+            {% for receta in recetas %}
+            <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:12px 0; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div>
+                    <div style="font-weight:500;">{{ receta.ingrediente.nombre }}</div>
+                    <div style="font-size:12px; color:var(--md-sys-color-on-surface-variant);">{{ receta.cantidad|floatformat:3 }} {{ receta.get_unidad_display }}</div>
+                </div>
+                <div class="md3-flex" style="gap:4px;">
+                    <a href="{% url 'productos:receta_editar' producto.pk receta.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
+                        <span class="material-symbols-outlined">edit</span>
+                    </a>
+                    <a href="{% url 'productos:receta_eliminar' producto.pk receta.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="return confirm('Eliminar {{ receta.ingrediente.nombre }} de la receta?')">
+                        <span class="material-symbols-outlined">delete</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="md3-empty-state" style="padding:32px;">
+            <span class="material-symbols-outlined" style="font-size:40px;">restaurant</span>
+            <div class="md3-empty-state-title">Sin ingredientes</div>
+            <div class="md3-empty-state-text">Agrega los ingredientes que componen este producto.</div>
+        </div>
+        {% endif %}
+        <div style="padding:12px 16px; border-top:1px solid var(--md-sys-color-outline-variant); display:flex; justify-content:flex-end; gap:8px; background:var(--md-sys-color-surface-container-low);">
+            <a href="{% url 'productos:list' %}" class="md3-btn md3-btn-outlined">Volver</a>
+            {% if ingredientes_disponibles %}
+            <a href="{% url 'productos:receta_crear' producto.pk %}" class="md3-btn md3-btn-filled">
+                <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+                Agregar Ingrediente
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -16,6 +16,7 @@ def restaurant_context(request):
             "RESTAURANT_EMAIL": getattr(config, "email", ""),
             "CURRENCY_SYMBOL": config.simbolo_moneda,
             "TAX_RATE": config.tasa_impuesto,
+            "PORCENTAJE_SERVICIO": config.porcentaje_servicio,
         }
     except Exception:
         return {
@@ -26,4 +27,5 @@ def restaurant_context(request):
             "RESTAURANT_EMAIL": "",
             "CURRENCY_SYMBOL": settings.CURRENCY_SYMBOL,
             "TAX_RATE": settings.TAX_RATE,
+            "PORCENTAJE_SERVICIO": settings.PORCENTAJE_SERVICIO,
         }
