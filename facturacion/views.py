@@ -121,8 +121,8 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
         config = ConfigRestaurante.get_config(cliente)
-        tasa_iva = config.tasa_impuesto
-        tasa_servicio = config.porcentaje_servicio
+        tasa_iva = Decimal(str(config.tasa_impuesto))
+        tasa_servicio = Decimal(str(config.porcentaje_servicio))
         context["tasa_iva"] = tasa_iva
         context["tasa_servicio"] = tasa_servicio
         comandas_qs = Comanda.objects.all()
@@ -152,12 +152,12 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
 
         cliente_obj = comanda.cliente
         config = ConfigRestaurante.get_config(cliente_obj)
-        tasa_iva = config.tasa_impuesto
-        tasa_servicio = config.porcentaje_servicio
+        tasa_iva = Decimal(str(config.tasa_impuesto))
+        tasa_servicio = Decimal(str(config.porcentaje_servicio))
 
         subtotal = comanda.total
-        iva = subtotal * tasa_iva if aplicar_iva else 0
-        servicio = subtotal * tasa_servicio if aplicar_servicio else 0
+        iva = subtotal * tasa_iva if aplicar_iva else Decimal(0)
+        servicio = subtotal * tasa_servicio if aplicar_servicio else Decimal(0)
 
         form.instance.cliente = cliente_obj
         form.instance.subtotal = subtotal
