@@ -213,6 +213,11 @@ class RecetaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
         self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["producto"] = self.producto
+        return context
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         cliente = self.get_cliente()
