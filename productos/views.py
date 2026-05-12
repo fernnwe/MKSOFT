@@ -121,7 +121,11 @@ class ProductoDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequir
             super().delete(request, *args, **kwargs)
             messages.success(request, f"Producto '{nombre}' eliminado permanentemente")
         except Exception as e:
-            messages.error(request, f"No se pudo eliminar '{nombre}': {str(e)}")
+            error_msg = str(e)
+            if "ComandaItem" in error_msg and "protected foreign keys" in error_msg:
+                messages.error(request, f"No se puede eliminar '{nombre}' porque tiene ventas asociadas. Puedes deshabilitarlo como 'No disponible' desde la edición del producto.")
+            else:
+                messages.error(request, f"No se pudo eliminar '{nombre}': {error_msg}")
         return redirect(self.success_url)
 
 
