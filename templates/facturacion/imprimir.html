@@ -3,24 +3,24 @@
 {% block extra_css %}
 <style>
     @page { size: 58mm 297mm; margin: 0; }
-    body { margin: 0; padding: 0; }
+    body { margin: 0; padding: 0; background: #fff; }
     .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
     .messages-wrap, .md3-fab, .md3-nav-drawer-overlay,
     header, nav { display: none !important; }
     .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
-    #factura-print { padding: 2mm 1.5mm; color: #000 !important; font-size: 12px !important; line-height: 1.15; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    #factura-print hr { border-color: #000 !important; margin: 3px 0; border-width: 1px; }
-    #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 12px !important; font-weight: 700; }
+    #factura-print { padding: 2mm 1.5mm; color: #000 !important; font-size: 13px !important; line-height: 1.2; font-weight: 900; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-shadow: 0 0 0.5px #000; }
+    #factura-print hr { border-color: #000 !important; margin: 4px 0; border-width: 1px; }
+    #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 13px !important; font-weight: 900; }
     #factura-print table { width: 100%; border-collapse: collapse; }
-    #factura-print td, #factura-print th { padding: 2px 0; }
+    #factura-print td, #factura-print th { padding: 3px 0; }
     @media print {
         .md3-nav-drawer, .md3-nav-rail, .md3-top-app-bar, .md3-bottom-nav,
         .messages-wrap, .md3-fab, header, nav { display: none !important; }
         .md3-main, .content-wrap { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
         body { background: white !important; margin: 0; padding: 0; }
-        #factura-print { padding: 1mm; color: #000 !important; font-size: 11px !important; line-height: 1.1; font-weight: 700; }
-        #factura-print hr { border-color: #000 !important; margin: 2px 0; border-width: 1px; }
-        #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 11px !important; font-weight: 700; }
+        #factura-print { padding: 1.5mm; color: #000 !important; font-size: 12px !important; line-height: 1.15; font-weight: 900; text-shadow: 0 0 0.5px #000; }
+        #factura-print hr { border-color: #000 !important; margin: 3px 0; border-width: 2px; }
+        #factura-print p, #factura-print td, #factura-print th, #factura-print span, #factura-print div, #factura-print h4 { color: #000 !important; font-size: 12px !important; font-weight: 900; }
     }
 </style>
 {% endblock %}
