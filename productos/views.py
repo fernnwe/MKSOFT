@@ -111,6 +111,9 @@ class ProductoDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequir
     success_url = reverse_lazy("productos:list")
     permission = "can_manage_productos"
 
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         nombre = self.object.nombre
@@ -268,6 +271,9 @@ class RecetaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
     def dispatch(self, request, *args, **kwargs):
         self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
         return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
