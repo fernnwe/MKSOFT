@@ -505,7 +505,17 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         aperturas_cerradas = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end, estado=CajaApertura.Estado.CERRADA).first()
         config = ConfigRestaurante.get_config(cliente)
 
-        movimientos = CajaMovimiento.objects.filter(caja__in=cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end))
+        caja_abierta = cajas_qs.filter(estado=CajaApertura.Estado.ABIERTA).first()
+        movimientos = CajaMovimiento.objects.none()
+        if caja_abierta:
+            movimientos = caja_abierta.movimientos.all()
+        cajas_cerradas_hoy = cajas_qs.filter(
+            fecha_apertura__gte=start, fecha_apertura__lte=end,
+            estado=CajaApertura.Estado.CERRADA
+        )
+        if cajas_cerradas_hoy.exists():
+            movimientos = movimientos | CajaMovimiento.objects.filter(caja__in=cajas_cerradas_hoy)
+        movimientos = movimientos.select_related("usuario").order_by("-fecha")
         total_gastos_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
         total_retiros_mov = movimientos.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
 
