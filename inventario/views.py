@@ -920,6 +920,7 @@ class ProveedorDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequi
 # ─── Export Excel ───────────────────────────────────────────────────
 
 @login_required
+@login_required
 def inventario_export_excel(request):
     import openpyxl
     from openpyxl.styles import Font, Alignment, Border, Side

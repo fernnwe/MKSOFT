@@ -46,6 +46,12 @@ class PermissionRequiredMixin:
 class ClienteScopeMixin:
     """Mixin que filtra automaticamente todas las queries por el cliente del usuario actual."""
 
+    @classmethod
+    def get_cliente_static(cls, request):
+        if request.user.is_superuser:
+            return None
+        return getattr(request.user, "cliente", None)
+
     def get_cliente(self):
         if self.request.user.is_superuser:
             return None
