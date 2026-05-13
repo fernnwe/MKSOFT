@@ -7,16 +7,16 @@
     {% load static %}
     {% load currency_tags %}
     <style>
-        @page { size: 58mm 297mm; margin: 2mm; }
+        @page { size: 58mm 297mm; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
             font-size: 10px; line-height: 1.2; font-weight: 700;
-            width: 54mm; overflow-x: hidden;
+            width: 48mm; overflow-x: hidden;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
-        #factura-print { padding: 0.5mm; width: 100%; }
+        body { padding: 2mm; }
         .center { text-align: center; }
         hr { border: none; border-top: 1px solid #000; margin: 2px 0; }
         table { width: 100%; border-collapse: collapse; }
@@ -29,9 +29,9 @@
         .total { font-weight: 900; font-size: 11px; }
         .header-title { font-size: 12px; font-weight: 900; }
         @media print {
-            @page { size: 58mm 297mm; margin: 2mm; }
-            html, body { width: 54mm; font-size: 9px; }
-            #factura-print { padding: 0; }
+            @page { size: 58mm 297mm; margin: 0; }
+            html, body { width: 48mm; font-size: 9px; }
+            body { padding: 2mm; }
             .header-title { font-size: 11px; }
             .total { font-size: 10px; }
         }
