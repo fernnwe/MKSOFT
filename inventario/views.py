@@ -560,6 +560,7 @@ class CompraRecibirView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         CuentaPorPagar.objects.create(
             cliente=cliente,
             proveedor=compra.proveedor,
+            proveedor_fk=compra.proveedor_fk,
             compra=compra,
             monto_total=compra.total,
             fecha_vencimiento=timezone.now().date() + timezone.timedelta(days=dias),
@@ -694,9 +695,25 @@ class CuentaPorPagarListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRe
 class CuentaPorPagarCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = CuentaPorPagar
     template_name = "inventario/cuenta_form.html"
-    fields = ["proveedor", "monto_total", "fecha_vencimiento", "notas"]
+    fields = ["proveedor_fk", "proveedor", "monto_total", "fecha_vencimiento", "notas"]
     success_url = reverse_lazy("inventario:cuentas")
     permission = "can_manage_inventario"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        cliente = self.get_cliente()
+        proveedores = Proveedor.objects.filter(cliente=cliente, activo=True) if cliente else Proveedor.objects.none()
+        form.fields["proveedor_fk"] = forms.ModelChoiceField(
+            queryset=proveedores, required=False,
+            widget=forms.Select(attrs={"class": "md3-input", "onchange": "document.getElementById('id_proveedor').value = this.options[this.selectedIndex].text"}),
+            label="Proveedor (seleccionar)",
+        )
+        form.fields["proveedor"].widget = forms.TextInput(attrs={
+            "class": "md3-input",
+            "placeholder": " ",
+        })
+        form.fields["proveedor"].help_text = "O escribe el nombre manualmente si no está en la lista."
+        return form
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user

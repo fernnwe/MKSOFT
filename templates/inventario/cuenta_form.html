@@ -25,11 +25,23 @@
 
         <div style="padding:8px 16px;">
             <div class="md3-field">
-                <input type="text" name="proveedor" id="id_proveedor" class="md3-input" placeholder=" " value="{{ form.proveedor.value|default:'' }}" required autofocus>
-                <label class="md3-label" for="id_proveedor">Proveedor</label>
+                <select name="proveedor_fk" id="id_proveedor_fk" class="md3-input" onchange="document.getElementById('id_proveedor').value = this.options[this.selectedIndex].text">
+                    <option value="">---------</option>
+                    {% for p in form.proveedor_fk.field.queryset %}
+                    <option value="{{ p.pk }}" {% if form.proveedor_fk.value|stringformat:"s" == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <label class="md3-label" for="id_proveedor_fk">Proveedor (seleccionar)</label>
+                <div class="md3-input-line"></div>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Selecciona de la lista o escribe el nombre manualmente abajo.</small>
+            </div>
+
+            <div class="md3-field">
+                <input type="text" name="proveedor" id="id_proveedor" class="md3-input" placeholder=" " value="{{ form.proveedor.value|default:'' }}" required>
+                <label class="md3-label" for="id_proveedor">Nombre del Proveedor</label>
                 <div class="md3-input-line"></div>
                 {% if form.proveedor.errors %}<div style="font-size:12px; color:var(--md-sys-color-error); margin-top:4px;">{{ form.proveedor.errors|striptags }}</div>{% endif %}
-                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Nombre del proveedor al que se le debe.</small>
+                <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Se auto-completa si seleccionas arriba.</small>
             </div>
 
             <div class="md3-field">
