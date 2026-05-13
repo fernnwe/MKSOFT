@@ -31,7 +31,7 @@ def enviar_email_bienvenida(cliente, password):
         subject=f"Bienvenido a {context['system_name']} - Credenciales de acceso",
         body=text_content,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[cliente.admin_email] if cliente.admin_email else [settings.DEFAULT_FROM_EMAIL],
+        to=[cliente.admin_email] if cliente.admin_email else ([cliente.email] if cliente.email else [settings.DEFAULT_FROM_EMAIL]),
     )
     msg.attach_alternative(html_content, "text/html")
     msg.send()

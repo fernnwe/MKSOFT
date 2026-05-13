@@ -1183,12 +1183,15 @@ class ClienteEnviarCredencialesView(PermissionRequiredMixin, LoginRequiredMixin,
         if not cliente.admin_email:
             messages.error(request, "El cliente no tiene un email registrado")
             return redirect("core:superadmin_cliente_detalle", pk=cliente.pk)
-        import threading
-        def _send():
+        try:
             from core.emails import enviar_email_bienvenida
             enviar_email_bienvenida(cliente, password)
-        threading.Thread(target=_send, daemon=True).start()
-        messages.success(request, f"Enviando credenciales por correo a {cliente.admin_email}...")
+            messages.success(request, f"Credenciales enviadas a {cliente.admin_email}")
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception("Error al enviar credenciales por correo")
+            messages.error(request, f"Error al enviar correo: {e}")
         return redirect("core:superadmin_cliente_detalle", pk=cliente.pk)
 
 
