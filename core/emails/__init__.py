@@ -12,7 +12,7 @@ def enviar_email_bienvenida(cliente, password):
         "restaurant_name": cliente.nombre_negocio,
         "username": cliente.admin_username,
         "password": password,
-        "login_url": settings.SITE_URL + "/login/",
+        "login_url": settings.SITE_URL + "/cliente/login/",
         "plan": "Unico",
         "periodo": {
             "14": "14 dias (Prueba)",
