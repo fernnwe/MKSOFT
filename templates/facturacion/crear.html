@@ -195,15 +195,10 @@
 
 {% block extra_js %}
 <script>
-var previewData = {
-    subtotal: {{ preview.subtotal|default:0 }},
-    iva: {{ preview.iva|default:0 }},
-    servicio: {{ preview.servicio|default:0 }},
-    descuento: {{ preview.descuento|default:0 }},
-    total: {{ preview.total|default:0 }},
-};
+var previewData = {{ preview_json|safe }};
 
 function recalcPreview() {
+    if (!previewData) return;
     var aplicarIva = document.getElementById('id_aplicar_iva').checked;
     var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
     var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;

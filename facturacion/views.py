@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -137,13 +138,19 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
                 subtotal = comanda.total
                 iva = subtotal * tasa_iva
                 servicio = subtotal * tasa_servicio
-                context["preview"] = {
-                    "subtotal": subtotal,
-                    "iva": iva,
-                    "servicio": servicio,
+                preview = {
+                    "subtotal": float(subtotal),
+                    "iva": float(iva),
+                    "servicio": float(servicio),
                     "descuento": 0,
-                    "total": subtotal + iva + servicio,
+                    "total": float(subtotal + iva + servicio),
                 }
+                context["preview"] = preview
+                context["preview_json"] = json.dumps(preview)
+            else:
+                context["preview_json"] = json.dumps(None)
+        else:
+            context["preview_json"] = json.dumps(None)
         return context
 
     def form_valid(self, form):
