@@ -14,7 +14,6 @@
             font-family: 'Courier New', 'Courier', monospace;
             font-size: 10px; line-height: 1.3; font-weight: 900;
             width: 48mm; overflow-x: hidden;
-            text-shadow: 0 0 0.5px currentColor;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
         body { padding: 2mm; }
@@ -27,8 +26,8 @@
         td:nth-child(1) { white-space: nowrap; }
         .row { display: flex; justify-content: space-between; margin: 1px 0; gap: 4px; }
         .row > span:last-child { text-align: right; white-space: nowrap; flex-shrink: 0; }
-        .total { font-weight: 900; font-size: 11px; text-shadow: 0 0 1px currentColor; }
-        .header-title { font-size: 12px; font-weight: 900; text-shadow: 0 0 1px currentColor; }
+        .total { font-weight: 900; font-size: 11px; }
+        .header-title { font-size: 12px; font-weight: 900; }
         @media print {
             @page { size: 58mm 297mm; margin: 0; }
             html, body { width: 48mm; font-size: 10px; }
