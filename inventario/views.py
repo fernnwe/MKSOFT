@@ -650,7 +650,12 @@ class CuentaPorPagarListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRe
 
         fecha_vencimiento = self.request.GET.get("fecha_vencimiento")
         if fecha_vencimiento:
-            qs = qs.filter(fecha_vencimiento__lte=fecha_vencimiento)
+            try:
+                from datetime import datetime
+                datetime.strptime(fecha_vencimiento, "%Y-%m-%d")
+                qs = qs.filter(fecha_vencimiento__lte=fecha_vencimiento)
+            except (ValueError, OverflowError):
+                pass
 
         orden = self.request.GET.get("orden", "-fecha_creacion")
         orden_validos = [

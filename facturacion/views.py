@@ -346,8 +346,11 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
         context = super().get_context_data(**kwargs)
         fecha_str = self.request.GET.get("fecha")
         if fecha_str:
-            from datetime import datetime
-            hoy = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            try:
+                from datetime import datetime
+                hoy = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            except (ValueError, OverflowError):
+                hoy = timezone.localtime(timezone.now()).date()
         else:
             hoy = timezone.localtime(timezone.now()).date()
 
@@ -479,7 +482,10 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
 
         fecha_str = request.GET.get("fecha")
         if fecha_str:
-            hoy = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            try:
+                hoy = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+            except (ValueError, OverflowError):
+                hoy = timezone.localtime(timezone.now()).date()
         else:
             hoy = timezone.localtime(timezone.now()).date()
 
@@ -654,11 +660,17 @@ class HistorialCierresView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequ
         usuario = self.request.GET.get("usuario")
 
         if fecha_desde:
-            start = timezone.make_aware(timezone.datetime.strptime(fecha_desde, "%Y-%m-%d"))
-            qs = qs.filter(fecha_apertura__gte=start)
+            try:
+                start = timezone.make_aware(timezone.datetime.strptime(fecha_desde, "%Y-%m-%d"))
+                qs = qs.filter(fecha_apertura__gte=start)
+            except (ValueError, OverflowError):
+                pass
         if fecha_hasta:
-            end = timezone.make_aware(timezone.datetime.strptime(fecha_hasta, "%Y-%m-%d") + timezone.timedelta(days=1) - timezone.timedelta(seconds=1))
-            qs = qs.filter(fecha_apertura__lte=end)
+            try:
+                end = timezone.make_aware(timezone.datetime.strptime(fecha_hasta, "%Y-%m-%d") + timezone.timedelta(days=1) - timezone.timedelta(seconds=1))
+                qs = qs.filter(fecha_apertura__lte=end)
+            except (ValueError, OverflowError):
+                pass
         if usuario:
             qs = qs.filter(usuario_apertura_id=usuario)
 
