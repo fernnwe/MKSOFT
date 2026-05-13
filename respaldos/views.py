@@ -104,17 +104,12 @@ def crear_respaldo(request):
             unique_id = str(uuid.uuid4())[:8]
 
             if backup.tipo == DatabaseBackup.Tipo.COMPLETO:
-                import shutil
-                filename = f"backup_completo_{timestamp}_{unique_id}.sqlite3"
+                filename = f"backup_completo_{timestamp}_{unique_id}.json"
                 backup_path = os.path.join(settings.MEDIA_ROOT, "respaldos", filename)
                 os.makedirs(os.path.dirname(backup_path), exist_ok=True)
 
-                db_path = str(settings.DATABASES["default"]["NAME"])
-                shutil.copy2(db_path, backup_path)
-                for ext in ["-wal", "-shm"]:
-                    src = db_path + ext
-                    if os.path.exists(src):
-                        shutil.copy2(src, backup_path + ext)
+                with open(backup_path, "w", encoding="utf-8") as f:
+                    call_command("dumpdata", stdout=f, format="json", natural_foreign=True, exclude=["contenttypes", "auth.permission", "sessions"])
             else:
                 filename = f"backup_tenant_{timestamp}_{unique_id}.json"
                 backup_path = os.path.join(settings.MEDIA_ROOT, "respaldos", str(cliente.pk), filename)
@@ -145,7 +140,7 @@ def crear_respaldo(request):
                     for obj in qs:
                         item = {
                             "model": f"{app_label}.{model_name}",
-                            "pk": obj.pk,
+                            "pk": str(obj.pk) if not isinstance(obj.pk, (int, str)) else obj.pk,
                             "fields": {},
                         }
                         for field in obj._meta.fields:
@@ -155,14 +150,20 @@ def crear_respaldo(request):
                                 value = getattr(obj, field.attname)
                             else:
                                 value = getattr(obj, field.name)
-                            if hasattr(value, "isoformat"):
+                            if isinstance(value, decimal.Decimal):
+                                value = float(value)
+                            elif hasattr(value, "isoformat"):
                                 value = value.isoformat()
+                            elif not isinstance(value, (str, int, float, bool, type(None))):
+                                value = str(value)
                             item["fields"][field.name] = value
                         data.append(item)
                 with open(backup_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False, default=lambda o: float(o) if isinstance(o, decimal.Decimal) else str(o))
+                    json.dump(data, f, indent=2, ensure_ascii=False)
 
-            backup.archivo.name = os.path.relpath(backup_path, settings.MEDIA_ROOT).replace("\\", "/")
+            rel_path = os.path.relpath(backup_path, settings.MEDIA_ROOT).replace("\\", "/")
+            with open(backup_path, "rb") as src:
+                backup.archivo.save(rel_path, src, save=False)
             backup.estado = DatabaseBackup.Estado.EXITOSO
             backup.calcular_tamaño()
 

@@ -230,7 +230,8 @@ class CuentaPorPagar(models.Model):
         if self.monto_pagado >= self.monto_total:
             self.monto_pagado = self.monto_total
             self.estado = self.Estado.PAGADA
-            self.fecha_pago = self.fecha_vencimiento
+            from django.utils import timezone
+            self.fecha_pago = timezone.now().date()
         elif self.monto_pagado > 0:
             self.estado = self.Estado.PARCIAL
         self.save()

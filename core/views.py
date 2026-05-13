@@ -366,7 +366,6 @@ class UsuarioDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.get_object()
-        cliente = self.get_queryset().model.objects.filter(pk=user.pk).first()
         cliente_filter = getattr(user, "cliente", None)
         if not self.request.user.is_superuser and not cliente_filter:
             return context
@@ -696,12 +695,12 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
 
         try:
             from django.utils import timezone
-            from facturacion.models import Factura, CajaApertura
+            from facturacion.models import Factura, CajaApertura, CajaMovimiento
             from comandas.models import Comanda, ComandaItem
             from mesas.models import Mesa
             from productos.models import Producto, Categoria
             from meseros.models import Mesero
-            from inventario.models import Ingrediente, Compra, CompraItem, CuentaPorPagar, Inventario, MovimientoInventario
+            from inventario.models import Ingrediente, Compra, CompraItem, CuentaPorPagar, Inventario, MovimientoInventario, Receta
 
             ultimo.estado = DatabaseBackup.Estado.RESTAURANDO
             ultimo.fecha_restauracion = timezone.now()
@@ -710,9 +709,9 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
 
             with transaction.atomic():
                 delete_order = [
-                    ComandaItem, Factura, Comanda, Mesa,
+                    ComandaItem, CajaMovimiento, Factura, Comanda, Mesa,
                     Mesero, CuentaPorPagar, MovimientoInventario,
-                    CompraItem, Compra, Inventario, Ingrediente,
+                    CompraItem, Compra, Inventario, Receta, Ingrediente,
                     Producto, Categoria, CajaApertura,
                 ]
                 for model in delete_order:
@@ -721,6 +720,8 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
                     else:
                         delete_lookups = {
                             "ComandaItem": "comanda__cliente",
+                            "CajaMovimiento": "caja__cliente",
+                            "Receta": "producto__cliente",
                             "MovimientoInventario": "inventario__ingrediente__cliente",
                             "CompraItem": "compra__cliente",
                             "Inventario": "ingrediente__cliente",
@@ -744,6 +745,7 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
                     "inventario.Inventario",
                     "meseros.Mesero",
                     "productos.Producto",
+                    "inventario.Receta",
                     "comandas.Comanda",
                     "inventario.Compra",
                     "comandas.ComandaItem",
@@ -751,6 +753,7 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
                     "inventario.MovimientoInventario",
                     "facturacion.Factura",
                     "facturacion.CajaApertura",
+                    "facturacion.CajaMovimiento",
                     "inventario.CuentaPorPagar",
                 ]
 
