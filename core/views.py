@@ -1024,6 +1024,7 @@ class ClienteUpdateView(PermissionRequiredMixin, LoginRequiredMixin, View):
         cliente.direccion = request.POST.get("direccion", cliente.direccion)
         cliente.telefono = request.POST.get("telefono", cliente.telefono)
         cliente.email = request.POST.get("email", cliente.email)
+        cliente.admin_email = request.POST.get("admin_email", cliente.admin_email)
         cliente.estado = request.POST.get("estado", cliente.estado)
         cliente.notas = request.POST.get("notas", cliente.notas)
 
