@@ -11,7 +11,7 @@
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
-            font-size: 10px; line-height: 1.25; font-weight: 700;
+            font-size: 10px; line-height: 1.25; font-weight: 900;
             width: 70mm; overflow-x: hidden;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
@@ -26,20 +26,20 @@
         .total-row { font-weight: 900; border-top: 1px solid #000; padding-top: 2px; }
         .grand-total { font-size: 11px; font-weight: 900; border-top: 2px solid #000; padding-top: 3px; margin-top: 3px; }
         .section-title { font-weight: 900; text-transform: uppercase; margin: 4px 0 2px; font-size: 10px; letter-spacing: 0.3px; }
-        .subsection { font-weight: 700; margin: 2px 0 1px; }
-        .error { color: #B3261E; font-weight: 700; }
+        .subsection { font-weight: 900; margin: 2px 0 1px; }
+        .error { color: #B3261E; font-weight: 900; }
         .header-title { font-size: 13px; font-weight: 900; letter-spacing: 0.3px; }
         .footer { text-align: center; margin-top: 6px; }
         @media print {
             @page { size: 80mm 297mm; margin: 0; }
-            html, body { width: 70mm; font-size: 9px; }
+            html, body { width: 70mm; font-size: 9px; font-weight: 900; }
             body { padding: 2mm; }
             .grand-total { font-size: 10px; }
             .header-title { font-size: 12px; }
         }
         @media print and (max-width: 58mm) {
             @page { size: 58mm 297mm; margin: 0; }
-            html, body { width: 48mm; font-size: 8px; }
+            html, body { width: 48mm; font-size: 8px; font-weight: 900; }
             body { padding: 1.5mm; }
             .grand-total { font-size: 9px; }
             .section-title { font-size: 8px; }
