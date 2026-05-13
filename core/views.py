@@ -89,7 +89,7 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
         if not user.is_superuser:
-            messages.error(self.request, "Usa el acceso de restaurantes para iniciar sesion")
+            messages.error(self.request, "Usa cliente/login para iniciar sesion con tus credenciales de acceso")
             return reverse_lazy("core:cliente_login")
         return reverse_lazy("core:superadmin_dashboard")
 
