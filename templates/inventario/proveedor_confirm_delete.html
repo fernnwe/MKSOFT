@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Proveedor - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="px-3 px-md-4" style="max-width: 480px; margin: 3rem auto;">
+    <div class="md3-card-outlined" style="padding: 2rem; text-align: center;">
+        <span class="material-symbols-outlined" style="font-size: 48px; color: var(--md-sys-color-error);">business</span>
+        <h2 style="margin-top: 1rem;">¿Desactivar proveedor?</h2>
+        <p style="color: var(--md-sys-color-on-surface-variant); margin-top: 0.5rem;">
+            El proveedor <strong>{{ object.nombre }}</strong> será desactivado.<br>
+            No se eliminarán sus compras ni cuentas asociadas.
+        </p>
+        <form method="post" style="margin-top: 1.5rem;">
+            {% csrf_token %}
+            <div class="md3-flex" style="gap: 0.5rem; justify-content: center;">
+                <button type="submit" class="md3-btn md3-btn-filled" style="background: var(--md-sys-color-error);">
+                    <span class="material-symbols-outlined" style="margin-right: 0.25rem;">check</span>Desactivar
+                </button>
+                <a href="{% url 'inventario:proveedores' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

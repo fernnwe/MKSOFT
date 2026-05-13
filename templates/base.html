@@ -103,6 +103,10 @@
                 <span class="material-symbols-outlined">account_balance</span>
                 Cuentas por pagar
             </a>
+            <a href="{% url 'inventario:proveedores' %}" class="md3-nav-item {% if 'proveedores' in request.path %}active{% endif %}">
+                <span class="material-symbols-outlined">business</span>
+                Proveedores
+            </a>
             {% endif %}
 
             {% if user.can_view_facturacion %}

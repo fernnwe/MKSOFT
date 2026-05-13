@@ -32,12 +32,36 @@ class Ingrediente(models.Model):
         return f"{self.nombre}"
 
 
+class Proveedor(models.Model):
+    cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="proveedores")
+    nombre = models.CharField(max_length=200)
+    contacto = models.CharField(max_length=200, blank=True)
+    telefono = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+    direccion = models.TextField(blank=True)
+    notas = models.TextField(blank=True)
+    activo = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["nombre"]
+        verbose_name = "Proveedor"
+        verbose_name_plural = "Proveedores"
+        constraints = [
+            models.UniqueConstraint(fields=["cliente", "nombre"], name="unique_proveedor_per_cliente"),
+        ]
+
+    def __str__(self):
+        return self.nombre
+
+
 class Inventario(models.Model):
     ingrediente = models.OneToOneField(Ingrediente, on_delete=models.CASCADE, related_name="inventario")
     cantidad_actual = models.DecimalField(max_digits=10, decimal_places=3)
     unidad = models.CharField(max_length=20, choices=Ingrediente.Unidad.choices, default=Ingrediente.Unidad.UNIDAD)
     costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     proveedor = models.CharField(max_length=200, blank=True)
+    proveedor_fk = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="inventarios")
     ultima_actualizacion = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -54,6 +78,12 @@ class Inventario(models.Model):
     @property
     def valor_total(self):
         return self.cantidad_actual * self.costo_unitario
+
+
+    def save(self, *args, **kwargs):
+        if self.proveedor_fk:
+            self.proveedor = self.proveedor_fk.nombre
+        super().save(*args, **kwargs)
 
 
 class MovimientoInventario(models.Model):
@@ -93,6 +123,7 @@ class Compra(models.Model):
 
     cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="compras")
     proveedor = models.CharField(max_length=200)
+    proveedor_fk = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="compras")
     folio = models.CharField(max_length=50, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
@@ -108,6 +139,8 @@ class Compra(models.Model):
         return f"Compra {self.folio} - {self.proveedor}"
 
     def save(self, *args, **kwargs):
+        if self.proveedor_fk:
+            self.proveedor = self.proveedor_fk.nombre
         if not self.folio:
             import uuid
             self.folio = f"COMP-{uuid.uuid4().hex[:8].upper()}"
@@ -150,6 +183,7 @@ class CuentaPorPagar(models.Model):
 
     cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="cuentas_por_pagar")
     proveedor = models.CharField(max_length=200)
+    proveedor_fk = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="cuentas_por_pagar")
     folio = models.CharField(max_length=50, blank=True)
     compra = models.ForeignKey(Compra, on_delete=models.SET_NULL, null=True, blank=True, related_name="cuentas_por_pagar")
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
@@ -170,6 +204,8 @@ class CuentaPorPagar(models.Model):
         return f"{self.folio} - {self.proveedor} ({self.monto_total})"
 
     def save(self, *args, **kwargs):
+        if self.proveedor_fk:
+            self.proveedor = self.proveedor_fk.nombre
         if not self.folio:
             import uuid
             self.folio = f"CP-{uuid.uuid4().hex[:8].upper()}"
@@ -198,7 +234,6 @@ class CuentaPorPagar(models.Model):
         elif self.monto_pagado > 0:
             self.estado = self.Estado.PARCIAL
         self.save()
-
 
 class Receta(models.Model):
     producto = models.ForeignKey("productos.Producto", on_delete=models.CASCADE, related_name="receta_ingredientes")

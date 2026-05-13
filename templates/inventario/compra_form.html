@@ -295,9 +295,14 @@
                 </div>
             </div>
             <div style="padding:12px 16px;">
+                <div class="md3-field" style="margin-bottom:8px;">
+                    {{ form.proveedor_fk }}
+                    <label class="md3-label" for="id_proveedor_fk">Proveedor (seleccionar)</label>
+                    <div class="md3-input-line"></div>
+                </div>
                 <div class="md3-field {% if form.proveedor.errors %}md3-field-error{% endif %}" style="margin-bottom:12px;">
                     {{ form.proveedor }}
-                    <label class="md3-label" for="id_proveedor">Proveedor</label>
+                    <label class="md3-label" for="id_proveedor">O escribir nombre manual</label>
                     <div class="md3-input-line"></div>
                     {% for error in form.proveedor.errors %}
                     <p class="md3-field-helper" style="color:var(--md-sys-color-error);">{{ error }}</p>

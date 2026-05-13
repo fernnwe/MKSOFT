@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Proveedor - {{ RESTAURANT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="md3-page-header">
+    <h1 class="md3-page-title">{% if object %}Editar{% else %}Nuevo{% endif %} Proveedor</h1>
+    <p class="md3-page-subtitle">{% if object %}Modifica los datos del proveedor{% else %}Registra un nuevo proveedor{% endif %}</p>
+</div>
+
+<div class="px-3 px-md-4">
+    <div class="md3-card-outlined" style="max-width:600px;">
+        <form method="post" style="padding: 1.5rem;">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="md3-field" style="margin-bottom: 1rem;">
+                <label for="{{ field.id_for_label }}" class="md3-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="md3-error" style="color: var(--md-sys-color-error); font-size: 0.8rem; margin-top: 0.25rem;">
+                    {{ field.errors|join:", " }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="md3-flex" style="gap: 0.5rem; margin-top: 1.5rem;">
+                <button type="submit" class="md3-btn md3-btn-filled md3-btn-success">
+                    <span class="material-symbols-outlined" style="margin-right: 0.25rem;">save</span>Guardar
+                </button>
+                <a href="{% url 'inventario:proveedores' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

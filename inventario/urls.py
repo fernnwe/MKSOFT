@@ -25,4 +25,10 @@ urlpatterns = [
     path("cuentas/<int:pk>/eliminar/", views.CuentaPorPagarDeleteView.as_view(), name="cuenta_eliminar"),
     path("pdf/inventario/", views.inventario_pdf, name="inventario_pdf"),
     path("pdf/compras/", views.compras_pdf, name="compras_pdf"),
+    path("proveedores/", views.ProveedorListView.as_view(), name="proveedores"),
+    path("proveedores/crear/", views.ProveedorCreateView.as_view(), name="proveedor_crear"),
+    path("proveedores/<int:pk>/editar/", views.ProveedorUpdateView.as_view(), name="proveedor_editar"),
+    path("proveedores/<int:pk>/eliminar/", views.ProveedorDeleteView.as_view(), name="proveedor_eliminar"),
+    path("excel/inventario/", views.inventario_export_excel, name="inventario_excel"),
+    path("excel/compras/", views.compras_export_excel, name="compras_excel"),
 ]

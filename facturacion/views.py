@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView, FormView
 from django.views.generic.base import View
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -722,3 +724,61 @@ class CajaMovimientoCreateView(ClienteScopeMixin, PermissionRequiredMixin, Login
         msg = "Gasto registrado" if tipo == CajaMovimiento.Tipo.GASTO else "Retiro registrado"
         messages.success(request, f"{msg}: {descripcion} ({monto_dec})")
         return redirect("facturacion:cierre_caja")
+
+
+@login_required
+def facturas_export_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, Border, Side
+
+    from core.views import ClienteScopeMixin
+
+    cliente = ClienteScopeMixin.get_cliente_static(request)
+    qs = Factura.objects.filter(cliente=cliente).select_related("comanda__mesa")
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Facturas"
+
+    header_font = Font(name="Arial", bold=True, size=11)
+    thin_border = Border(
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin"),
+    )
+
+    headers = ["Folio", "Fecha", "Mesa", "Cliente", "Metodo Pago", "Subtotal", "IVA", "Servicio", "Descuento", "Total", "Estado"]
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.border = thin_border
+
+    for row, f in enumerate(qs, 2):
+        data = [
+            f.folio,
+            f.fecha_emision.strftime("%d/%m/%Y %H:%M"),
+            f.comanda.mesa.numero if f.comanda else "",
+            f.cliente_nombre or "",
+            f.get_metodo_pago_display(),
+            float(f.subtotal),
+            float(f.impuestos),
+            float(f.propina),
+            float(f.descuento),
+            float(f.total_con_impuestos),
+            f.get_estado_display(),
+        ]
+        for col, val in enumerate(data, 1):
+            cell = ws.cell(row=row, column=col, value=val)
+            cell.border = thin_border
+
+    ws.column_dimensions["A"].width = 18
+    ws.column_dimensions["B"].width = 18
+    ws.column_dimensions["C"].width = 8
+    ws.column_dimensions["D"].width = 20
+    ws.column_dimensions["E"].width = 16
+    for c in "FGHIJ": ws.column_dimensions[c].width = 14
+    ws.column_dimensions["K"].width = 12
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="facturas.xlsx"'
+    wb.save(response)
+    return response

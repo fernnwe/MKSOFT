@@ -121,6 +121,9 @@
             <h1 class="md3-page-title"><span class="material-symbols-outlined" style="margin-right:8px;">payments</span>Facturacion</h1>
             <p class="md3-page-subtitle">Historial de facturas y cobros</p>
         </div>
+        <a href="{% url 'facturacion:facturas_excel' %}" class="md3-btn md3-btn-outlined md3-btn-success" style="margin-right:0.5rem;">
+            <span class="material-symbols-outlined" style="font-size:18px;">table_chart</span>Excel
+        </a>
         <a href="{% url 'facturacion:crear' %}" class="md3-btn md3-btn-filled">
             <span class="material-symbols-outlined" style="font-size:18px;">add</span>Nueva Factura
         </a>

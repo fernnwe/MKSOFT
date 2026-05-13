@@ -17,4 +17,5 @@ urlpatterns = [
     path("cierre-caja/pdf/", views.CierreCajaPdfView.as_view(), name="cierre_pdf"),
     path("cierres/historial/", views.HistorialCierresView.as_view(), name="historial_cierres"),
     path("caja/movimiento/", views.CajaMovimientoCreateView.as_view(), name="caja_movimiento"),
+    path("excel/facturas/", views.facturas_export_excel, name="facturas_excel"),
 ]

@@ -9,9 +9,9 @@ from django.db import IntegrityError, models
 from django.utils import timezone
 from django import forms
 from django.views.decorators.http import require_GET
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
-from .models import Ingrediente, Inventario, MovimientoInventario, Compra, CompraItem, CuentaPorPagar
+from .models import Ingrediente, Inventario, MovimientoInventario, Compra, CompraItem, CuentaPorPagar, Proveedor
 from core.models import ConfigRestaurante
 
 
@@ -352,12 +352,19 @@ class CompraListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
 class CompraCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Compra
     template_name = "inventario/compra_form.html"
-    fields = ["proveedor", "notas"]
+    fields = ["proveedor_fk", "proveedor", "notas"]
     success_url = reverse_lazy("inventario:compras")
     permission = "can_manage_inventario"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
+        cliente = self.get_cliente()
+        proveedores = Proveedor.objects.filter(cliente=cliente, activo=True) if cliente else Proveedor.objects.none()
+        form.fields["proveedor_fk"] = forms.ModelChoiceField(
+            queryset=proveedores, required=False,
+            widget=forms.Select(attrs={"class": "md3-input", "onchange": "document.getElementById('id_proveedor').value = this.options[this.selectedIndex].text"}),
+            label="Proveedor (seleccionar)",
+        )
         form.fields["proveedor"].widget = forms.TextInput(attrs={
             "class": "md3-input",
             "placeholder": " ",
@@ -826,4 +833,176 @@ def compras_pdf(request):
     buffer = generate_compras_pdf(qs, config.nombre, config.simbolo_moneda)
     response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="compras.pdf"'
+    return response
+
+
+# ─── Proveedores CRUD ───────────────────────────────────────────────
+
+class ProveedorListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
+    model = Proveedor
+    template_name = "inventario/proveedor_list.html"
+    context_object_name = "proveedores"
+    permission = "can_view_inventario"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        cliente = self.get_cliente()
+        if cliente:
+            qs = qs.filter(cliente=cliente)
+        return qs.filter(activo=True)
+
+
+class ProveedorCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Proveedor
+    template_name = "inventario/proveedor_form.html"
+    fields = ["nombre", "contacto", "telefono", "email", "direccion", "notas"]
+    permission = "can_view_inventario"
+
+    def form_valid(self, form):
+        form.instance.cliente = self.get_cliente()
+        messages.success(self.request, "Proveedor creado exitosamente.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("inventario:proveedores")
+
+
+class ProveedorUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Proveedor
+    template_name = "inventario/proveedor_form.html"
+    fields = ["nombre", "contacto", "telefono", "email", "direccion", "notas"]
+    permission = "can_view_inventario"
+
+    def get_success_url(self):
+        return reverse_lazy("inventario:proveedores")
+
+
+class ProveedorDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Proveedor
+    template_name = "inventario/proveedor_confirm_delete.html"
+    permission = "can_view_inventario"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        cliente = self.get_cliente()
+        if cliente:
+            qs = qs.filter(cliente=cliente)
+        return qs
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.activo = False
+        self.object.save()
+        messages.success(request, "Proveedor desactivado exitosamente.")
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("inventario:proveedores")
+
+
+# ─── Export Excel ───────────────────────────────────────────────────
+
+@login_required
+def inventario_export_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, Border, Side
+
+    cliente = ClienteScopeMixin.get_cliente_static(request)
+    qs = Inventario.objects.filter(ingrediente__cliente=cliente).select_related("ingrediente")
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario"
+
+    header_font = Font(name="Arial", bold=True, size=11)
+    thin_border = Border(
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin"),
+    )
+
+    headers = ["Ingrediente", "Categoria", "Cantidad", "Unidad", "Costo Unitario", "Valor Total", "Stock Minimo", "Proveedor"]
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = thin_border
+
+    for row, inv in enumerate(qs, 2):
+        data = [
+            inv.ingrediente.nombre,
+            inv.ingrediente.categoria,
+            float(inv.cantidad_actual),
+            inv.get_unidad_display(),
+            float(inv.costo_unitario),
+            float(inv.valor_total),
+            float(inv.ingrediente.stock_minimo),
+            inv.proveedor,
+        ]
+        for col, val in enumerate(data, 1):
+            cell = ws.cell(row=row, column=col, value=val)
+            cell.border = thin_border
+
+    ws.column_dimensions["A"].width = 25
+    ws.column_dimensions["B"].width = 15
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 12
+    ws.column_dimensions["E"].width = 15
+    ws.column_dimensions["F"].width = 15
+    ws.column_dimensions["G"].width = 12
+    ws.column_dimensions["H"].width = 20
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="inventario.xlsx"'
+    wb.save(response)
+    return response
+
+
+@login_required
+def compras_export_excel(request):
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, Border, Side
+
+    cliente = ClienteScopeMixin.get_cliente_static(request)
+    qs = Compra.objects.filter(cliente=cliente).prefetch_related("items__ingrediente")
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Compras"
+
+    header_font = Font(name="Arial", bold=True, size=11)
+    thin_border = Border(
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin"),
+    )
+
+    headers = ["Folio", "Proveedor", "Fecha", "Estado", "Total", "Notas"]
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = thin_border
+
+    for row, compra in enumerate(qs, 2):
+        data = [
+            compra.folio,
+            compra.proveedor,
+            compra.fecha.strftime("%d/%m/%Y %H:%M"),
+            compra.get_estado_display(),
+            float(compra.total),
+            compra.notas,
+        ]
+        for col, val in enumerate(data, 1):
+            cell = ws.cell(row=row, column=col, value=val)
+            cell.border = thin_border
+
+    ws.column_dimensions["A"].width = 18
+    ws.column_dimensions["B"].width = 22
+    ws.column_dimensions["C"].width = 18
+    ws.column_dimensions["D"].width = 14
+    ws.column_dimensions["E"].width = 14
+    ws.column_dimensions["F"].width = 30
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="compras.xlsx"'
+    wb.save(response)
     return response
