@@ -1168,6 +1168,26 @@ class ClienteResetPasswordView(PermissionRequiredMixin, LoginRequiredMixin, View
         return redirect("core:superadmin_cliente_detalle", pk=cliente.pk)
 
 
+class ClienteEnviarCredencialesView(PermissionRequiredMixin, LoginRequiredMixin, View):
+    permission = "can_manage_users"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            return render(request, "core/acceso_bloqueado.html", status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        cliente = get_object_or_404(Cliente, pk=pk)
+        password = cliente.admin_password_visible
+        try:
+            from core.emails import enviar_email_bienvenida
+            enviar_email_bienvenida(cliente, password)
+            messages.success(request, f"Credenciales enviadas por correo a {cliente.admin_email or 'N/A'}")
+        except Exception as e:
+            messages.error(request, f"Error al enviar correo: {str(e)}")
+        return redirect("core:superadmin_cliente_detalle", pk=cliente.pk)
+
+
 class ClienteDeleteView(PermissionRequiredMixin, LoginRequiredMixin, View):
     permission = "can_manage_users"
 

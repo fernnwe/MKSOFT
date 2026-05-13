@@ -42,4 +42,5 @@ urlpatterns = [
     path("superadmin/cliente/<int:pk>/extender/", views.ClienteExtendView.as_view(), name="superadmin_cliente_extender"),
     path("suscripcion-vencida/", views.SuscripcionVencidaView.as_view(), name="suscripcion_vencida"),
     path("superadmin/cliente/<int:pk>/suspender/", views.ClienteSuspendView.as_view(), name="superadmin_cliente_suspender"),
+    path("superadmin/cliente/<int:pk>/enviar-credenciales/", views.ClienteEnviarCredencialesView.as_view(), name="superadmin_enviar_credenciales"),
 ]

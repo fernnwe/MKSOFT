@@ -234,6 +234,12 @@
                 <button type="button" class="md3-copy-btn" onclick="sendWhatsApp()" title="Enviar por WhatsApp" style="color:var(--md-sys-color-success);">
                     <span class="material-symbols-outlined">chat</span>
                 </button>
+                <form method="post" action="{% url 'core:superadmin_enviar_credenciales' cliente.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="md3-copy-btn" title="Enviar por correo" style="color:var(--md-sys-color-primary);">
+                        <span class="material-symbols-outlined">mail</span>
+                    </button>
+                </form>
             </div>
         </div>
         {% else %}
