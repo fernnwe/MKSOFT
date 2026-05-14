@@ -125,11 +125,9 @@
     </div>
 
     <div id="toolbar" style="position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:2px solid #000;padding:6px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;z-index:999;font-family:sans-serif;font-size:13px;">
-        <button onclick="window.print()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Imprimir (Navegador)</button>
-        <button id="btnUsb" onclick="printUSB({{ factura.pk }})" style="padding:6px 14px;background:#388e3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">USB ESC/POS</button>
-        <button id="btnSerial" onclick="printSerial({{ factura.pk }})" style="padding:6px 14px;background:#f57c00;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Serial ESC/POS</button>
-        <button onclick="printAgent({{ factura.pk }})" style="padding:6px 14px;background:#7b1fa2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Agente Local</button>
-        <span id="printStatus" style="margin-left:8px;font-size:12px;"></span>
+        <button id="btnAgent" onclick="printAgent({{ factura.pk }})" style="padding:8px 20px;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:14px;">Imprimir</button>
+        <button onclick="window.print()" style="padding:4px 10px;background:#757575;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Navegador</button>
+        <span id="printStatus" style="font-size:12px;"></span>
     </div>
 
     <script>
@@ -141,55 +139,29 @@
         el.style.color = ok ? '#2e7d32' : '#c62828';
     }
 
-    async function printUSB(pk) {
-        if (!navigator.usb) { status('WebUSB no soportado en este navegador', 0); return; }
-        try {
-            status('Conectando impresora USB...');
-            var device = await navigator.usb.requestDevice({ filters: [] });
-            status('Obteniendo datos ESC/POS...');
-            var resp = await fetch('/facturacion/' + pk + '/escpos/');
-            var data = await resp.arrayBuffer();
-            await device.open();
-            if (device.configuration === null) await device.selectConfiguration(1);
-            await device.claimInterface(0);
-            await device.transferOut(1, data);
-            await device.close();
-            status('Impreso correctamente!', 1);
-        } catch(e) {
-            status('Error USB: ' + e.message, 0);
-        }
-    }
-
-    async function printSerial(pk) {
-        if (!navigator.serial) { status('Web Serial no soportado en este navegador', 0); return; }
-        try {
-            status('Conectando puerto serial...');
-            var port = await navigator.serial.requestPort();
-            status('Abriendo puerto a 9600 baud...');
-            await port.open({ baudRate: 9600 });
-            status('Obteniendo datos ESC/POS...');
-            var resp = await fetch('/facturacion/' + pk + '/escpos/');
-            var data = await resp.arrayBuffer();
-            var writer = port.writable.getWriter();
-            await writer.write(data);
-            writer.releaseLock();
-            await port.close();
-            status('Impreso correctamente!', 1);
-        } catch(e) {
-            status('Error Serial: ' + e.message, 0);
-        }
-    }
-
     async function printAgent(pk) {
         try {
-            status('Obteniendo datos ESC/POS...');
+            status('Conectando al agente...');
+            var agentStatus = await fetch(AGENT_URL + '/status');
+            var info = await agentStatus.json();
+            if (info.printer) {
+                status('Impresora: ' + info.printer);
+            } else {
+                status('No se detecto impresora termica');
+            }
+        } catch(e) {
+            status('Agente no disponible. Ejecuta printer_agent.py', 0);
+            return;
+        }
+        try {
+            status('Obteniendo datos...');
             var resp = await fetch('/facturacion/' + pk + '/escpos/');
             if (!resp.ok) {
                 var text = await resp.text();
-                throw new Error(text.slice(0, 500));
+                throw new Error(text.slice(0, 300));
             }
             var data = await resp.arrayBuffer();
-            status('Enviando al agente local...');
+            status('Enviando a imprimir...');
             var agentResp = await fetch(AGENT_URL + '/print', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/octet-stream' },
@@ -205,6 +177,18 @@
             status('Error: ' + e.message, 0);
         }
     }
+
+    (function() {
+        fetch(AGENT_URL + '/status').then(function(r) { return r.json(); }).then(function(info) {
+            if (info.printer) {
+                status('Listo - ' + info.printer, 1);
+            } else {
+                status('Agente OK - sin impresora termica');
+            }
+        }).catch(function() {
+            status('Agente local no disponible');
+        });
+    })();
     </script>
 </body>
 </html>
