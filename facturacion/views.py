@@ -487,6 +487,10 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
         context["facturas_canceladas_count"] = facturas_canceladas.count()
         context["facturas_pendientes_count"] = facturas_pendientes.count()
 
+        llevar_qs = facturas_pagadas.filter(tipo=Factura.Tipo.LLEVAR)
+        context["llevar_count"] = llevar_qs.count()
+        context["llevar_total"] = llevar_qs.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+
         total_ventas = facturas_pagadas.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
         total_iva = facturas_pagadas.aggregate(iva=Sum("impuestos"))["iva"] or 0
         total_servicio = facturas_pagadas.aggregate(servicio=Sum("propina"))["servicio"] or 0
@@ -603,6 +607,10 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         facturas_canceladas = facturas_qs.filter(fecha_emision__gte=start, fecha_emision__lte=end, estado=Factura.Estado.CANCELADA)
         compras_recibidas = compras_qs.filter(fecha__gte=start, fecha__lte=end, estado=Compra.Estado.RECIBIDA)
 
+        llevar_qs = facturas_pagadas.filter(tipo=Factura.Tipo.LLEVAR)
+        llevar_count = llevar_qs.count()
+        llevar_total = llevar_qs.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
+
         total_ventas = facturas_pagadas.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
         total_iva = facturas_pagadas.aggregate(iva=Sum("impuestos"))["iva"] or 0
         total_servicio = facturas_pagadas.aggregate(servicio=Sum("propina"))["servicio"] or 0
@@ -640,7 +648,8 @@ class CierreCajaPdfView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
             aperturas_cerradas, facturas_pagadas, facturas_canceladas, compras_recibidas,
             ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos,
             total_ventas - total_compras, config.nombre, config.simbolo_moneda, hoy,
-            movimientos=movimientos, total_gastos_mov=total_gastos_mov, total_retiros_mov=total_retiros_mov
+            movimientos=movimientos, total_gastos_mov=total_gastos_mov, total_retiros_mov=total_retiros_mov,
+            llevar_count=llevar_count, llevar_total=llevar_total
         )
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="cierre_{hoy.strftime("%Y%m%d")}.pdf"'
@@ -683,6 +692,10 @@ class CierreTicketView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
         facturas_canceladas = facturas_dia.filter(estado=Factura.Estado.CANCELADA)
         context["facturas_pagadas_count"] = facturas_pagadas.count()
         context["facturas_canceladas_count"] = facturas_canceladas.count()
+
+        llevar_qs = facturas_pagadas.filter(tipo=Factura.Tipo.LLEVAR)
+        context["llevar_count"] = llevar_qs.count()
+        context["llevar_total"] = llevar_qs.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
 
         total_ventas = facturas_pagadas.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
         total_iva = facturas_pagadas.aggregate(iva=Sum("impuestos"))["iva"] or 0

@@ -367,7 +367,7 @@ def generate_productos_pdf(productos_qs, restaurant_name, currency_symbol):
     return buffer
 
 
-def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas, compras_recibidas, ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos, balance_neto, restaurant_name, currency_symbol, fecha, movimientos=None, total_gastos_mov=0, total_retiros_mov=0):
+def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas, compras_recibidas, ventas_por_metodo, total_ventas, total_compras, total_iva, total_servicio, total_descuentos, balance_neto, restaurant_name, currency_symbol, fecha, movimientos=None, total_gastos_mov=0, total_retiros_mov=0, llevar_count=0, llevar_total=0):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -457,6 +457,10 @@ def generate_cierre_pdf(apertura_cerrada, facturas_pagadas, facturas_canceladas,
         ["Concepto", "Monto"],
         ["Facturas Pagadas", f"{facturas_pagadas.count()} | {currency_symbol}{total_ventas:.2f}"],
         ["Facturas Canceladas", str(facturas_canceladas.count())],
+    ]
+    if llevar_count > 0:
+        resumen_data.append(["Para llevar", f"{llevar_count} | {currency_symbol}{llevar_total:.2f}"])
+    resumen_data += [
         ["IVA (15%)", f"{currency_symbol}{total_iva:.2f}"],
         ["Servicio (10%)", f"{currency_symbol}{total_servicio:.2f}"],
         ["Descuentos", f"-{currency_symbol}{total_descuentos:.2f}"],

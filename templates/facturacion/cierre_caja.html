@@ -164,6 +164,12 @@
                     </div>
                     <span style="font-weight:600; color:var(--md-sys-color-success);">{{ CURRENCY_SYMBOL }}{{ total_ventas|currency }}</span>
                 </div>
+                {% if llevar_count > 0 %}
+                <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
+                    <span>Para llevar ({{ llevar_count }})</span>
+                    <span>{{ CURRENCY_SYMBOL }}{{ llevar_total|currency }}</span>
+                </div>
+                {% endif %}
                 {% if total_iva > 0 %}
                 <div class="md3-flex md3-flex-justify-between md3-flex-align-center" style="padding:10px 0; padding-left:26px;">
                     <span>IVA 15%</span>

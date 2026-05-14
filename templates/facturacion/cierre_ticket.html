@@ -11,7 +11,7 @@
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
-            font-size: 10px; line-height: 1.25; font-weight: 900;
+            font-size: 11px; line-height: 1.3; font-weight: 600;
             width: 70mm; overflow-x: hidden;
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
@@ -23,26 +23,27 @@
         .row > span:last-child { text-align: right; white-space: nowrap; flex-shrink: 0; }
         .row > span:first-child { overflow: hidden; text-overflow: ellipsis; }
         .indent { padding-left: 6px; }
-        .total-row { font-weight: 900; border-top: 1px solid #000; padding-top: 2px; }
-        .grand-total { font-size: 11px; font-weight: 900; border-top: 2px solid #000; padding-top: 3px; margin-top: 3px; }
-        .section-title { font-weight: 900; text-transform: uppercase; margin: 4px 0 2px; font-size: 10px; letter-spacing: 0.3px; }
-        .subsection { font-weight: 900; margin: 2px 0 1px; }
-        .error { color: #B3261E; font-weight: 900; }
-        .header-title { font-size: 13px; font-weight: 900; letter-spacing: 0.3px; }
+        .total-row { font-weight: 700; border-top: 1px solid #000; padding-top: 2px; }
+        .grand-total { font-size: 12px; font-weight: 800; border-top: 2px solid #000; padding-top: 3px; margin-top: 3px; }
+        .section-title { font-weight: 700; text-transform: uppercase; margin: 4px 0 2px; font-size: 11px; letter-spacing: 0.5px; }
+        .subsection { font-weight: 700; margin: 2px 0 1px; }
+        .error { color: #B3261E; font-weight: 700; }
+        .header-title { font-size: 14px; font-weight: 800; letter-spacing: 0.5px; }
         .footer { text-align: center; margin-top: 6px; }
         @media print {
             @page { size: 80mm 297mm; margin: 0; }
-            html, body { width: 70mm; font-size: 9px; font-weight: 900; }
+            html, body { width: 70mm; font-size: 10px; font-weight: 600; }
             body { padding: 2mm; }
-            .grand-total { font-size: 10px; }
-            .header-title { font-size: 12px; }
+            .grand-total { font-size: 11px; font-weight: 800; }
+            .header-title { font-size: 13px; font-weight: 800; }
+            .section-title { font-size: 10px; font-weight: 700; }
         }
         @media print and (max-width: 58mm) {
             @page { size: 58mm 297mm; margin: 0; }
-            html, body { width: 48mm; font-size: 8px; font-weight: 900; }
+            html, body { width: 48mm; font-size: 9px; font-weight: 600; }
             body { padding: 1.5mm; }
-            .grand-total { font-size: 9px; }
-            .section-title { font-size: 8px; }
+            .grand-total { font-size: 10px; font-weight: 800; }
+            .section-title { font-size: 9px; font-weight: 700; }
         }
     </style>
 </head>
@@ -63,6 +64,9 @@
         <div class="row"><span>Facturas pagadas:</span><span>{{ facturas_pagadas_count }}</span></div>
         <div class="row"><span>Facturas canceladas:</span><span>{{ facturas_canceladas_count }}</span></div>
         <div class="row"><span>Comandas cerradas:</span><span>{{ comandas_cerradas_count }}</span></div>
+        {% if llevar_count > 0 %}
+        <div class="row indent"><span>Para llevar:</span><span>{{ llevar_count }} ({{ CURRENCY_SYMBOL }}{{ llevar_total|currency }})</span></div>
+        {% endif %}
         <hr>
 
         <div class="section-title">TIPOS DE PAGO</div>
