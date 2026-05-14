@@ -26,6 +26,8 @@
         .error { color: #000; font-weight: 800; }
         .header-title { font-size: 12px; font-weight: 800; }
         .footer { text-align: center; margin-top: 4px; }
+        .no-print { display: block; }
+        @media print { .no-print { display: none; } }
         p { margin: 1px 0; }
         @media print {
             @page { margin: 0; }
@@ -133,6 +135,10 @@
             <p>Gracias por su preferencia</p>
             <p style="font-size:8px;">{{ RESTAURANT_NAME }}</p>
         </div>
+    </div>
+
+    <div class="no-print" style="text-align:center; margin-top:10px;">
+        <a href="{% url 'facturacion:cierre_escpos' %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}" target="_blank" style="display:inline-block; padding:8px 16px; background:#000; color:#fff; text-decoration:none; font-family:sans-serif; font-size:12px; border-radius:4px;">Imprimir ESC/POS</a>
     </div>
 
     <script>

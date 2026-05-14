@@ -300,8 +300,11 @@
                                 <a href="{% url 'facturacion:detalle' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm">
                                     <span class="material-symbols-outlined">visibility</span>
                                 </a>
-                                <a href="{% url 'facturacion:imprimir' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" target="_blank">
+                                <a href="{% url 'facturacion:imprimir' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" target="_blank" title="Imprimir HTML">
                                     <span class="material-symbols-outlined">print</span>
+                                </a>
+                                <a href="{% url 'facturacion:escpos' factura.pk %}" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" target="_blank" title="Imprimir ESC/POS directo">
+                                    <span class="material-symbols-outlined">receipt_long</span>
                                 </a>
                                 {% if user.can_cancel_facturas %}
                                 <button type="button" class="md3-btn md3-btn-icon md3-btn-text md3-btn-sm" style="color:var(--md-sys-color-error);" onclick="openDeleteModal({{ factura.pk }}, '{{ factura.folio }}')">

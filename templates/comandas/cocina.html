@@ -99,6 +99,9 @@
                             <a href="{% url 'comandas:imprimir_cocina' comanda.pk %}" target="_blank" class="md3-btn md3-btn-icon md3-btn-text" title="Imprimir ticket de cocina">
                                 <span class="material-symbols-outlined" style="font-size:18px;">print</span>
                             </a>
+                            <a href="{% url 'comandas:escpos' comanda.pk %}" target="_blank" class="md3-btn md3-btn-icon md3-btn-text" title="Imprimir ESC/POS directo">
+                                <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>
+                            </a>
                             <span class="cocina-mesa">Mesa {% if comanda.mesa %}{{ comanda.mesa.numero }}{% else %}—{% endif %}</span>
                         </div>
                     </div>

@@ -365,6 +365,44 @@ def factura_escpos_tcp(request, pk):
         return HttpResponse(f"Error al imprimir: {e}", status=500)
 
 
+def cierre_escpos(request):
+    try:
+        from core.escpos_utils import build_cierre
+        from core.models import ConfigRestaurante
+        cliente = getattr(request.user, 'cliente', None)
+        config = ConfigRestaurante.get_config(cliente)
+        view = CierreTicketView()
+        view.request = request
+        data = view.get_context_data()
+        cols = int(request.GET.get("cols", "32"))
+        raw = build_cierre(data, config, cols=cols)
+        return HttpResponse(raw, content_type="application/octet-stream")
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
+
+
+def cierre_escpos_tcp(request):
+    from core.escpos_utils import build_cierre, send_tcp
+    from core.models import ConfigRestaurante
+    host = request.GET.get("host", "")
+    port = int(request.GET.get("port", "9100"))
+    if not host:
+        return HttpResponse("Falta parametro host", status=400)
+    cliente = getattr(request.user, 'cliente', None)
+    config = ConfigRestaurante.get_config(cliente)
+    view = CierreTicketView()
+    view.request = request
+    data = view.get_context_data()
+    raw = build_cierre(data, config)
+    try:
+        send_tcp(raw, host, port)
+        return HttpResponse(f"Impreso en {host}:{port}")
+    except Exception as e:
+        return HttpResponse(f"Error al imprimir: {e}", status=500)
+
+
 class AperturaCajaForm(forms.Form):
     monto_inicial = forms.DecimalField(
         label="Monto inicial en caja",

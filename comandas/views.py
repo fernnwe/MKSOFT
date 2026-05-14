@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -384,6 +385,48 @@ def imprimir_cocina(request, pk):
         qs = qs.filter(cliente=cliente)
     comanda = get_object_or_404(qs, pk=pk)
     return render(request, "comandas/imprimir_cocina.html", {"comanda": comanda})
+
+
+@login_required
+def comanda_escpos(request, pk):
+    try:
+        from core.escpos_utils import build_comanda
+        from core.models import ConfigRestaurante
+        cliente = getattr(request.user, 'cliente', None)
+        qs = Comanda.objects.all()
+        if cliente:
+            qs = qs.filter(cliente=cliente)
+        comanda = get_object_or_404(qs, pk=pk)
+        config = ConfigRestaurante.get_config(cliente)
+        cols = int(request.GET.get("cols", "32"))
+        data = build_comanda(comanda, config, cols=cols)
+        return HttpResponse(data, content_type="application/octet-stream")
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
+
+
+@login_required
+def comanda_escpos_tcp(request, pk):
+    from core.escpos_utils import build_comanda, send_tcp
+    from core.models import ConfigRestaurante
+    host = request.GET.get("host", "")
+    port = int(request.GET.get("port", "9100"))
+    if not host:
+        return HttpResponse("Falta parametro host", status=400)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = get_object_or_404(qs, pk=pk)
+    config = ConfigRestaurante.get_config(cliente)
+    data = build_comanda(comanda, config)
+    try:
+        send_tcp(data, host, port)
+        return HttpResponse(f"Impreso en {host}:{port}")
+    except Exception as e:
+        return HttpResponse(f"Error al imprimir: {e}", status=500)
 
 
 class VistaCocina(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):

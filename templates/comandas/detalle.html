@@ -641,6 +641,9 @@
         <a href="{% url 'comandas:imprimir_cocina' comanda.pk %}" class="md3-btn md3-btn-outlined" target="_blank">
             <span class="material-symbols-outlined" style="font-size:18px;">print</span>Imprimir Cocina
         </a>
+        <a href="{% url 'comandas:escpos' comanda.pk %}" class="md3-btn md3-btn-outlined" target="_blank" title="ESC/POS directo">
+            <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>ESC/POS
+        </a>
         {% endif %}
         {% if comanda.estado != 'cerrada' and comanda.estado != 'cancelada' %}
         <a href="{% url 'comandas:cerrar' comanda.pk %}" class="md3-btn md3-btn-tonal md3-btn-success" onclick="return confirm('¿Cerrar esta comanda y liberar la mesa?')">

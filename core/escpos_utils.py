@@ -100,7 +100,7 @@ def build_factura(factura, config, cols=32):
     buf += _enc("un documento fiscal*") + b'\n'
     buf += _enc("Gracias por utilizar MKSOFT") + b'\n'
 
-    buf += b'\n' * 4
+    buf += b'\n' * 2
     buf += GS + b'V' + b'\x00'
     return bytes(buf)
 
@@ -171,3 +171,127 @@ def _get_items(factura):
     if factura.comanda:
         return list(factura.comanda.items.filter(cancelado=False))
     return []
+
+
+def _init(cols=32):
+    buf = bytearray()
+    buf += ESC + b'@'
+    buf += ESC + b't' + b'\x02'
+    return buf
+
+
+def _center_header(buf, nombre, direccion, telefono, rfc, cols=32):
+    buf += ESC + b'a' + b'\x01'
+    buf += GS + b'!' + b'\x10'
+    buf += _enc(nombre) + b'\n'
+    buf += GS + b'!' + b'\x00'
+    buf += _enc(direccion) + b'\n'
+    buf += _enc(f"Tel: {telefono}") + b'\n'
+    buf += _enc(f"RUC: {rfc}") + b'\n'
+    buf += ESC + b'a' + b'\x00'
+    buf += _sep('-', cols) + b'\n'
+
+
+def _footer(buf, cols=32):
+    buf += ESC + b'a' + b'\x01'
+    buf += _enc("Gracias por su preferencia!") + b'\n'
+    buf += _enc("Gracias por utilizar MKSOFT") + b'\n'
+    buf += b'\n' * 2
+    buf += GS + b'V' + b'\x00'
+
+
+def build_cierre(data, config, cols=32):
+    """Build ESC/POS receipt for cash closure.
+    data: dict from CierreTicketView context"""
+    buf = _init(cols)
+    _center_header(buf, config.nombre, config.direccion, config.telefono, config.rfc, cols)
+
+    buf += _enc("CIERRE DE CAJA") + b'\n'
+    buf += _enc(data["fecha_seleccionada"].strftime('%d/%m/%Y')) + b'\n'
+    buf += _enc(f"Generado: {data['fecha_cierre'].strftime('%H:%M')}") + b'\n'
+    buf += _enc(f"Usuario: {data['user']}") + b'\n'
+    buf += _sep('-', cols) + b'\n'
+
+    s = config.simbolo_moneda
+
+    buf += _enc("VENTAS") + b'\n'
+    buf += _key_val("Pagadas:", str(data["facturas_pagadas_count"]), cols)
+    buf += _key_val("Canceladas:", str(data["facturas_canceladas_count"]), cols)
+    buf += _key_val("Comandas:", str(data["comandas_cerradas_count"]), cols)
+    if data.get("llevar_count", 0) > 0:
+        buf += _key_val("Para llevar:", f"{data['llevar_count']} ({s}{data['llevar_total']:.2f})", cols)
+    buf += _sep('-', cols) + b'\n'
+
+    buf += _enc("FORMAS DE PAGO") + b'\n'
+    for item in data.get("ventas_por_metodo", []):
+        buf += _key_val(f"{item['metodo']} ({item['count']})", f"{s}{item['total']:.2f}", cols)
+    buf += ESC + b'E' + b'\x01'
+    buf += _key_val("TOTAL VENTAS", f"{s}{data['total_ventas']:.2f}", cols)
+    buf += ESC + b'E' + b'\x00'
+    buf += _sep('-', cols) + b'\n'
+
+    if data.get("total_iva", 0) > 0 or data.get("total_servicio", 0) > 0 or data.get("total_descuentos", 0) > 0:
+        buf += _enc("DESGLOSE") + b'\n'
+        if data["total_iva"] > 0:
+            buf += _key_val("IVA (15%):", f"{s}{data['total_iva']:.2f}", cols)
+        if data["total_servicio"] > 0:
+            buf += _key_val("Servicio (10%):", f"{s}{data['total_servicio']:.2f}", cols)
+        if data["total_descuentos"] > 0:
+            buf += _key_val("Descuentos:", f"-{s}{data['total_descuentos']:.2f}", cols)
+        buf += _sep('-', cols) + b'\n'
+
+    buf += _enc("COMPRAS") + b'\n'
+    buf += _key_val("Recibidas:", str(data.get("compras_recibidas_count", 0)), cols)
+    buf += _key_val("Pendientes:", str(data.get("compras_pendientes_count", 0)), cols)
+    buf += _key_val("Canceladas:", str(data.get("compras_canceladas_count", 0)), cols)
+    buf += _key_val("Total Compras:", f"{s}{data.get('total_compras', 0):.2f}", cols)
+    if data.get("total_gastos_mov", 0) > 0:
+        buf += _key_val("Gastos:", f"-{s}{data['total_gastos_mov']:.2f}", cols)
+    if data.get("total_retiros_mov", 0) > 0:
+        buf += _key_val("Retiros:", f"-{s}{data['total_retiros_mov']:.2f}", cols)
+    buf += _sep('-', cols) + b'\n'
+
+    buf += ESC + b'E' + b'\x01'
+    buf += _key_val("BALANCE NETO", f"{s}{data.get('balance_neto', 0):.2f}", cols)
+    buf += ESC + b'E' + b'\x00'
+    buf += _sep('-', cols) + b'\n'
+
+    _footer(buf, cols)
+    return bytes(buf)
+
+
+def build_comanda(comanda, config, cols=32):
+    """Build ESC/POS receipt for kitchen order."""
+    buf = _init(cols)
+    buf += ESC + b'a' + b'\x01'
+    buf += _enc(config.nombre) + b'\n'
+    buf += GS + b'!' + b'\x10'
+    buf += _enc(comanda.codigo) + b'\n'
+    buf += GS + b'!' + b'\x00'
+    mesa = comanda.mesa.numero if comanda.mesa else "N/A"
+    buf += _enc(f"Mesa: {mesa}") + b'\n'
+    if comanda.mesero:
+        buf += _enc(comanda.mesero.get_full_name() or comanda.mesero.username) + b'\n'
+    if comanda.prioridad == 'urgente':
+        buf += _enc("*** URGENTE ***") + b'\n'
+    elif comanda.prioridad == 'vip':
+        buf += _enc("*** VIP ***") + b'\n'
+    buf += ESC + b'a' + b'\x00'
+    buf += _enc(comanda.fecha_creacion.strftime('%d/%m/%Y %H:%M')) + b'\n'
+    buf += _sep('-', cols) + b'\n'
+
+    for item in comanda.items.filter(cancelado=False):
+        buf += _enc(f"{item.cantidad}x {item.producto.nombre}") + b'\n'
+        if item.notas:
+            buf += _enc(f"  Nota: {item.notas}") + b'\n'
+
+    buf += _sep('-', cols) + b'\n'
+    count = comanda.items.filter(cancelado=False).count()
+    buf += _enc(f"{count} item{'es' if count != 1 else ''}") + b'\n'
+
+    if comanda.notas:
+        buf += _sep('-', cols) + b'\n'
+        buf += _enc(f"Nota: {comanda.notas}") + b'\n'
+
+    _footer(buf, cols)
+    return bytes(buf)

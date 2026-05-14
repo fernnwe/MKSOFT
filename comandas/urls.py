@@ -16,5 +16,7 @@ urlpatterns = [
     path("item/<int:item_pk>/listo/", views.marcar_listo_item, name="item_listo"),
     path("item/<int:item_pk>/cancelar/", views.cancelar_item, name="item_cancelar"),
     path("<int:pk>/imprimir-cocina/", views.imprimir_cocina, name="imprimir_cocina"),
+    path("<int:pk>/escpos/", views.comanda_escpos, name="escpos"),
+    path("<int:pk>/escpos-tcp/", views.comanda_escpos_tcp, name="escpos_tcp"),
     path("cocina/", views.VistaCocina.as_view(), name="cocina"),
 ]
