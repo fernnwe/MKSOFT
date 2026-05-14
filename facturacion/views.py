@@ -334,7 +334,7 @@ def factura_escpos(request, pk):
             qs = qs.filter(cliente=cliente)
         factura = get_object_or_404(qs, pk=pk)
         config = ConfigRestaurante.get_config(cliente)
-        cols = int(request.GET.get("cols", "36"))
+        cols = int(request.GET.get("cols", "32"))
         data = build_factura(factura, config, cols=cols)
         return HttpResponse(data, content_type="application/octet-stream")
     except Exception as e:

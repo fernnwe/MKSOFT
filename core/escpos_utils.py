@@ -8,11 +8,10 @@ def _enc(text, encoding='cp858'):
     return text.encode(encoding, errors='replace')
 
 
-def build_factura(factura, config, cols=36):
+def build_factura(factura, config, cols=32):
     items = _get_items(factura)
     buf = bytearray()
     buf += ESC + b'@'
-    buf += ESC + b'M' + b'\x01'
     buf += ESC + b't' + b'\x02'
 
     # Header
@@ -55,8 +54,8 @@ def build_factura(factura, config, cols=36):
 
     # Items
     for item in items:
-        line = _item_line(item, config, cols)
-        buf += _enc(line) + b'\n'
+        for line in _item_lines(item, config, cols):
+            buf += _enc(line) + b'\n'
 
     buf += _sep('-', cols) + b'\n'
 
@@ -110,7 +109,7 @@ def _item_header(cols=32):
     return f"{'Cant':<5}{'Concepto':<{cols-12}}{'Total':>7}"
 
 
-def _item_line(item, config, cols=32):
+def _item_lines(item, config, cols=32):
     if isinstance(item, dict):
         qty = int(item.get('cantidad', 0))
         name = str(item.get('producto_nombre', ''))
@@ -121,10 +120,24 @@ def _item_line(item, config, cols=32):
         total = float(item.subtotal)
     qty_str = f"{qty}x"
     price_str = f"{total:.2f}"
-    name_max = cols - len(qty_str) - len(price_str) - 2
-    name_trunc = name[:name_max] if name_max > 0 else ''
-    spaces = cols - len(qty_str) - len(name_trunc) - len(price_str)
-    return qty_str + ' ' + name_trunc + ' ' * spaces + price_str
+    first = qty_str + ' ' + name
+    if len(first) + len(price_str) + 1 <= cols:
+        spaces = cols - len(first) - len(price_str)
+        return [first + ' ' * spaces + price_str]
+    name_max = cols - len(qty_str) - 1
+    if name_max > 0:
+        first = qty_str + ' ' + name[:name_max]
+    rest = name[name_max:] if name_max > 0 else name
+    lines = [first]
+    if rest:
+        lines.append(rest[:cols])
+        rest = rest[cols:]
+        while rest:
+            lines.append(rest[:cols])
+            rest = rest[cols:]
+    pad = ' ' * (cols - len(price_str))
+    lines.append(pad + price_str)
+    return lines
 
 
 def _key_val(key, val, cols=32):
