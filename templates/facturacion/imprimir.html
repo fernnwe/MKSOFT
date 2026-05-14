@@ -11,29 +11,30 @@
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
-            font-size: 12px; line-height: 1.35; font-weight: 600;
+            font-size: 10px; line-height: 1.2; font-weight: 600;
         }
         .center { text-align: center; }
         hr { border: none; border-top: 1px solid #000; margin: 2px 0; }
         table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 1px 0; vertical-align: top; }
+        td, th { padding: 0; vertical-align: top; }
         td:nth-child(3), th:nth-child(3) { text-align: right; white-space: nowrap; }
         td:nth-child(2) { width: 100%; overflow: hidden; text-overflow: ellipsis; }
         td:nth-child(1) { white-space: nowrap; }
-        .row { display: table; width: 100%; table-layout: fixed; margin: 1px 0; }
+        .row { display: table; width: 100%; table-layout: fixed; }
         .row > span { display: table-cell; }
         .row > span:last-child { text-align: right; white-space: nowrap; }
-        .total { font-weight: 800; font-size: 13px; }
-        .header-title { font-size: 14px; font-weight: 800; }
+        .total { font-weight: 800; }
+        .header-title { font-size: 12px; font-weight: 800; }
+        p { margin: 1px 0; }
         @media print {
             @page { margin: 0; }
-            body { padding: 2mm; }
+            body { width: 48mm; margin: 0 auto; padding: 1mm; }
         }
     </style>
 </head>
 <body>
     <div id="factura-print">
-        <div class="center" style="margin-bottom:6px;">
+        <div class="center">
             <div class="header-title">{{ RESTAURANT_NAME }}</div>
             <p>{{ RESTAURANT_ADDRESS }}</p>
             <p>Tel: {{ RESTAURANT_PHONE }}</p>
@@ -42,19 +43,19 @@
 
         <hr>
 
-        <p><span class="bold">Folio:</span> {{ factura.folio }}</p>
+        <p>Folio: {{ factura.folio }}</p>
         {% if factura.tipo == 'llevar' %}
-        <p style="font-size:14px; font-weight:bold; text-align:center; margin:6px 0;">*** PARA LLEVAR ***</p>
+        <p style="text-align:center; font-size:12px;">*** PARA LLEVAR ***</p>
         {% else %}
-        <p><span class="bold">Comanda:</span> {{ factura.comanda.codigo }}</p>
-        <p><span class="bold">Mesa:</span> {{ factura.comanda.mesa.numero }}</p>
+        <p>Comanda: {{ factura.comanda.codigo }}</p>
+        <p>Mesa: {{ factura.comanda.mesa.numero }}</p>
         {% endif %}
-        <p><span class="bold">Fecha:</span> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
+        <p>Fecha: {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
 
         {% if factura.cliente_nombre %}
         <hr>
-        <p><span class="bold">Cliente:</span> {{ factura.cliente_nombre }}</p>
-        {% if factura.cliente_rfc %}<p><span class="bold">RUC:</span> {{ factura.cliente_rfc }}</p>{% endif %}
+        <p>Cliente: {{ factura.cliente_nombre }}</p>
+        {% if factura.cliente_rfc %}<p>RUC: {{ factura.cliente_rfc }}</p>{% endif %}
         {% endif %}
 
         <hr>
@@ -116,7 +117,7 @@
 
         <hr>
         <p class="center">Gracias por su preferencia!</p>
-        <p class="center" style="margin-top:4px;">*Este vaucher no sustituye un documento fiscal*</p>
+        <p class="center">*Este vaucher no sustituye un documento fiscal*</p>
         <p class="center">Gracias por utilizar MKSOFT</p>
     </div>
 

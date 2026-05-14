@@ -10,39 +10,37 @@
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
-            font-size: 12px; line-height: 1.35; font-weight: 600;
+            font-size: 10px; line-height: 1.2; font-weight: 600;
         }
         .ticket { width: 100%; }
         .center { text-align: center; }
-        hr { border: none; border-top: 1px solid #000; margin: 3px 0; }
-        .row { display: table; width: 100%; table-layout: fixed; margin: 1px 0; }
+        hr { border: none; border-top: 1px solid #000; margin: 2px 0; }
+        .row { display: table; width: 100%; table-layout: fixed; }
         .row > span { display: table-cell; }
         .row > span:last-child { text-align: right; white-space: nowrap; }
-        .indent { padding-left: 6px; }
-        .total-row { font-weight: 700; border-top: 1px solid #000; padding-top: 2px; }
-        .grand-total { font-size: 13px; font-weight: 800; border-top: 2px solid #000; padding-top: 3px; margin-top: 3px; }
-        .section-title { font-weight: 700; text-transform: uppercase; margin: 4px 0 2px; font-size: 12px; letter-spacing: 0.5px; }
-        .subsection { font-weight: 700; margin: 2px 0 1px; }
+        .indent { padding-left: 4px; }
+        .total-row { font-weight: 700; border-top: 1px solid #000; padding-top: 1px; }
+        .grand-total { font-weight: 800; border-top: 2px solid #000; padding-top: 2px; margin-top: 2px; }
+        .section-title { font-weight: 700; text-transform: uppercase; margin: 3px 0 1px; font-size: 10px; }
+        .subsection { font-weight: 700; margin: 1px 0; }
         .error { color: #000; font-weight: 800; }
-        .header-title { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; }
-        .footer { text-align: center; margin-top: 6px; }
+        .header-title { font-size: 12px; font-weight: 800; }
+        .footer { text-align: center; margin-top: 4px; }
+        p { margin: 1px 0; }
         @media print {
             @page { margin: 0; }
-            body { padding: 2mm; }
-            .grand-total { font-size: 12px; }
-            .header-title { font-size: 14px; }
-            .section-title { font-size: 11px; }
+            body { width: 58mm; margin: 0 auto; padding: 1mm; }
         }
     </style>
 </head>
 <body>
     <div class="ticket">
-        <div class="center" style="margin-bottom:3px;">
+        <div class="center">
             <div class="header-title">{{ RESTAURANT_NAME }}</div>
             <p>{{ RESTAURANT_ADDRESS }}</p>
             <p>Tel: {{ RESTAURANT_PHONE }} | RUC: {{ RESTAURANT_RFC }}</p>
             <hr>
-            <div class="section-title" style="font-size:11px;">Cierre de Caja</div>
+            <div class="section-title">Cierre de Caja</div>
             <p>{{ fecha_seleccionada|date:"d/m/Y" }} - Generado: {{ fecha_cierre|date:"H:i" }}</p>
             <p>Usuario: {{ user.get_full_name|default:user.username }}</p>
             <hr>
