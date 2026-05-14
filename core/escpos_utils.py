@@ -17,11 +17,12 @@ def build_factura(factura, config, cols=32):
     # Header
     buf += ESC + b'a' + b'\x01'
     buf += GS + b'!' + b'\x10'
-    buf += _enc(_center(config.nombre, cols)) + b'\n'
+    buf += _enc(config.nombre) + b'\n'
     buf += GS + b'!' + b'\x00'
-    buf += _enc(_center(config.direccion, cols)) + b'\n'
-    buf += _enc(_center(f"Tel: {config.telefono}", cols)) + b'\n'
-    buf += _enc(_center(f"RUC: {config.rfc}", cols)) + b'\n'
+    buf += _enc(config.direccion) + b'\n'
+    buf += _enc(f"Tel: {config.telefono}") + b'\n'
+    buf += _enc(f"RUC: {config.rfc}") + b'\n'
+    buf += ESC + b'a' + b'\x00'
     buf += _sep('-', cols) + b'\n'
 
     # Info
@@ -30,7 +31,7 @@ def build_factura(factura, config, cols=32):
     if factura.tipo == 'llevar':
         buf += ESC + b'a' + b'\x01'
         buf += ESC + b'E' + b'\x01'
-        buf += _enc(_center("*** PARA LLEVAR ***", cols)) + b'\n'
+        buf += _enc("*** PARA LLEVAR ***") + b'\n'
         buf += ESC + b'E' + b'\x00'
         buf += ESC + b'a' + b'\x00'
     else:
@@ -83,10 +84,10 @@ def build_factura(factura, config, cols=32):
 
     # Footer
     buf += ESC + b'a' + b'\x01'
-    buf += _enc(_center("Gracias por su preferencia!", cols)) + b'\n'
-    buf += _enc(_center("*Este vaucher no sustituye", cols)) + b'\n'
-    buf += _enc(_center("un documento fiscal*", cols)) + b'\n'
-    buf += _enc(_center("Gracias por utilizar MKSOFT", cols)) + b'\n'
+    buf += _enc("Gracias por su preferencia!") + b'\n'
+    buf += _enc("*Este vaucher no sustituye") + b'\n'
+    buf += _enc("un documento fiscal*") + b'\n'
+    buf += _enc("Gracias por utilizar MKSOFT") + b'\n'
 
     buf += b'\n' * 4
     buf += GS + b'V' + b'\x00'
