@@ -8,7 +8,7 @@ def _enc(text, encoding='cp858'):
     return text.encode(encoding, errors='replace')
 
 
-def build_factura(factura, config, cols=32):
+def build_factura(factura, config, cols=42):
     items = _get_items(factura)
     buf = bytearray()
     buf += ESC + b'@'
@@ -94,7 +94,9 @@ def build_factura(factura, config, cols=32):
 
 
 def _center(text, cols):
-    text = str(text)[:cols]
+    text = str(text)
+    if len(text) >= cols:
+        return text
     left = (cols - len(text)) // 2
     return ' ' * left + text
 
