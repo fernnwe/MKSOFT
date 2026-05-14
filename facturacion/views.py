@@ -333,7 +333,12 @@ def factura_escpos(request, pk):
         qs = qs.filter(cliente=cliente)
     factura = get_object_or_404(qs, pk=pk)
     config = ConfigRestaurante.get_config(cliente)
-    data = build_factura(factura, config)
+    try:
+        data = build_factura(factura, config)
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
     return HttpResponse(data, content_type="application/octet-stream")
 
 
