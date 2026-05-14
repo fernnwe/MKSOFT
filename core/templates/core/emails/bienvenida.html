@@ -4,33 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .wrapper { width: 100%; padding: 24px 0; background: #f5f5f5; }
-        .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .header { background: linear-gradient(135deg, #6750A4 0%, #7D5260 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
-        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-        .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.9; }
-        .content { padding: 32px 24px; }
-        .greeting { font-size: 16px; color: #1D1B20; margin-bottom: 16px; }
-        .message { font-size: 14px; color: #49454F; line-height: 1.6; margin-bottom: 24px; }
-        .credentials { background: #F3EDF7; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-        .credentials h3 { margin: 0 0 16px; font-size: 14px; color: #6750A4; text-transform: uppercase; letter-spacing: 1px; }
-        .cred-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #E6E0E9; }
-        .cred-row:last-child { border-bottom: none; }
-        .cred-label { font-size: 13px; color: #49454F; }
-        .cred-value { font-size: 14px; font-weight: 600; color: #1D1B20; font-family: 'Roboto Mono', monospace; }
-        .login-btn { display: inline-block; padding: 14px 32px; background: #6750A4; color: #ffffff; text-decoration: none; border-radius: 24px; font-size: 15px; font-weight: 500; text-align: center; margin: 8px 0 24px; }
-        .login-btn:hover { background: #543E8E; }
-        .plan-info { background: #E8DEF8; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
-        .plan-info p { margin: 4px 0; font-size: 14px; color: #1D1B20; }
-        .plan-info strong { color: #6750A4; }
-        .footer { background: #F7F2FA; padding: 24px; text-align: center; }
-        .footer p { margin: 4px 0; font-size: 12px; color: #79747E; }
-        .warning { background: #F9DEDC; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #410E0B; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f5; }
+        .wrapper { width: 100%; padding: 32px 0; background: #f4f4f5; }
+        .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+        .header { background: #0d9488; padding: 40px 32px 32px; text-align: center; }
+        .header-logo { width: 64px; height: 64px; background: rgba(255,255,255,0.15); border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; line-height: 64px; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; }
+        .header p { margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.85); }
+        .content { padding: 32px; }
+        .greeting { font-size: 16px; color: #18181b; margin: 0 0 8px; font-weight: 600; }
+        .message { font-size: 14px; color: #52525b; line-height: 1.7; margin: 0 0 24px; }
+        .card { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .card-title { font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; margin: 0 0 16px; }
+        .field { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+        .field + .field { border-top: 1px solid #e4e4e7; }
+        .field-label { font-size: 13px; color: #71717a; }
+        .field-value { font-size: 14px; font-weight: 600; color: #18181b; font-family: 'SF Mono', 'Roboto Mono', 'Cascadia Code', monospace; background: #f4f4f5; padding: 4px 12px; border-radius: 6px; letter-spacing: 0.3px; }
+        .field-value.password { color: #0d9488; background: #f0fdfa; font-size: 15px; }
+        .btn { display: block; padding: 14px 32px; background: #0d9488; color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 24px; transition: background 0.2s; }
+        .btn:hover { background: #0f766e; }
+        .plan-grid { display: flex; gap: 12px; margin-bottom: 24px; }
+        .plan-item { flex: 1; background: #fafafa; border: 1px solid #e4e4e7; border-radius: 12px; padding: 14px; text-align: center; }
+        .plan-item-label { font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+        .plan-item-value { font-size: 14px; font-weight: 600; color: #18181b; }
+        .note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #9a3412; line-height: 1.5; }
+        .note strong { color: #c2410c; }
+        .footer { padding: 24px 32px; background: #fafafa; border-top: 1px solid #e4e4e7; text-align: center; }
+        .footer p { margin: 2px 0; font-size: 12px; color: #a1a1aa; }
+        .footer a { color: #0d9488; text-decoration: none; }
         @media only screen and (max-width: 600px) {
-            .container { margin: 0 12px; }
-            .content { padding: 24px 16px; }
-            .cred-row { flex-direction: column; gap: 4px; }
+            .wrapper { padding: 16px 0; }
+            .container { border-radius: 16px; margin: 0 12px; }
+            .header { padding: 28px 20px 24px; }
+            .content { padding: 24px 20px; }
+            .plan-grid { flex-direction: column; gap: 8px; }
+            .field { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .footer { padding: 20px; }
         }
     </style>
 </head>
@@ -38,54 +47,60 @@
     <div class="wrapper">
         <div class="container">
             <div class="header">
-                <h1>Bienvenido a {{ system_name }}</h1>
-                <p>Tu sistema de gestion de restaurante esta listo</p>
+                <div class="header-logo">&#127860;</div>
+                <h1>{{ system_name }}</h1>
+                <p>Tu restaurante ya esta en linea</p>
             </div>
             <div class="content">
-                <p class="greeting">Hola {{ admin_name }},</p>
+                <p class="greeting">Hola,</p>
                 <p class="message">
-                    Tu cuenta para <strong>{{ restaurant_name }}</strong> ha sido creada exitosamente.
-                    Ya puedes acceder al panel de administracion con las siguientes credenciales:
+                    Bienvenido a <strong>{{ system_name }}</strong>. La cuenta para tu restaurante <strong>{{ restaurant_name }}</strong> ha sido creada y esta lista para usar.
                 </p>
 
-                <div class="credentials">
-                    <h3>Credenciales de Acceso</h3>
-                    <div class="cred-row">
-                        <span class="cred-label">Usuario</span>
-                        <span class="cred-value">{{ username }}</span>
+                <div class="card">
+                    <div class="card-title">Credenciales de acceso</div>
+                    <div class="field">
+                        <span class="field-label">Usuario</span>
+                        <span class="field-value">{{ username }}</span>
                     </div>
-                    <div class="cred-row">
-                        <span class="cred-label">Contraseña</span>
-                        <span class="cred-value" style="font-size: 16px; color: #6750A4;">{{ password }}</span>
+                    <div class="field">
+                        <span class="field-label">Contrase&ntilde;a</span>
+                        <span class="field-value password">{{ password }}</span>
                     </div>
                 </div>
 
-                <div style="text-align: center;">
-                    <a href="{{ login_url }}" class="login-btn">Iniciar Sesion</a>
+                <a href="{{ login_url }}" class="btn">Iniciar Sesi&oacute;n</a>
+
+                <div class="plan-grid">
+                    <div class="plan-item">
+                        <div class="plan-item-label">Plan</div>
+                        <div class="plan-item-value">{{ plan }}</div>
+                    </div>
+                    <div class="plan-item">
+                        <div class="plan-item-label">Periodo</div>
+                        <div class="plan-item-value">{{ periodo }}</div>
+                    </div>
+                    <div class="plan-item">
+                        <div class="plan-item-label">Pr&oacute;ximo pago</div>
+                        <div class="plan-item-value">{{ fecha_pago }}</div>
+                    </div>
                 </div>
 
-                <div class="plan-info">
-                    <p><strong>Plan:</strong> {{ plan }}</p>
-                    <p><strong>Periodo:</strong> {{ periodo }}</p>
-                    <p><strong>Proximo pago:</strong> {{ fecha_pago }}</p>
+                <div class="note">
+                    <strong>&#9432; Recomendaci&oacute;n:</strong> Cambia tu contrase&ntilde;a despu&eacute;s del primer inicio de sesi&oacute;n para mantener tu cuenta segura.
                 </div>
 
-                <div class="warning">
-                    <strong>Importante:</strong> Por seguridad, te recomendamos cambiar la contraseña despues de tu primer inicio de sesion.
-                </div>
-
-                <p class="message">
-                    Si tienes alguna duda o necesitas soporte, no dudes en contactarnos.
+                <p class="message" style="margin-bottom: 0;">
+                    Si tienes dudas, responde a este correo o contacta a nuestro equipo de soporte.
                 </p>
-
-                <p class="message">
+                <p class="message" style="margin: 12px 0 0;">
                     Saludos,<br>
-                    <strong>Equipo de {{ system_name }}</strong>
+                    <strong>Equipo {{ system_name }}</strong>
                 </p>
             </div>
             <div class="footer">
-                <p>{{ system_name }} - Sistema de Gestion para Restaurantes</p>
-                <p>{{ system_email }}</p>
+                <p>{{ system_name }} &mdash; Sistema de Gesti&oacute;n para Restaurantes</p>
+                <p><a href="{{ login_url }}">{{ system_name|lower }}.com</a> &middot; {{ system_email }}</p>
             </div>
         </div>
     </div>
