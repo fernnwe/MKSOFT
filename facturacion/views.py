@@ -374,6 +374,7 @@ def cierre_escpos(request):
         view = CierreTicketView()
         view.request = request
         data = view.get_context_data()
+        data['user'] = request.user
         cols = int(request.GET.get("cols", "32"))
         raw = build_cierre(data, config, cols=cols)
         return HttpResponse(raw, content_type="application/octet-stream")
@@ -395,6 +396,7 @@ def cierre_escpos_tcp(request):
     view = CierreTicketView()
     view.request = request
     data = view.get_context_data()
+    data['user'] = request.user
     raw = build_cierre(data, config)
     try:
         send_tcp(raw, host, port)
