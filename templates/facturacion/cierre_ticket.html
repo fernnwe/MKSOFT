@@ -6,15 +6,13 @@
     <title>Cierre de Caja {{ fecha_seleccionada|date:"d/m/Y" }}</title>
 {% load currency_tags %}
     <style>
-        @page { size: 80mm 297mm; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             background: #fff; color: #000;
             font-family: 'Courier New', 'Courier', monospace;
             font-size: 12px; line-height: 1.35; font-weight: 600;
-            width: 78mm; overflow-x: hidden;
         }
-        body { padding: 1mm; }
+        body { width: 78mm; margin: 0 auto; padding: 1mm; }
         .ticket { width: 100%; }
         .center { text-align: center; }
         hr { border: none; border-top: 1px solid #000; margin: 3px 0; }
@@ -30,19 +28,15 @@
         .header-title { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; }
         .footer { text-align: center; margin-top: 6px; }
         @media print {
-            @page { size: 80mm 297mm; margin: 0; }
-            html, body { width: 78mm; font-size: 11px; font-weight: 600; }
-            body { padding: 1mm; }
-            .grand-total { font-size: 12px; font-weight: 800; }
-            .header-title { font-size: 14px; font-weight: 800; }
-            .section-title { font-size: 11px; font-weight: 700; }
+            body { width: 80mm; padding: 1mm; }
+            .grand-total { font-size: 12px; }
+            .header-title { font-size: 14px; }
+            .section-title { font-size: 11px; }
         }
         @media print and (max-width: 58mm) {
-            @page { size: 58mm 297mm; margin: 0; }
-            html, body { width: 56mm; font-size: 10px; font-weight: 600; }
-            body { padding: 1mm; }
-            .grand-total { font-size: 11px; font-weight: 800; }
-            .section-title { font-size: 10px; font-weight: 700; }
+            body { width: 58mm; }
+            .grand-total { font-size: 11px; }
+            .section-title { font-size: 10px; }
         }
     </style>
 </head>
