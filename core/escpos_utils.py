@@ -22,7 +22,7 @@ def build_factura(factura, config, cols=32):
     buf += _enc(_center(config.direccion, cols)) + b'\n'
     buf += _enc(_center(f"Tel: {config.telefono}", cols)) + b'\n'
     buf += _enc(_center(f"RUC: {config.rfc}", cols)) + b'\n'
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
 
     # Info
     buf += ESC + b'a' + b'\x00'
@@ -41,23 +41,23 @@ def build_factura(factura, config, cols=32):
     buf += _enc(f"Fecha: {factura.fecha_emision.strftime('%d/%m/%Y %H:%M')}") + b'\n'
 
     if factura.cliente_nombre:
-        buf += _sep(cols) + b'\n'
+        buf += _sep('-', cols) + b'\n'
         buf += _enc(f"Cliente: {factura.cliente_nombre}") + b'\n'
         if factura.cliente_rfc:
             buf += _enc(f"RUC: {factura.cliente_rfc}") + b'\n'
 
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
 
     # Items header
     buf += _enc(_item_header(cols)) + b'\n'
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
 
     # Items
     for item in items:
         line = _item_line(item, config, cols)
         buf += _enc(line) + b'\n'
 
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
 
     # Totals
     buf += _key_val("Subtotal:", f"{config.simbolo_moneda}{factura.subtotal:.2f}", cols)
@@ -68,7 +68,7 @@ def build_factura(factura, config, cols=32):
     if factura.propina > 0:
         buf += _key_val("Servicio (10%):", f"{config.simbolo_moneda}{factura.propina:.2f}", cols)
 
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
     buf += ESC + b'E' + b'\x01'
     buf += _key_val("TOTAL:", f"{config.simbolo_moneda}{factura.total:.2f}", cols)
     buf += ESC + b'E' + b'\x00'
@@ -79,7 +79,7 @@ def build_factura(factura, config, cols=32):
     if factura.cambio and factura.cambio > 0:
         buf += _key_val("Cambio:", f"{config.simbolo_moneda}{factura.cambio:.2f}", cols)
 
-    buf += _sep(cols) + b'\n'
+    buf += _sep('-', cols) + b'\n'
 
     # Footer
     buf += ESC + b'a' + b'\x01'
