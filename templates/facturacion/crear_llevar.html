@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+{% block title %}Venta para llevar{% endblock %}
+{% block content %}
+<div class="md3-page-header">
+    <div class="md3-flex md3-flex-align-center" style="gap:8px;">
+        <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-icon md3-btn-outlined">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h1 class="md3-page-title">Venta para llevar</h1>
+            <p class="md3-page-subtitle">Registra una venta directa sin comanda</p>
+        </div>
+    </div>
+</div>
+
+<div class="px-3 px-md-4">
+    <form method="post" id="facturaForm" class="md3-grid md3-grid-2" style="gap:16px; align-items:start;">
+        {% csrf_token %}
+
+        <!-- LEFT COL: Products -->
+        <div class="md3-card-outlined" style="padding:20px;">
+            <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:16px;">
+                <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">inventory_2</span>
+                <strong style="font-size:15px;">Productos</strong>
+            </div>
+
+            <div class="md3-field-filled" style="margin-bottom:12px;">
+                <input type="text" id="productSearch" class="md3-field-input" placeholder=" " oninput="filterProducts()">
+                <label for="productSearch" class="md3-field-label">Buscar producto</label>
+            </div>
+
+            <div id="productList" style="max-height:360px; overflow-y:auto; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; padding:8px;">
+                {% for p in productos %}
+                <label class="product-item" data-name="{{ p.nombre|lower }}" onclick="selectProduct(this, {{ p.pk }}, '{{ p.nombre|escapejs }}', {{ p.precio }})">
+                    <div class="md3-flex md3-flex-align-center" style="gap:12px;">
+                        <input type="checkbox" class="product-check" style="accent-color:var(--md-sys-color-primary); width:18px; height:18px;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:14px; font-weight:500; color:var(--md-sys-color-on-surface);">{{ p.nombre }}</div>
+                            <div style="font-size:13px; color:var(--md-sys-color-on-surface-variant);">{{ CURRENCY_SYMBOL }}{{ p.precio|currency }}</div>
+                        </div>
+                    </div>
+                </label>
+                {% empty %}
+                <p style="text-align:center; padding:24px; color:var(--md-sys-color-on-surface-variant); font-size:14px;">No hay productos activos</p>
+                {% endfor %}
+            </div>
+
+            <p style="font-size:12px; color:var(--md-sys-color-on-surface-variant); margin:8px 0 0;">Selecciona los productos y ajusta las cantidades abajo</p>
+        </div>
+
+        <!-- RIGHT COL: Invoice -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            <!-- Items seleccionados -->
+            <div class="md3-card-outlined" style="padding:20px;">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">shopping_cart</span>
+                    <strong style="font-size:15px;">Carrito</strong>
+                    <span id="itemCount" class="md3-badge md3-badge-primary" style="margin-left:auto;">0 items</span>
+                </div>
+                <div id="cartItems">
+                    <p id="emptyCart" style="text-align:center; padding:24px; color:var(--md-sys-color-on-surface-variant); font-size:14px;">Selecciona productos de la lista</p>
+                </div>
+                <div id="cartTotals" style="display:none; margin-top:12px; padding-top:12px; border-top:2px solid var(--md-sys-color-outline-variant);">
+                    <div class="md3-flex md3-flex-justify-between" style="font-size:15px; font-weight:700;">
+                        <span>Subtotal:</span>
+                        <span id="cartSubtotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos del cliente -->
+            <div class="md3-card-outlined" style="padding:20px;">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">person</span>
+                    <strong style="font-size:15px;">Datos del cliente</strong>
+                </div>
+                <div class="md3-field-group">
+                    <div class="full-width">
+                        <div class="md3-field-filled">
+                            <input type="text" id="id_cliente_nombre" name="cliente_nombre" class="md3-field-input" value="Consumidor Final" placeholder=" ">
+                            <label for="id_cliente_nombre" class="md3-field-label">Nombre del cliente</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="md3-field-filled">
+                            <input type="text" id="id_cliente_rfc" name="cliente_rfc" class="md3-field-input" maxlength="13" placeholder=" ">
+                            <label for="id_cliente_rfc" class="md3-field-label">RUC</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pago -->
+            <div class="md3-card-outlined" style="padding:20px;">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
+                    <strong style="font-size:15px;">Pago</strong>
+                </div>
+
+                <div class="md3-field-group">
+                    <div>
+                        <div class="md3-field-filled">
+                            <select id="id_metodo_pago" name="metodo_pago" class="md3-field-select" onchange="toggleEfectivo()">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                            <label for="id_metodo_pago" class="md3-field-label">Metodo de pago</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="md3-field-filled">
+                            <input type="number" id="id_descuento" name="descuento" class="md3-field-input" value="0" step="any" min="0" oninput="recalcTotal()" placeholder=" ">
+                            <label for="id_descuento" class="md3-field-label">Descuento ({{ CURRENCY_SYMBOL }})</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md3-flex" style="gap:16px; margin:12px 0;">
+                    <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" checked onchange="recalcTotal()" style="accent-color:var(--md-sys-color-primary); width:18px; height:18px;">
+                        <span style="font-size:14px;">IVA (15%)</span>
+                    </label>
+                    <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" checked onchange="recalcTotal()" style="accent-color:var(--md-sys-color-primary); width:18px; height:18px;">
+                        <span style="font-size:14px;">Servicio (10%)</span>
+                    </label>
+                </div>
+
+                <div id="efectivoFields" style="display:none;">
+                    <div class="md3-field-filled">
+                        <input type="number" id="id_monto_recibido" name="monto_recibido" class="md3-field-input" step="0.01" min="0" oninput="recalcTotal()" placeholder=" ">
+                        <label for="id_monto_recibido" class="md3-field-label">Con cuanto pago ({{ CURRENCY_SYMBOL }})</label>
+                    </div>
+                    <div id="cambioBox" style="display:none; margin-top:12px; padding:12px; border-radius:12px; background:var(--md-sys-color-secondary-container);">
+                        <div class="md3-flex md3-flex-justify-between" style="align-items:center;">
+                            <span style="font-weight:500;">Cambio a devolver:</span>
+                            <span id="previewCambio" style="font-weight:900; font-size:20px; color:var(--md-sys-color-on-secondary-container);">{{ CURRENCY_SYMBOL }}0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totales -->
+            <div class="md3-card-filled" style="padding:20px; background:var(--md-sys-color-primary-container);">
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; font-size:14px;">
+                    <span>Subtotal:</span>
+                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; font-size:14px;" id="previewIvaRow">
+                    <span>IVA (15%):</span>
+                    <span id="previewIva">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; font-size:14px;" id="previewServicioRow">
+                    <span>Servicio (10%):</span>
+                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; font-size:14px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
+                    <span>Descuento:</span>
+                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div style="height:1px; background:var(--md-sys-color-outline); margin:8px 0;"></div>
+                <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:24px;">
+                    <span>TOTAL:</span>
+                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="md3-flex" style="gap:8px;">
+                <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-outlined" style="flex:1;">Cancelar</a>
+                <button type="submit" class="md3-btn md3-btn-filled" style="flex:2; background:linear-gradient(135deg,var(--md-sys-color-primary),#0d6e64);">
+                    <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>
+                    Generar factura para llevar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.product-item {
+    display:block; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s;
+}
+.product-item:hover { background:var(--md-sys-color-surface-container-high); }
+.product-item.selected { background:var(--md-sys-color-primary-container); }
+.product-item.selected .product-check:not(:checked) { display:none; }
+.cart-item {
+    display:flex; align-items:center; gap:8px; padding:8px 0;
+}
+.cart-item + .cart-item { border-top:1px solid var(--md-sys-color-outline-variant); }
+.cart-item-name { flex:1; min-width:0; font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cart-item-qty { width:60px; }
+.cart-item-qty input { width:100%; padding:4px 8px; border:1px solid var(--md-sys-color-outline-variant); border-radius:6px; text-align:center; font-size:14px; }
+.cart-item-price { font-size:14px; font-weight:600; white-space:nowrap; min-width:70px; text-align:right; }
+.cart-item-remove { cursor:pointer; color:var(--md-sys-color-error); }
+.md3-checkbox-field:hover { background:var(--md-sys-color-surface-container-high); border-radius:8px; padding:4px 8px; }
+@media (max-width:768px) {
+    .md3-grid-2 { grid-template-columns:1fr; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var cart = [];
+var tasaIVA = {{ tasa_iva|default:"0.15" }};
+var tasaservicio = {{ tasa_servicio|default:"0.10" }};
+var CURRENCY = '{{ CURRENCY_SYMBOL }}';
+
+function filterProducts() {
+    var q = document.getElementById('productSearch').value.toLowerCase();
+    document.querySelectorAll('.product-item').forEach(function(el) {
+        el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+    });
+}
+
+function selectProduct(label, pid, name, price) {
+    var check = label.querySelector('.product-check');
+    check.checked = !check.checked;
+    label.classList.toggle('selected', check.checked);
+    if (check.checked) {
+        addToCart(pid, name, price);
+    } else {
+        removeFromCart(pid);
+    }
+}
+
+function addToCart(pid, name, price) {
+    var existing = cart.find(function(item) { return item.pid === pid; });
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({ pid: pid, name: name, price: price, qty: 1 });
+    }
+    renderCart();
+}
+
+function removeFromCart(pid) {
+    cart = cart.filter(function(item) { return item.pid !== pid; });
+    renderCart();
+}
+
+function updateQty(pid, qty) {
+    var item = cart.find(function(i) { return i.pid === pid; });
+    if (!item) return;
+    qty = parseInt(qty) || 0;
+    if (qty <= 0) {
+        removeFromCart(pid);
+        var label = document.querySelector('.product-item[data-name*="' + item.name.toLowerCase() + '"]');
+        if (label) { label.classList.remove('selected'); label.querySelector('.product-check').checked = false; }
+        return;
+    }
+    item.qty = qty;
+    renderCart();
+}
+
+function removeItem(pid) {
+    removeFromCart(pid);
+    var label = document.querySelectorAll('.product-item');
+    label.forEach(function(el) {
+        var check = el.querySelector('.product-check');
+        if (el.dataset.name.includes(cart.find(function(i) { return i.pid === pid; })?.name?.toLowerCase() || '')) {
+            check.checked = false;
+            el.classList.remove('selected');
+        }
+    });
+}
+
+function renderCart() {
+    var container = document.getElementById('cartItems');
+    var empty = document.getElementById('emptyCart');
+    var totals = document.getElementById('cartTotals');
+    var count = document.getElementById('itemCount');
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p id="emptyCart" style="text-align:center;padding:24px;color:var(--md-sys-color-on-surface-variant);font-size:14px;">Selecciona productos de la lista</p>';
+        totals.style.display = 'none';
+        count.textContent = '0 items';
+        recalcTotal();
+        return;
+    }
+
+    var html = '';
+    var subtotal = 0;
+    cart.forEach(function(item, idx) {
+        var lineTotal = item.qty * item.price;
+        subtotal += lineTotal;
+        html += '<div class="cart-item">' +
+            '<span class="cart-item-name">' + item.name + '</span>' +
+            '<div class="cart-item-qty"><input type="number" name="cantidad[]" value="' + item.qty + '" min="1" onchange="updateQty(' + item.pid + ', this.value)"></div>' +
+            '<span class="cart-item-price">' + CURRENCY + lineTotal.toFixed(2) + '</span>' +
+            '<span class="cart-item-remove material-symbols-outlined" onclick="removeItem(' + item.pid + ')">close</span>' +
+            '<input type="hidden" name="producto_id[]" value="' + item.pid + '">' +
+            '<input type="hidden" name="precio[]" value="' + item.price + '">' +
+            '</div>';
+    });
+
+    container.innerHTML = html;
+    totals.style.display = 'block';
+    document.getElementById('cartSubtotal').textContent = CURRENCY + subtotal.toFixed(2);
+    count.textContent = cart.length + ' items';
+    recalcTotal();
+}
+
+function recalcTotal() {
+    var subtotal = 0;
+    cart.forEach(function(item) { subtotal += item.qty * item.price; });
+
+    var aplicarIva = document.getElementById('id_aplicar_iva').checked;
+    var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
+    var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
+
+    var iva = aplicarIva ? subtotal * tasaIVA : 0;
+    var servicio = aplicarServicio ? subtotal * tasaservicio : 0;
+    var total = subtotal + iva + servicio - descuentoVal;
+
+    document.getElementById('previewSubtotal').textContent = CURRENCY + subtotal.toFixed(2);
+    document.getElementById('previewIva').textContent = CURRENCY + iva.toFixed(2);
+    document.getElementById('previewIvaRow').style.display = aplicarIva ? '' : 'none';
+    document.getElementById('previewServicio').textContent = CURRENCY + servicio.toFixed(2);
+    document.getElementById('previewServicioRow').style.display = aplicarServicio ? '' : 'none';
+    document.getElementById('previewDescuento').textContent = '-' + CURRENCY + descuentoVal.toFixed(2);
+    document.getElementById('previewDescuentoRow').style.display = descuentoVal > 0 ? '' : 'none';
+    document.getElementById('previewTotal').textContent = CURRENCY + total.toFixed(2);
+
+    calcCambio(total);
+}
+
+function toggleEfectivo() {
+    var metodo = document.getElementById('id_metodo_pago').value;
+    var fields = document.getElementById('efectivoFields');
+    fields.style.display = metodo === 'efectivo' ? 'block' : 'none';
+    if (metodo !== 'efectivo') {
+        document.getElementById('cambioBox').style.display = 'none';
+    }
+}
+
+function calcCambio(total) {
+    var monto = parseFloat(document.getElementById('id_monto_recibido').value) || 0;
+    var box = document.getElementById('cambioBox');
+    var cambioEl = document.getElementById('previewCambio');
+    if (monto > 0 && document.getElementById('id_metodo_pago').value === 'efectivo') {
+        var cambio = monto - total;
+        cambioEl.textContent = CURRENCY + Math.abs(cambio).toFixed(2);
+        box.style.display = cambio >= 0 ? 'block' : 'none';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+toggleEfectivo();
+</script>
+{% endblock %}

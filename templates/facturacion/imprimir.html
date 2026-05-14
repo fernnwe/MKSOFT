@@ -49,8 +49,12 @@
         <hr>
 
         <p><span class="bold">Folio:</span> {{ factura.folio }}</p>
+        {% if factura.tipo == 'llevar' %}
+        <p style="font-size:14px; font-weight:bold; text-align:center; margin:6px 0;">*** PARA LLEVAR ***</p>
+        {% else %}
         <p><span class="bold">Comanda:</span> {{ factura.comanda.codigo }}</p>
         <p><span class="bold">Mesa:</span> {{ factura.comanda.mesa.numero }}</p>
+        {% endif %}
         <p><span class="bold">Fecha:</span> {{ factura.fecha_emision|date:"d/m/Y H:i" }}</p>
 
         {% if factura.cliente_nombre %}
@@ -64,6 +68,15 @@
         <table>
             <thead><tr><th style="text-align:left;">Cant</th><th style="text-align:left;">Concepto</th><th style="text-align:right;">Total</th></tr></thead>
             <tbody>
+                {% if factura.tipo == 'llevar' %}
+                {% for item in factura.items %}
+                <tr>
+                    <td style="white-space:nowrap;">{{ item.cantidad }}</td>
+                    <td style="width:100%;">{{ item.producto_nombre }}</td>
+                    <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
                 {% for item in factura.comanda.items.all %}
                 {% if not item.cancelado %}
                 <tr>
@@ -73,6 +86,7 @@
                 </tr>
                 {% endif %}
                 {% endfor %}
+                {% endif %}
             </tbody>
         </table>
 

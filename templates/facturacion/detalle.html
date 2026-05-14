@@ -42,8 +42,13 @@
                     </div>
                 </div>
                 <div>
+                    {% if factura.tipo == 'llevar' %}
+                    <small style="color:var(--md-sys-color-on-surface-variant);">Tipo</small>
+                    <div style="font-size:14px; font-weight:500;"><span class="md3-badge md3-badge-warning">Para llevar</span></div>
+                    {% else %}
                     <small style="color:var(--md-sys-color-on-surface-variant);">Comanda</small>
                     <div style="font-size:14px; font-weight:500;">{{ factura.comanda.codigo }}</div>
+                    {% endif %}
                 </div>
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">Fecha</small>
@@ -65,10 +70,12 @@
                     <div style="font-size:14px;">{{ factura.cliente_rfc }}</div>
                 </div>
                 {% endif %}
+                {% if factura.tipo != 'llevar' %}
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">Mesa</small>
                     <div style="font-size:14px;">{{ factura.comanda.mesa.numero }}</div>
                 </div>
+                {% endif %}
                 <div>
                     <small style="color:var(--md-sys-color-on-surface-variant);">Atendido por</small>
                     <div style="font-size:14px;">{{ factura.usuario.get_full_name|default:factura.usuario.username }}</div>
@@ -109,6 +116,14 @@
             <strong style="font-size:14px;">Productos</strong>
             <table class="md3-table" style="margin-top:8px;">
                 <tbody>
+                    {% if factura.tipo == 'llevar' %}
+                    {% for item in factura.items %}
+                    <tr>
+                        <td>{{ item.cantidad|floatformat:0 }}x {{ item.producto_nombre }}</td>
+                        <td style="text-align:right; font-weight:500;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
                     {% for item in factura.comanda.items.all %}
                     {% if not item.cancelado %}
                     <tr>
@@ -117,6 +132,7 @@
                     </tr>
                     {% endif %}
                     {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>

@@ -61,9 +61,15 @@ class Factura(models.Model):
         TARJETA = "tarjeta", "Tarjeta"
         TRANSFERENCIA = "transferencia", "Transferencia"
 
+    class Tipo(models.TextChoices):
+        MESA = "mesa", "Mesa"
+        LLEVAR = "llevar", "Para llevar"
+
     cliente = models.ForeignKey("core.Cliente", on_delete=models.CASCADE, related_name="facturas")
     folio = models.CharField(max_length=50)
-    comanda = models.ForeignKey(Comanda, on_delete=models.PROTECT, related_name="facturas")
+    tipo = models.CharField(max_length=10, choices=Tipo.choices, default=Tipo.MESA)
+    comanda = models.ForeignKey(Comanda, on_delete=models.PROTECT, related_name="facturas", null=True, blank=True)
+    items_json = models.TextField(blank=True, help_text="Items en formato JSON (para llevar)")
     cliente_nombre = models.CharField(max_length=200, blank=True)
     cliente_rfc = models.CharField(max_length=13, blank=True, verbose_name="RUC del cliente")
     cliente_email = models.EmailField(blank=True)
@@ -113,6 +119,18 @@ class Factura(models.Model):
     @property
     def total(self):
         return self.total_con_impuestos or 0
+
+    @property
+    def items(self):
+        if self.items_json:
+            import json
+            try:
+                return json.loads(self.items_json)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        if self.comanda:
+            return self.comanda.items.filter(cancelado=False)
+        return []
 
 
 class CajaMovimiento(models.Model):

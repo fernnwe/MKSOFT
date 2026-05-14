@@ -10,12 +10,14 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum, Exists, OuterRef, Q
 from django import forms
+import json as json_lib
 from decimal import Decimal
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
 from .models import Factura, CajaApertura, CajaMovimiento
 from core.models import ConfigRestaurante
 from comandas.models import Comanda
 from inventario.models import Compra, CuentaPorPagar
+from productos.models import Producto
 
 
 class FacturaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, ListView):
@@ -193,6 +195,106 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         response = super().form_valid(form)
         messages.success(self.request, f"Factura {form.instance.folio} generada")
         return response
+
+
+class FacturaLlevarCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, View):
+    template_name = "facturacion/crear_llevar.html"
+    permission = "can_create_facturas"
+
+    def get_cliente(self):
+        return ClienteScopeMixin.get_cliente_static(self.request)
+
+    def get(self, request):
+        cliente = self.get_cliente()
+        productos = Producto.objects.filter(cliente=cliente, activo=True).order_by("nombre") if cliente else []
+        config = ConfigRestaurante.get_config(cliente)
+        return render(request, self.template_name, {
+            "productos": productos,
+            "tasa_iva": config.tasa_impuesto if config else 0.15,
+            "tasa_servicio": config.porcentaje_servicio if config else 0.10,
+        })
+
+    def post(self, request):
+        cliente = self.get_cliente()
+        if not cliente:
+            messages.error(request, "Cliente no encontrado")
+            return redirect("facturacion:list")
+
+        productos_ids = request.POST.getlist("producto_id[]")
+        cantidades = request.POST.getlist("cantidad[]")
+        precios = request.POST.getlist("precio[]")
+
+        items = []
+        subtotal = Decimal(0)
+        for pid, qty, price in zip(productos_ids, cantidades, precios):
+            if not pid or not qty or Decimal(qty) <= 0:
+                continue
+            try:
+                producto = Producto.objects.get(pk=pid, cliente=cliente)
+                qty_dec = Decimal(qty)
+                price_dec = Decimal(price) if price else producto.precio
+                item_subtotal = qty_dec * price_dec
+                items.append({
+                    "producto_id": producto.pk,
+                    "producto_nombre": producto.nombre,
+                    "cantidad": float(qty_dec),
+                    "precio_unitario": float(price_dec),
+                    "subtotal": float(item_subtotal),
+                })
+                subtotal += item_subtotal
+            except Producto.DoesNotExist:
+                continue
+
+        if not items:
+            messages.error(request, "Agrega al menos un producto")
+            return redirect("facturacion:crear_llevar")
+
+        aplicar_iva = request.POST.get("aplicar_iva") == "on"
+        aplicar_servicio = request.POST.get("aplicar_servicio") == "on"
+        descuento = Decimal(request.POST.get("descuento", "0") or "0")
+        metodo_pago = request.POST.get("metodo_pago", "efectivo")
+        cliente_nombre = request.POST.get("cliente_nombre", "Consumidor Final")
+        cliente_rfc = request.POST.get("cliente_rfc", "")
+        monto_recibido = request.POST.get("monto_recibido", "")
+
+        config = ConfigRestaurante.get_config(cliente)
+        tasa_iva = Decimal(str(config.tasa_impuesto)) if config else Decimal("0.15")
+        tasa_servicio = Decimal(str(config.porcentaje_servicio)) if config else Decimal("0.10")
+
+        iva = subtotal * tasa_iva if aplicar_iva else Decimal(0)
+        servicio = subtotal * tasa_servicio if aplicar_servicio else Decimal(0)
+        total = subtotal + iva + servicio - descuento
+
+        factura = Factura.objects.create(
+            cliente=cliente,
+            tipo=Factura.Tipo.LLEVAR,
+            comanda=None,
+            items_json=json_lib.dumps(items),
+            cliente_nombre=cliente_nombre,
+            cliente_rfc=cliente_rfc,
+            subtotal=subtotal,
+            impuestos=iva,
+            descuento=descuento,
+            propina=servicio,
+            total_sin_impuestos=subtotal - descuento,
+            total_con_impuestos=total,
+            estado=Factura.Estado.PAGADA,
+            metodo_pago=metodo_pago,
+            fecha_pago=timezone.now(),
+            usuario=request.user,
+        )
+
+        if metodo_pago == "efectivo" and monto_recibido:
+            try:
+                monto_dec = Decimal(monto_recibido)
+                factura.monto_recibido = monto_dec
+                factura.cambio = monto_dec - total
+                factura.save(update_fields=["monto_recibido", "cambio"])
+            except Exception:
+                pass
+
+        messages.success(request, f"Venta para llevar {factura.folio} registrada")
+        return redirect("facturacion:imprimir", pk=factura.pk)
 
 
 class FacturaDetailView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DetailView):
