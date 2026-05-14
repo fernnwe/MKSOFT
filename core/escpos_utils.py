@@ -1,11 +1,22 @@
 """ESC/POS receipt generator for thermal printers."""
 
+import socket
+
 ESC = b'\x1b'
 GS = b'\x1d'
 
 
 def _enc(text, encoding='cp858'):
     return text.encode(encoding, errors='replace')
+
+
+def send_tcp(data, host, port=9100, timeout=5):
+    """Send ESC/POS raw bytes to a network printer via TCP (port 9100)."""
+    sock = socket.create_connection((host, port), timeout=timeout)
+    try:
+        sock.sendall(data)
+    finally:
+        sock.close()
 
 
 def build_factura(factura, config, cols=32):

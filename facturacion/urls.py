@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/", views.FacturaDetailView.as_view(), name="detalle"),
     path("<int:pk>/imprimir/", views.imprimir_factura, name="imprimir"),
     path("<int:pk>/escpos/", views.factura_escpos, name="escpos"),
+    path("<int:pk>/escpos-tcp/", views.factura_escpos_tcp, name="escpos_tcp"),
     path("<int:pk>/eliminar/", views.FacturaDeleteView.as_view(), name="eliminar"),
     path("apertura/", views.AperturaCajaView.as_view(), name="apertura"),
     path("cierre-caja/", views.CierreCajaView.as_view(), name="cierre_caja"),

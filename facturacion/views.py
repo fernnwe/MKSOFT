@@ -343,6 +343,28 @@ def factura_escpos(request, pk):
         return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
 
 
+def factura_escpos_tcp(request, pk):
+    """Print directly to a network printer via TCP (port 9100)."""
+    from core.escpos_utils import build_factura, send_tcp
+    from core.models import ConfigRestaurante
+    host = request.GET.get("host", "")
+    port = int(request.GET.get("port", "9100"))
+    if not host:
+        return HttpResponse("Falta parametro host", status=400)
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Factura.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    factura = get_object_or_404(qs, pk=pk)
+    config = ConfigRestaurante.get_config(cliente)
+    data = build_factura(factura, config)
+    try:
+        send_tcp(data, host, port)
+        return HttpResponse(f"Impreso en {host}:{port}")
+    except Exception as e:
+        return HttpResponse(f"Error al imprimir: {e}", status=500)
+
+
 class AperturaCajaForm(forms.Form):
     monto_inicial = forms.DecimalField(
         label="Monto inicial en caja",
