@@ -13,7 +13,6 @@
             font-family: 'Courier New', 'Courier', monospace;
             font-size: 12px; line-height: 1.35; font-weight: 600;
         }
-        body { width: 56mm; margin: 0 auto; padding: 1mm; }
         .center { text-align: center; }
         hr { border: none; border-top: 1px solid #000; margin: 2px 0; }
         table { width: 100%; border-collapse: collapse; }
@@ -21,14 +20,14 @@
         td:nth-child(3), th:nth-child(3) { text-align: right; white-space: nowrap; }
         td:nth-child(2) { width: 100%; overflow: hidden; text-overflow: ellipsis; }
         td:nth-child(1) { white-space: nowrap; }
-        .row { display: flex; justify-content: space-between; margin: 1px 0; gap: 4px; }
-        .row > span:last-child { text-align: right; white-space: nowrap; flex-shrink: 0; }
+        .row { display: table; width: 100%; table-layout: fixed; margin: 1px 0; }
+        .row > span { display: table-cell; }
+        .row > span:last-child { text-align: right; white-space: nowrap; }
         .total { font-weight: 800; font-size: 13px; }
         .header-title { font-size: 14px; font-weight: 800; }
         @media print {
-            body { width: 58mm; padding: 1mm; }
-            .header-title { font-size: 13px; }
-            .total { font-size: 12px; }
+            @page { margin: 0; }
+            body { padding: 2mm; }
         }
     </style>
 </head>
