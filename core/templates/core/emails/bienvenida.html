@@ -3,106 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a MKSOFT</title>
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f5; }
-        .wrapper { width: 100%; padding: 32px 0; background: #f4f4f5; }
-        .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-        .header { background: #0d9488; padding: 40px 32px 32px; text-align: center; }
-        .header-logo { width: 64px; height: 64px; background: rgba(255,255,255,0.15); border-radius: 16px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; line-height: 64px; }
-        .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px; }
-        .header p { margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.85); }
-        .content { padding: 32px; }
-        .greeting { font-size: 16px; color: #18181b; margin: 0 0 8px; font-weight: 600; }
-        .message { font-size: 14px; color: #52525b; line-height: 1.7; margin: 0 0 24px; }
-        .card { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
-        .card-title { font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; margin: 0 0 16px; }
-        .field { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-        .field + .field { border-top: 1px solid #e4e4e7; }
-        .field-label { font-size: 13px; color: #71717a; }
-        .field-value { font-size: 14px; font-weight: 600; color: #18181b; font-family: 'SF Mono', 'Roboto Mono', 'Cascadia Code', monospace; background: #f4f4f5; padding: 4px 12px; border-radius: 6px; letter-spacing: 0.3px; }
-        .field-value.password { color: #0d9488; background: #f0fdfa; font-size: 15px; }
-        .btn { display: block; padding: 14px 32px; background: #0d9488; color: #ffffff; text-decoration: none; border-radius: 12px; font-size: 15px; font-weight: 600; text-align: center; margin-bottom: 24px; transition: background 0.2s; }
-        .btn:hover { background: #0f766e; }
-        .plan-grid { display: flex; gap: 12px; margin-bottom: 24px; }
-        .plan-item { flex: 1; background: #fafafa; border: 1px solid #e4e4e7; border-radius: 12px; padding: 14px; text-align: center; }
-        .plan-item-label { font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-        .plan-item-value { font-size: 14px; font-weight: 600; color: #18181b; }
-        .note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: #9a3412; line-height: 1.5; }
-        .note strong { color: #c2410c; }
-        .footer { padding: 24px 32px; background: #fafafa; border-top: 1px solid #e4e4e7; text-align: center; }
-        .footer p { margin: 2px 0; font-size: 12px; color: #a1a1aa; }
-        .footer a { color: #0d9488; text-decoration: none; }
+        body { margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+        table { border-collapse: collapse; }
+        .wrapper { width: 100%; background-color: #f1f5f9; padding: 40px 0; }
+        .main { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04); }
+        .header-cell { background: #0f172a; padding: 48px 48px 40px; text-align: center; }
+        .header-brand { font-size: 13px; font-weight: 700; color: #14b8a6; letter-spacing: 3px; text-transform: uppercase; }
+        .header-divider { width: 40px; height: 3px; background: #14b8a6; margin: 16px auto; border-radius: 2px; }
+        .header-title { font-size: 26px; font-weight: 700; color: #ffffff; margin: 0; letter-spacing: -0.5px; }
+        .header-sub { font-size: 15px; color: #94a3b8; margin: 8px 0 0; line-height: 1.5; }
+        .body-cell { padding: 48px 48px 40px; }
+        .greeting { font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 16px; }
+        .text { font-size: 15px; color: #475569; line-height: 1.7; margin: 0 0 28px; }
+        .text strong { color: #0f172a; }
+        .creds-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0; margin-bottom: 28px; }
+        .creds-header { padding: 20px 24px 0; }
+        .creds-header span { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
+        .creds-body { padding: 4px 24px 20px; }
+        .creds-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+        .creds-row + .creds-row { border-top: 1px solid #e2e8f0; }
+        .creds-label { font-size: 14px; color: #64748b; }
+        .creds-value { font-size: 14px; font-weight: 600; color: #0f172a; font-family: 'SF Mono', 'Roboto Mono', 'Cascadia Code', 'Fira Code', monospace; background: #f1f5f9; padding: 4px 14px; border-radius: 6px; letter-spacing: 0.5px; }
+        .creds-value.pw { color: #0d9488; background: #f0fdfa; }
+        .btn-cell { text-align: center; padding: 0 0 28px; }
+        .btn { display: inline-block; padding: 15px 40px; background: #0d9488; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+        .plan-wrap { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 28px; display: table; width: 100%; }
+        .plan-row { display: table-row; }
+        .plan-cell { display: table-cell; padding: 16px 20px; text-align: center; border-right: 1px solid #e2e8f0; }
+        .plan-cell:last-child { border-right: none; }
+        .plan-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .plan-value { font-size: 15px; font-weight: 600; color: #0f172a; }
+        .note-cell { background: #fef9ee; border: 1px solid #fde68a; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; }
+        .note-text { font-size: 14px; color: #92400e; line-height: 1.6; margin: 0; }
+        .note-text strong { color: #78350f; }
+        .signoff { font-size: 15px; color: #475569; line-height: 1.7; margin: 0; }
+        .signoff strong { color: #0f172a; }
+        .footer-cell { background: #f8fafc; padding: 32px 48px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .footer-text { font-size: 13px; color: #94a3b8; margin: 2px 0; }
+        .footer-link { color: #0d9488; text-decoration: none; }
         @media only screen and (max-width: 600px) {
             .wrapper { padding: 16px 0; }
-            .container { border-radius: 16px; margin: 0 12px; }
-            .header { padding: 28px 20px 24px; }
-            .content { padding: 24px 20px; }
-            .plan-grid { flex-direction: column; gap: 8px; }
-            .field { flex-direction: column; align-items: flex-start; gap: 4px; }
-            .footer { padding: 20px; }
+            .main { border-radius: 0; }
+            .header-cell { padding: 36px 24px 28px; }
+            .header-title { font-size: 22px; }
+            .body-cell { padding: 32px 24px 28px; }
+            .creds-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+            .plan-wrap, .plan-row, .plan-cell { display: block; width: 100%; }
+            .plan-cell { border-right: none; border-bottom: 1px solid #e2e8f0; padding: 12px 16px; }
+            .plan-cell:last-child { border-bottom: none; }
+            .footer-cell { padding: 24px; }
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <div class="container">
-            <div class="header">
-                <div class="header-logo">&#127860;</div>
-                <h1>{{ system_name }}</h1>
-                <p>Tu restaurante ya esta en linea</p>
-            </div>
-            <div class="content">
-                <p class="greeting">Hola,</p>
-                <p class="message">
-                    Bienvenido a <strong>{{ system_name }}</strong>. La cuenta para tu restaurante <strong>{{ restaurant_name }}</strong> ha sido creada y esta lista para usar.
-                </p>
+    <table class="wrapper" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center">
+                <table class="main" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td class="header-cell">
+                            <div class="header-brand">MKSOFT</div>
+                            <div class="header-divider"></div>
+                            <h1 class="header-title">Bienvenido a bordo</h1>
+                            <p class="header-sub">Tu restaurante ya est&aacute; listo para operar</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="body-cell">
+                            <p class="greeting">Hola,</p>
+                            <p class="text">
+                                Nos complace darte la bienvenida a <strong>MKSOFT</strong>. Hemos creado tu cuenta para <strong>{{ restaurant_name }}</strong> y ya puedes acceder al panel de administraci&oacute;n con las siguientes credenciales:
+                            </p>
 
-                <div class="card">
-                    <div class="card-title">Credenciales de acceso</div>
-                    <div class="field">
-                        <span class="field-label">Usuario</span>
-                        <span class="field-value">{{ username }}</span>
-                    </div>
-                    <div class="field">
-                        <span class="field-label">Contrase&ntilde;a</span>
-                        <span class="field-value password">{{ password }}</span>
-                    </div>
-                </div>
+                            <table class="creds-card" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td class="creds-header"><span>Credenciales de acceso</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="creds-body">
+                                        <div class="creds-row">
+                                            <span class="creds-label">Usuario</span>
+                                            <span class="creds-value">{{ username }}</span>
+                                        </div>
+                                        <div class="creds-row">
+                                            <span class="creds-label">Contrase&ntilde;a</span>
+                                            <span class="creds-value pw">{{ password }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
 
-                <a href="{{ login_url }}" class="btn">Iniciar Sesi&oacute;n</a>
+                            <div class="btn-cell">
+                                <a href="{{ login_url }}" class="btn">Ingresar al panel</a>
+                            </div>
 
-                <div class="plan-grid">
-                    <div class="plan-item">
-                        <div class="plan-item-label">Plan</div>
-                        <div class="plan-item-value">{{ plan }}</div>
-                    </div>
-                    <div class="plan-item">
-                        <div class="plan-item-label">Periodo</div>
-                        <div class="plan-item-value">{{ periodo }}</div>
-                    </div>
-                    <div class="plan-item">
-                        <div class="plan-item-label">Pr&oacute;ximo pago</div>
-                        <div class="plan-item-value">{{ fecha_pago }}</div>
-                    </div>
-                </div>
+                            <table class="plan-wrap" cellpadding="0" cellspacing="0" border="0">
+                                <tr class="plan-row">
+                                    <td class="plan-cell">
+                                        <div class="plan-label">Plan</div>
+                                        <div class="plan-value">{{ plan }}</div>
+                                    </td>
+                                    <td class="plan-cell">
+                                        <div class="plan-label">Periodo</div>
+                                        <div class="plan-value">{{ periodo }}</div>
+                                    </td>
+                                    <td class="plan-cell">
+                                        <div class="plan-label">Pr&oacute;ximo pago</div>
+                                        <div class="plan-value">{{ fecha_pago }}</div>
+                                    </td>
+                                </tr>
+                            </table>
 
-                <div class="note">
-                    <strong>&#9432; Recomendaci&oacute;n:</strong> Cambia tu contrase&ntilde;a despu&eacute;s del primer inicio de sesi&oacute;n para mantener tu cuenta segura.
-                </div>
+                            <table class="note-cell" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <p class="note-text">
+                                            <strong>&#9432; Seguridad:</strong> Por razones de seguridad, te sugerimos cambiar tu contrase&ntilde;a despu&eacute;s del primer inicio de sesi&oacute;n. No compartas tus credenciales con terceros.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
 
-                <p class="message" style="margin-bottom: 0;">
-                    Si tienes dudas, responde a este correo o contacta a nuestro equipo de soporte.
-                </p>
-                <p class="message" style="margin: 12px 0 0;">
-                    Saludos,<br>
-                    <strong>Equipo {{ system_name }}</strong>
-                </p>
-            </div>
-            <div class="footer">
-                <p>{{ system_name }} &mdash; Sistema de Gesti&oacute;n para Restaurantes</p>
-                <p><a href="{{ login_url }}">{{ system_name|lower }}.com</a> &middot; {{ system_email }}</p>
-            </div>
-        </div>
-    </div>
+                            <p class="signoff">
+                                Si tienes alguna consulta, nuestro equipo de soporte est&aacute; a tu disposici&oacute;n.
+                            </p>
+                            <p class="signoff" style="margin-top: 20px;">
+                                Cordialmente,<br>
+                                <strong>El equipo de MKSOFT</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer-cell">
+                            <p class="footer-text">MKSOFT &mdash; Sistema de Gesti&oacute;n para Restaurantes</p>
+                            <p class="footer-text">
+                                <a href="{{ login_url }}" class="footer-link">mksoft.com</a>
+                                &nbsp;&middot;&nbsp;
+                                <a href="mailto:{{ system_email }}" class="footer-link">{{ system_email }}</a>
+                            </p>
+                            <p class="footer-text" style="margin-top: 12px; font-size: 12px;">
+                                Este es un mensaje autom&aacute;tico, por favor no respondas a este correo.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
