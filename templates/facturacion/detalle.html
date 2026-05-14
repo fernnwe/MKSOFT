@@ -174,7 +174,7 @@
         <a href="{% url 'facturacion:imprimir' factura.pk %}" class="md3-btn md3-btn-tonal" target="_blank">
             <span class="material-symbols-outlined" style="font-size:18px;">print</span>Imprimir
         </a>
-        <a href="{% url 'facturacion:escpos' factura.pk %}" class="md3-btn md3-btn-tonal" target="_blank" title="ESC/POS directo">
+        <a href="#" onclick="printEscpos('{% url 'facturacion:escpos' factura.pk %}'); return false;" class="md3-btn md3-btn-tonal" title="ESC/POS directo">
             <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>ESC/POS
         </a>
         {% if user.can_cancel_facturas %}

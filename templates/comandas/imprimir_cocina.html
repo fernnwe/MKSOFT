@@ -29,13 +29,23 @@
         .no-print { display: block; }
         @media print { .no-print { display: none; } }
         .total-items { font-size: 10px; font-weight: 600; text-align: center; margin-top: 2px; }
+        #toolbar { display: flex; }
         @media print {
             @page { margin: 0; }
             body { padding: 1mm; }
+            #toolbar { display: none !important; }
+            #print-area { margin-top: 0; }
         }
     </style>
 </head>
 <body>
+    <div id="toolbar" style="position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:2px solid #000;padding:6px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;z-index:999;font-family:sans-serif;font-size:13px;">
+        <button onclick="printEscposAgent({{ comanda.pk }}, 'comandas')" style="padding:8px 20px;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:14px;">Imprimir</button>
+        <button onclick="window.print()" style="padding:4px 10px;background:#757575;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Navegador</button>
+        <span id="printStatus" style="font-size:12px;"></span>
+    </div>
+
+    <div id="print-area" style="margin-top:44px;">
     <div class="header">
         <h2>{{ RESTAURANT_NAME }}</h2>
         <div class="codigo">{{ comanda.codigo }}</div>
@@ -86,12 +96,59 @@
 
     <div class="footer">Gracias!</div>
 
-    <div class="no-print" style="text-align:center; margin-top:10px;">
-        <a href="{% url 'comandas:escpos' comanda.pk %}" target="_blank" style="display:inline-block; padding:8px 16px; background:#000; color:#fff; text-decoration:none; font-family:sans-serif; font-size:12px; border-radius:4px;">Imprimir ESC/POS</a>
-    </div>
+    </div> <!-- /print-area -->
 
+    <script src="{% static 'js/print-agent.js' %}"></script>
     <script>
-        window.onload = function() { window.print(); };
+    var AGENT_URL = 'http://127.0.0.1:8765';
+
+    function status(msg, ok) {
+        var el = document.getElementById('printStatus');
+        el.textContent = msg;
+        el.style.color = ok ? '#2e7d32' : '#c62828';
+    }
+
+    async function printEscposAgent(pk, app) {
+        try {
+            status('Conectando al agente...');
+            var agentStatus = await fetch(AGENT_URL + '/status');
+            var info = await agentStatus.json();
+            status('Impresora: ' + (info.printer || 'desconocida'));
+        } catch(e) {
+            status('Agente no disponible. Ejecuta printer_agent.py', 0);
+            return;
+        }
+        try {
+            status('Obteniendo datos...');
+            var resp = await fetch('/' + app + '/' + pk + '/escpos/');
+            if (!resp.ok) {
+                var text = await resp.text();
+                throw new Error(text.slice(0, 300));
+            }
+            var data = await resp.arrayBuffer();
+            status('Enviando a imprimir...');
+            var agentResp = await fetch(AGENT_URL + '/print', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: data
+            });
+            var result = await agentResp.json();
+            if (result.success) {
+                status('Impreso correctamente!', 1);
+            } else {
+                status('Error: ' + (result.error || 'desconocido'), 0);
+            }
+        } catch(e) {
+            status('Error: ' + e.message, 0);
+        }
+    }
+
+    (function() {
+        fetch(AGENT_URL + '/status').then(function(r) { return r.json(); }).then(function(info) {
+            if (info.printer) { status('Listo - ' + info.printer, 1); }
+            else { status('Agente OK - sin impresora termica'); }
+        }).catch(function() { status('Agente local no disponible'); });
+    })();
     </script>
 </body>
 </html>

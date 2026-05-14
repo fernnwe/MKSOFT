@@ -42,7 +42,7 @@
                 <span class="material-symbols-outlined">print</span>
                 Imprimir Ticket
             </a>
-            <a href="{% url 'facturacion:cierre_escpos' %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}" target="_blank" class="md3-btn md3-btn-filled" title="ESC/POS directo">
+            <a href="#" onclick="printEscpos('{% url 'facturacion:cierre_escpos' %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}'); return false;" class="md3-btn md3-btn-filled" title="ESC/POS directo">
                 <span class="material-symbols-outlined">receipt_long</span>
                 ESC/POS
             </a>

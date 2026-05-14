@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cierre de Caja {{ fecha_seleccionada|date:"d/m/Y" }}</title>
+{% load static %}
 {% load currency_tags %}
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,17 +27,23 @@
         .error { color: #000; font-weight: 800; }
         .header-title { font-size: 12px; font-weight: 800; }
         .footer { text-align: center; margin-top: 4px; }
-        .no-print { display: block; }
-        @media print { .no-print { display: none; } }
         p { margin: 1px 0; }
+        #toolbar { display: flex; }
         @media print {
             @page { margin: 0; }
             body { padding: 1mm; }
+            #toolbar { display: none !important; }
         }
     </style>
 </head>
 <body>
-    <div class="ticket">
+    <div id="toolbar" style="position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:2px solid #000;padding:6px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;z-index:999;font-family:sans-serif;font-size:13px;">
+        <button id="btnCierreAgent" onclick="printCierreAgent()" style="padding:8px 20px;background:#2e7d32;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:14px;">Imprimir</button>
+        <button onclick="window.print()" style="padding:4px 10px;background:#757575;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Navegador</button>
+        <span id="printStatus" style="font-size:12px;"></span>
+    </div>
+
+    <div class="ticket" style="margin-top:44px;">
         <div class="center">
             <div class="header-title">{{ RESTAURANT_NAME }}</div>
             <p>{{ RESTAURANT_ADDRESS }}</p>
@@ -137,12 +144,49 @@
         </div>
     </div>
 
-    <div class="no-print" style="text-align:center; margin-top:10px;">
-        <a href="{% url 'facturacion:cierre_escpos' %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}" target="_blank" style="display:inline-block; padding:8px 16px; background:#000; color:#fff; text-decoration:none; font-family:sans-serif; font-size:12px; border-radius:4px;">Imprimir ESC/POS</a>
-    </div>
-
+    <script src="{% static 'js/print-agent.js' %}"></script>
     <script>
-        window.onload = function() { window.print(); };
+    var CIERRE_AGENT_URL = 'http://127.0.0.1:8765';
+
+    function status(msg, ok) {
+        var el = document.getElementById('printStatus');
+        if (el) { el.textContent = msg; el.style.color = ok ? '#2e7d32' : '#c62828'; }
+    }
+
+    async function printCierreAgent() {
+        var url = '{% url 'facturacion:cierre_escpos' %}?fecha={{ fecha_seleccionada|date:'Y-m-d' }}';
+        try {
+            status('Conectando al agente...');
+            var agentStatus = await fetch(CIERRE_AGENT_URL + '/status');
+            var info = await agentStatus.json();
+            status('Impresora: ' + (info.printer || 'desconocida'));
+        } catch(e) {
+            status('Agente no disponible. Ejecuta printer_agent.py', 0);
+            return;
+        }
+        try {
+            status('Obteniendo datos...');
+            var resp = await fetch(url);
+            if (!resp.ok) { var text = await resp.text(); throw new Error(text.slice(0, 300)); }
+            var data = await resp.arrayBuffer();
+            status('Enviando a imprimir...');
+            var agentResp = await fetch(CIERRE_AGENT_URL + '/print', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: data
+            });
+            var result = await agentResp.json();
+            if (result.success) status('Impreso correctamente!', 1);
+            else status('Error: ' + (result.error || 'desconocido'), 0);
+        } catch(e) { status('Error: ' + e.message, 0); }
+    }
+
+    (function() {
+        fetch(CIERRE_AGENT_URL + '/status').then(function(r) { return r.json(); }).then(function(info) {
+            if (info.printer) status('Listo - ' + info.printer, 1);
+            else status('Agente OK - sin impresora termica');
+        }).catch(function() { status('Agente local no disponible'); });
+    })();
     </script>
 </body>
 </html>

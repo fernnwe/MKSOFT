@@ -641,7 +641,7 @@
         <a href="{% url 'comandas:imprimir_cocina' comanda.pk %}" class="md3-btn md3-btn-outlined" target="_blank">
             <span class="material-symbols-outlined" style="font-size:18px;">print</span>Imprimir Cocina
         </a>
-        <a href="{% url 'comandas:escpos' comanda.pk %}" class="md3-btn md3-btn-outlined" target="_blank" title="ESC/POS directo">
+        <a href="#" onclick="printEscpos('{% url 'comandas:escpos' comanda.pk %}'); return false;" class="md3-btn md3-btn-outlined" title="ESC/POS directo">
             <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>ESC/POS
         </a>
         {% endif %}
