@@ -184,7 +184,10 @@
         try {
             status('Obteniendo datos ESC/POS...');
             var resp = await fetch('/facturacion/' + pk + '/escpos/');
-            if (!resp.ok) { throw new Error('Error del servidor: ' + resp.status); }
+            if (!resp.ok) {
+                var text = await resp.text();
+                throw new Error(text.slice(0, 500));
+            }
             var data = await resp.arrayBuffer();
             status('Enviando al agente local...');
             var agentResp = await fetch(AGENT_URL + '/print', {

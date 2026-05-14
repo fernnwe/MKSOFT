@@ -325,21 +325,21 @@ def imprimir_factura(request, pk):
 
 
 def factura_escpos(request, pk):
-    from core.escpos_utils import build_factura
-    from core.models import ConfigRestaurante
-    cliente = getattr(request.user, 'cliente', None)
-    qs = Factura.objects.all()
-    if cliente:
-        qs = qs.filter(cliente=cliente)
-    factura = get_object_or_404(qs, pk=pk)
-    config = ConfigRestaurante.get_config(cliente)
     try:
+        from core.escpos_utils import build_factura
+        from core.models import ConfigRestaurante
+        cliente = getattr(request.user, 'cliente', None)
+        qs = Factura.objects.all()
+        if cliente:
+            qs = qs.filter(cliente=cliente)
+        factura = get_object_or_404(qs, pk=pk)
+        config = ConfigRestaurante.get_config(cliente)
         data = build_factura(factura, config)
+        return HttpResponse(data, content_type="application/octet-stream")
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
         return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
-    return HttpResponse(data, content_type="application/octet-stream")
 
 
 class AperturaCajaForm(forms.Form):
