@@ -66,7 +66,7 @@
                 {% if factura.tipo == 'llevar' %}
                 {% for item in factura.items %}
                 <tr>
-                    <td style="white-space:nowrap;">{{ item.cantidad }}</td>
+                    <td style="white-space:nowrap;">{{ item.cantidad|floatformat:0 }}x</td>
                     <td style="width:100%;">{{ item.producto_nombre }}</td>
                     <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
                 </tr>
@@ -75,7 +75,7 @@
                 {% for item in factura.comanda.items.all %}
                 {% if not item.cancelado %}
                 <tr>
-                    <td style="white-space:nowrap;">{{ item.cantidad }}</td>
+                    <td style="white-space:nowrap;">{{ item.cantidad|floatformat:0 }}x</td>
                     <td style="width:100%;">{{ item.producto.nombre }}</td>
                     <td style="text-align:right; white-space:nowrap;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
                 </tr>

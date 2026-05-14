@@ -237,7 +237,7 @@ class FacturaLlevarCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginR
                 items.append({
                     "producto_id": producto.pk,
                     "producto_nombre": producto.nombre,
-                    "cantidad": float(qty_dec),
+                    "cantidad": int(qty_dec),
                     "precio_unitario": float(price_dec),
                     "subtotal": float(item_subtotal),
                 })
