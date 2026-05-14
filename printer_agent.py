@@ -35,10 +35,17 @@ class PrintHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         origin = self.headers.get("Origin", "*")
+        content_type = self.headers.get("Content-Type", "")
         try:
             length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(length) if length > 0 else b"{}"
-            data = json.loads(body)
+            raw_body = self.rfile.read(length) if length > 0 else b""
+
+            if "application/octet-stream" in content_type:
+                self._print_raw(raw_body, None)
+                self._respond(200, {"success": True}, origin)
+                return
+
+            data = json.loads(raw_body)
             pk = data.get("pk")
             site_url = data.get("site_url", "http://127.0.0.1:8000")
             printer_name = data.get("printer_name", None)

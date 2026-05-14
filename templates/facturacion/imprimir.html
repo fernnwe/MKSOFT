@@ -182,23 +182,24 @@
 
     async function printAgent(pk) {
         try {
+            status('Obteniendo datos ESC/POS...');
+            var resp = await fetch('/facturacion/' + pk + '/escpos/');
+            if (!resp.ok) { throw new Error('Error del servidor: ' + resp.status); }
+            var data = await resp.arrayBuffer();
             status('Enviando al agente local...');
-            var resp = await fetch(AGENT_URL + '/print', {
+            var agentResp = await fetch(AGENT_URL + '/print', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    pk: pk,
-                    site_url: window.location.origin
-                })
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: data
             });
-            var result = await resp.json();
+            var result = await agentResp.json();
             if (result.success) {
                 status('Impreso correctamente!', 1);
             } else {
                 status('Error: ' + (result.error || 'desconocido'), 0);
             }
         } catch(e) {
-            status('Error agente: ' + e.message + '. Asegurate de que printer_agent.py este corriendo.', 0);
+            status('Error: ' + e.message, 0);
         }
     }
     </script>
