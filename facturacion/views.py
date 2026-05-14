@@ -324,6 +324,19 @@ def imprimir_factura(request, pk):
     return render(request, "facturacion/imprimir.html", {"factura": factura})
 
 
+def factura_escpos(request, pk):
+    from core.escpos_utils import build_factura
+    from core.models import ConfigRestaurante
+    cliente = getattr(request.user, 'cliente', None)
+    qs = Factura.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    factura = get_object_or_404(qs, pk=pk)
+    config = ConfigRestaurante.get_config(cliente)
+    data = build_factura(factura, config)
+    return HttpResponse(data, content_type="application/octet-stream")
+
+
 class AperturaCajaForm(forms.Form):
     monto_inicial = forms.DecimalField(
         label="Monto inicial en caja",

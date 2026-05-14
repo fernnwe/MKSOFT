@@ -26,9 +26,12 @@
         .total { font-weight: 800; }
         .header-title { font-size: 12px; font-weight: 800; }
         p { margin: 1px 0; }
+        #factura-print { margin-top: 44px; }
         @media print {
             @page { margin: 0; }
             body { padding: 1mm; }
+            #toolbar { display: none !important; }
+            #factura-print { margin-top: 0; }
         }
     </style>
 </head>
@@ -121,8 +124,83 @@
         <p class="center">Gracias por utilizar MKSOFT</p>
     </div>
 
+    <div id="toolbar" style="position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:2px solid #000;padding:6px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;z-index:999;font-family:sans-serif;font-size:13px;">
+        <button onclick="window.print()" style="padding:6px 14px;background:#1976d2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Imprimir (Navegador)</button>
+        <button id="btnUsb" onclick="printUSB({{ factura.pk }})" style="padding:6px 14px;background:#388e3c;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">USB ESC/POS</button>
+        <button id="btnSerial" onclick="printSerial({{ factura.pk }})" style="padding:6px 14px;background:#f57c00;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Serial ESC/POS</button>
+        <button onclick="printAgent({{ factura.pk }})" style="padding:6px 14px;background:#7b1fa2;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold;">Agente Local</button>
+        <span id="printStatus" style="margin-left:8px;font-size:12px;"></span>
+    </div>
+
     <script>
-        window.onload = function() { window.print(); };
+    var AGENT_URL = 'http://127.0.0.1:8765';
+
+    function status(msg, ok) {
+        var el = document.getElementById('printStatus');
+        el.textContent = msg;
+        el.style.color = ok ? '#2e7d32' : '#c62828';
+    }
+
+    async function printUSB(pk) {
+        if (!navigator.usb) { status('WebUSB no soportado en este navegador', 0); return; }
+        try {
+            status('Conectando impresora USB...');
+            var device = await navigator.usb.requestDevice({ filters: [] });
+            status('Obteniendo datos ESC/POS...');
+            var resp = await fetch('/facturacion/' + pk + '/escpos/');
+            var data = await resp.arrayBuffer();
+            await device.open();
+            if (device.configuration === null) await device.selectConfiguration(1);
+            await device.claimInterface(0);
+            await device.transferOut(1, data);
+            await device.close();
+            status('Impreso correctamente!', 1);
+        } catch(e) {
+            status('Error USB: ' + e.message, 0);
+        }
+    }
+
+    async function printSerial(pk) {
+        if (!navigator.serial) { status('Web Serial no soportado en este navegador', 0); return; }
+        try {
+            status('Conectando puerto serial...');
+            var port = await navigator.serial.requestPort();
+            status('Abriendo puerto a 9600 baud...');
+            await port.open({ baudRate: 9600 });
+            status('Obteniendo datos ESC/POS...');
+            var resp = await fetch('/facturacion/' + pk + '/escpos/');
+            var data = await resp.arrayBuffer();
+            var writer = port.writable.getWriter();
+            await writer.write(data);
+            writer.releaseLock();
+            await port.close();
+            status('Impreso correctamente!', 1);
+        } catch(e) {
+            status('Error Serial: ' + e.message, 0);
+        }
+    }
+
+    async function printAgent(pk) {
+        try {
+            status('Enviando al agente local...');
+            var resp = await fetch(AGENT_URL + '/print', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pk: pk,
+                    site_url: window.location.origin
+                })
+            });
+            var result = await resp.json();
+            if (result.success) {
+                status('Impreso correctamente!', 1);
+            } else {
+                status('Error: ' + (result.error || 'desconocido'), 0);
+            }
+        } catch(e) {
+            status('Error agente: ' + e.message + '. Asegurate de que printer_agent.py este corriendo.', 0);
+        }
+    }
     </script>
 </body>
 </html>
