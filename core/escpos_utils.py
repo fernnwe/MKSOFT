@@ -8,10 +8,11 @@ def _enc(text, encoding='cp858'):
     return text.encode(encoding, errors='replace')
 
 
-def build_factura(factura, config, cols=42):
+def build_factura(factura, config, cols=36):
     items = _get_items(factura)
     buf = bytearray()
     buf += ESC + b'@'
+    buf += ESC + b'M' + b'\x01'
     buf += ESC + b't' + b'\x02'
 
     # Header
