@@ -29,7 +29,7 @@
                         <div style="display:flex;align-items:center;gap:10px;">
                             <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:20px;">search</span>
                             <div style="position:relative;flex:1;">
-                                <input type="text" id="productSearch" class="ll-search" placeholder="Buscar producto..." oninput="filterProducts()" autocomplete="off">
+                                <input type="text" id="productSearch" class="ll-search" placeholder="Buscar producto..." autocomplete="off">
                                 <span class="material-symbols-outlined ll-search-icon">close</span>
                             </div>
                             <span id="productCount" class="ll-count-badge">{{ productos|length }}</span>
@@ -37,7 +37,7 @@
                     </div>
                     <div id="productList" class="ll-product-list">
                         {% for p in productos %}
-                        <div class="ll-product-item" data-name="{{ p.nombre|lower }}" onclick="selectProduct(this, {{ p.pk }}, '{{ p.nombre|escapejs }}', {{ p.precio }})">
+                        <div class="ll-product-item" data-pid="{{ p.pk }}" data-name="{{ p.nombre|lower }}" data-price="{{ p.precio }}">
                             <div class="ll-product-check">
                                 <div class="ll-checkbox"></div>
                             </div>
@@ -85,15 +85,9 @@
                         <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:20px;">person</span>
                         <strong style="font-size:14px;">Cliente</strong>
                     </div>
-                    <div class="ll-field-group">
-                        <div class="ll-field">
-                            <input type="text" id="id_cliente_nombre" name="cliente_nombre" class="ll-input" value="Consumidor Final" autocomplete="off">
-                            <label for="id_cliente_nombre" class="ll-label">Nombre</label>
-                        </div>
-                        <div class="ll-field" style="max-width:140px;">
-                            <input type="text" id="id_cliente_rfc" name="cliente_rfc" class="ll-input" maxlength="13" autocomplete="off">
-                            <label for="id_cliente_rfc" class="ll-label">RUC</label>
-                        </div>
+                    <div class="ll-field">
+                        <input type="text" id="id_cliente_nombre" name="cliente_nombre" class="ll-input" value="Consumidor Final" autocomplete="off">
+                        <label for="id_cliente_nombre" class="ll-label">Nombre del cliente</label>
                     </div>
                 </div>
 
@@ -103,9 +97,9 @@
                         <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:20px;">payments</span>
                         <strong style="font-size:14px;">Pago</strong>
                     </div>
-                    <div class="ll-field-group">
+                    <div style="display:flex;gap:10px;">
                         <div class="ll-field" style="max-width:160px;">
-                            <select id="id_metodo_pago" name="metodo_pago" class="ll-input" onchange="toggleEfectivo()">
+                            <select id="id_metodo_pago" name="metodo_pago" class="ll-input">
                                 <option value="efectivo">Efectivo</option>
                                 <option value="tarjeta">Tarjeta</option>
                                 <option value="transferencia">Transferencia</option>
@@ -113,25 +107,25 @@
                             <label for="id_metodo_pago" class="ll-label">Metodo</label>
                         </div>
                         <div class="ll-field" style="max-width:120px;">
-                            <input type="number" id="id_descuento" name="descuento" class="ll-input" value="0" step="any" min="0" oninput="recalcTotal()" autocomplete="off">
+                            <input type="number" id="id_descuento" name="descuento" class="ll-input" value="0" step="any" min="0" autocomplete="off">
                             <label for="id_descuento" class="ll-label">Dscto ({{ CURRENCY_SYMBOL }})</label>
                         </div>
                     </div>
                     <div style="display:flex;gap:16px;padding:4px 0;">
                         <label class="ll-toggle">
-                            <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" checked onchange="recalcTotal()">
+                            <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" checked>
                             <span class="ll-toggle-track"><span class="ll-toggle-thumb"></span></span>
                             <span class="ll-toggle-label">IVA 15%</span>
                         </label>
                         <label class="ll-toggle">
-                            <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" checked onchange="recalcTotal()">
+                            <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" checked>
                             <span class="ll-toggle-track"><span class="ll-toggle-thumb"></span></span>
                             <span class="ll-toggle-label">Servicio 10%</span>
                         </label>
                     </div>
                     <div id="efectivoFields" style="display:none;margin-top:12px;">
                         <div class="ll-field" style="max-width:200px;">
-                            <input type="number" id="id_monto_recibido" name="monto_recibido" class="ll-input" step="0.01" min="0" oninput="recalcTotal()" autocomplete="off">
+                            <input type="number" id="id_monto_recibido" name="monto_recibido" class="ll-input" step="0.01" min="0" autocomplete="off">
                             <label for="id_monto_recibido" class="ll-label">Recibido ({{ CURRENCY_SYMBOL }})</label>
                         </div>
                         <div id="cambioBox" style="display:none;margin-top:10px;padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#f0fdfa,#ccfbf1);">
@@ -157,7 +151,7 @@
                         <span>Servicio (10%)</span>
                         <span id="previewServicio">{{ CURRENCY_SYMBOL }}0.00</span>
                     </div>
-                    <div class="ll-summary-row ll-summary-disc" id="previewDescuentoRow">
+                    <div class="ll-summary-row ll-summary-disc" id="previewDescuentoRow" style="display:none;">
                         <span>Descuento</span>
                         <span id="previewDescuento">&minus;{{ CURRENCY_SYMBOL }}0.00</span>
                     </div>
@@ -171,7 +165,7 @@
                 <!-- Submit -->
                 <div style="display:flex;gap:8px;">
                     <a href="{% url 'facturacion:list' %}" class="ll-btn ll-btn-outline" style="flex:1;">Cancelar</a>
-                    <button type="submit" class="ll-btn ll-btn-primary" style="flex:2;" id="submitBtn">
+                    <button type="submit" class="ll-btn ll-btn-primary" style="flex:2;" id="submitBtn" disabled>
                         <span class="material-symbols-outlined" style="font-size:18px;">receipt_long</span>
                         Generar factura
                     </button>
@@ -184,18 +178,13 @@
 <style>
 .ll-layout { display:grid; grid-template-columns:1fr 380px; gap:16px; align-items:start; }
 @media (max-width:992px) { .ll-layout { grid-template-columns:1fr; } }
-
 .ll-card { background:#fff; border:1px solid var(--md-sys-color-outline-variant); border-radius:16px; margin-bottom:14px; }
-
-/* Search */
 .ll-search { width:100%; padding:10px 36px 10px 14px; border:1px solid var(--md-sys-color-outline-variant); border-radius:10px; font-size:14px; background:#fff; outline:none; transition:border-color .2s; }
 .ll-search:focus { border-color:var(--md-sys-color-primary); }
 .ll-search-icon { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--md-sys-color-on-surface-variant); pointer-events:none; }
 .ll-count-badge { display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);font-size:12px;font-weight:600; }
-
-/* Product list */
 .ll-product-list { max-height:440px; overflow-y:auto; padding:8px; }
-.ll-product-item { display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all .15s; }
+.ll-product-item { display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:all .15s;user-select:none; }
 .ll-product-item:hover { background:var(--md-sys-color-surface-container-high); }
 .ll-product-item.selected { background:var(--md-sys-color-primary-container); }
 .ll-product-check { width:22px;height:22px;flex-shrink:0; }
@@ -205,13 +194,10 @@
 .ll-product-info { flex:1;min-width:0; }
 .ll-product-name { font-size:14px;font-weight:500;color:var(--md-sys-color-on-surface);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .ll-product-price { font-size:13px;color:var(--md-sys-color-primary);font-weight:600;margin-top:2px; }
-
-/* Cart */
 .ll-cart-items { padding:8px; max-height:280px; overflow-y:auto; }
 .ll-cart-empty { text-align:center;padding:32px 16px;color:var(--md-sys-color-on-surface-variant);font-size:14px; }
-.ll-cart-total { padding:12px 20px;border-top:1px solid var(--md-sys-color-outline-variant);margin-top:0; }
-.ll-cart-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;transition:background .15s; }
-.ll-cart-item:hover { background:var(--md-sys-color-surface-container-low); }
+.ll-cart-total { padding:12px 20px;border-top:1px solid var(--md-sys-color-outline-variant); }
+.ll-cart-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px; }
 .ll-cart-item + .ll-cart-item { border-top:1px solid var(--md-sys-color-outline-variant); }
 .ll-ci-name { flex:1;min-width:0;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .ll-ci-qty { display:flex;align-items:center;gap:2px; }
@@ -221,18 +207,13 @@
 .ll-ci-price { font-size:14px;font-weight:600;white-space:nowrap;min-width:64px;text-align:right; }
 .ll-ci-remove { cursor:pointer;font-size:18px;color:var(--md-sys-color-error);opacity:0.5;transition:opacity .15s; }
 .ll-ci-remove:hover { opacity:1; }
-
-/* Fields */
-.ll-field-group { display:flex;gap:10px;flex-wrap:wrap; }
-.ll-field { position:relative;flex:1;min-width:0; }
-.ll-input { width:100%;padding:10px 12px;border:1px solid var(--md-sys-color-outline-variant);border-radius:10px;font-size:14px;background:#fff;outline:none;transition:border-color .2s; }
+.ll-field { position:relative;flex:1;min-width:0;margin-bottom:8px; }
+.ll-input { width:100%;padding:10px 12px;border:1px solid var(--md-sys-color-outline-variant);border-radius:10px;font-size:14px;background:#fff;outline:none;transition:border-color .2s;box-sizing:border-box; }
 .ll-input:focus { border-color:var(--md-sys-color-primary); }
 select.ll-input { appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;cursor:pointer; }
 .ll-label { position:absolute;left:12px;top:10px;font-size:14px;color:var(--md-sys-color-on-surface-variant);transition:all .15s;pointer-events:none;background:#fff;padding:0 4px; }
 .ll-input:focus + .ll-label,
 .ll-input:not(:placeholder-shown) + .ll-label { top:-8px;font-size:11px;color:var(--md-sys-color-primary); }
-
-/* Toggle */
 .ll-toggle { display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:4px 0; }
 .ll-toggle input { display:none; }
 .ll-toggle-track { width:36px;height:20px;border-radius:10px;background:var(--md-sys-color-outline);transition:all .2s;position:relative;flex-shrink:0; }
@@ -240,15 +221,11 @@ select.ll-input { appearance:none;background-image:url("data:image/svg+xml,%3Csv
 .ll-toggle-thumb { position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,0.15); }
 .ll-toggle input:checked + .ll-toggle-track .ll-toggle-thumb { left:18px; }
 .ll-toggle-label { font-size:13px;font-weight:500;color:var(--md-sys-color-on-surface); }
-
-/* Summary */
 .ll-summary { background:var(--md-sys-color-surface-container-low);border-radius:16px;padding:16px 20px;margin-bottom:14px; }
 .ll-summary-row { display:flex;justify-content:space-between;font-size:13px;color:var(--md-sys-color-on-surface-variant);padding:3px 0; }
 .ll-summary-disc { color:var(--md-sys-color-error); }
 .ll-divider { height:1px;background:var(--md-sys-color-outline-variant);margin:8px 0; }
 .ll-summary-total { display:flex;justify-content:space-between;font-size:20px;font-weight:800;color:var(--md-sys-color-on-surface); }
-
-/* Buttons */
 .ll-btn { display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:all .15s; }
 .ll-btn-primary { background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff; }
 .ll-btn-primary:hover { box-shadow:0 4px 12px rgba(13,148,136,0.3);transform:translateY(-1px); }
@@ -260,77 +237,86 @@ select.ll-input { appearance:none;background-image:url("data:image/svg+xml,%3Csv
 
 {% block extra_js %}
 <script>
-var cart = [];
+var cart = {};
 var tasaIVA = {{ tasa_iva|default:"0.15" }};
 var tasaservicio = {{ tasa_servicio|default:"0.10" }};
 var CURRENCY = '{{ CURRENCY_SYMBOL }}';
 
-function filterProducts() {
-    var q = document.getElementById('productSearch').value.toLowerCase();
-    var count = 0;
-    document.querySelectorAll('.ll-product-item').forEach(function(el) {
-        var show = el.dataset.name.includes(q);
-        el.style.display = show ? '' : 'none';
-        if (show) count++;
+document.addEventListener('DOMContentLoaded', function() {
+    // Product selection via delegation
+    document.getElementById('productList').addEventListener('click', function(e) {
+        var item = e.target.closest('.ll-product-item');
+        if (!item) return;
+        var pid = parseInt(item.dataset.pid);
+        var name = item.querySelector('.ll-product-name').textContent.trim();
+        var price = parseFloat(item.dataset.price);
+
+        item.classList.toggle('selected');
+        if (item.classList.contains('selected')) {
+            if (!cart[pid]) {
+                cart[pid] = { pid: pid, name: name, price: price, qty: 1 };
+            } else {
+                cart[pid].qty += 1;
+            }
+        } else {
+            delete cart[pid];
+        }
+        renderCart();
     });
-    document.getElementById('productCount').textContent = count;
-}
 
-function selectProduct(el, pid, name, price) {
-    el.classList.toggle('selected');
-    if (el.classList.contains('selected')) {
-        addToCart(pid, name, price);
-    } else {
-        removeFromCart(pid);
-    }
-}
+    // Search
+    document.getElementById('productSearch').addEventListener('input', function() {
+        var q = this.value.toLowerCase();
+        var items = document.querySelectorAll('.ll-product-item');
+        var count = 0;
+        items.forEach(function(el) {
+            var show = el.dataset.name.includes(q);
+            el.style.display = show ? '' : 'none';
+            if (show) count++;
+        });
+        document.getElementById('productCount').textContent = count;
+    });
 
-function addToCart(pid, name, price) {
-    var existing = cart.find(function(item) { return item.pid === pid; });
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ pid: pid, name: name, price: price, qty: 1 });
-    }
-    renderCart();
-}
+    // Payment method
+    document.getElementById('id_metodo_pago').addEventListener('change', toggleEfectivo);
 
-function removeFromCart(pid) {
-    removeItem(pid);
-}
+    // IVA, Service, Discount
+    document.getElementById('id_aplicar_iva').addEventListener('change', recalcTotal);
+    document.getElementById('id_aplicar_servicio').addEventListener('change', recalcTotal);
+    document.getElementById('id_descuento').addEventListener('input', recalcTotal);
+    document.getElementById('id_monto_recibido').addEventListener('input', recalcTotal);
+
+    toggleEfectivo();
+});
 
 function updateQty(pid, delta) {
-    var item = cart.find(function(i) { return i.pid === pid; });
-    if (!item) return;
-    var input = document.querySelector('input[data-qty-pid="' + pid + '"]');
-    var newQty = item.qty + delta;
-    if (newQty <= 0) {
-        removeItem(pid);
-        return;
+    if (!cart[pid]) return;
+    cart[pid].qty += delta;
+    if (cart[pid].qty <= 0) {
+        delete cart[pid];
+        var item = document.querySelector('.ll-product-item[data-pid="' + pid + '"]');
+        if (item) item.classList.remove('selected');
     }
-    item.qty = newQty;
-    if (input) input.value = newQty;
     renderCart();
 }
 
-function changeQtyInput(pid, val) {
+function setQty(pid, val) {
     var qty = parseInt(val) || 0;
     if (qty <= 0) {
-        removeItem(pid);
-        return;
+        delete cart[pid];
+        var item = document.querySelector('.ll-product-item[data-pid="' + pid + '"]');
+        if (item) item.classList.remove('selected');
+    } else {
+        if (!cart[pid]) return;
+        cart[pid].qty = qty;
     }
-    var item = cart.find(function(i) { return i.pid === pid; });
-    if (item) { item.qty = qty; renderCart(); }
+    renderCart();
 }
 
 function removeItem(pid) {
-    var item = cart.find(function(i) { return i.pid === pid; });
-    if (!item) return;
-    cart = cart.filter(function(i) { return i.pid !== pid; });
-    var nameLower = item.name.toLowerCase();
-    document.querySelectorAll('.ll-product-item.selected').forEach(function(el) {
-        if (el.dataset.name === nameLower) el.classList.remove('selected');
-    });
+    delete cart[pid];
+    var item = document.querySelector('.ll-product-item[data-pid="' + pid + '"]');
+    if (item) item.classList.remove('selected');
     renderCart();
 }
 
@@ -338,8 +324,9 @@ function renderCart() {
     var container = document.getElementById('cartItems');
     var totals = document.getElementById('cartTotals');
     var count = document.getElementById('itemCount');
+    var pids = Object.keys(cart);
 
-    if (cart.length === 0) {
+    if (pids.length === 0) {
         container.innerHTML = '<div class="ll-cart-empty"><span class="material-symbols-outlined" style="font-size:36px;display:block;margin-bottom:8px;opacity:0.2;">add_shopping_cart</span><div style="font-size:13px;">Selecciona productos de la lista</div></div>';
         totals.style.display = 'none';
         count.textContent = '0';
@@ -349,19 +336,20 @@ function renderCart() {
 
     var html = '';
     var subtotal = 0;
-    cart.forEach(function(item) {
+    pids.forEach(function(pid) {
+        var item = cart[pid];
         var lineTotal = item.qty * item.price;
         subtotal += lineTotal;
         html += '<div class="ll-cart-item">' +
             '<span class="ll-ci-name">' + item.name + '</span>' +
             '<div class="ll-ci-qty">' +
-                '<button type="button" onclick="updateQty(' + item.pid + ', -1)">&minus;</button>' +
-                '<input type="number" name="cantidad[]" value="' + item.qty + '" min="1" data-qty-pid="' + item.pid + '" onchange="changeQtyInput(' + item.pid + ', this.value)">' +
-                '<button type="button" onclick="updateQty(' + item.pid + ', 1)">+</button>' +
+                '<button type="button" onclick="updateQty(' + pid + ', -1)">&minus;</button>' +
+                '<input type="number" name="cantidad[]" value="' + item.qty + '" min="1" onchange="setQty(' + pid + ', this.value)">' +
+                '<button type="button" onclick="updateQty(' + pid + ', 1)">+</button>' +
             '</div>' +
             '<span class="ll-ci-price">' + CURRENCY + lineTotal.toFixed(2) + '</span>' +
-            '<span class="ll-ci-remove material-symbols-outlined" onclick="removeItem(' + item.pid + ')">close</span>' +
-            '<input type="hidden" name="producto_id[]" value="' + item.pid + '">' +
+            '<span class="ll-ci-remove material-symbols-outlined" onclick="removeItem(' + pid + ')">close</span>' +
+            '<input type="hidden" name="producto_id[]" value="' + pid + '">' +
             '<input type="hidden" name="precio[]" value="' + item.price + '">' +
         '</div>';
     });
@@ -369,13 +357,13 @@ function renderCart() {
     container.innerHTML = html;
     totals.style.display = 'block';
     document.getElementById('cartSubtotal').textContent = CURRENCY + subtotal.toFixed(2);
-    count.textContent = cart.length;
+    count.textContent = pids.length;
     recalcTotal();
 }
 
 function recalcTotal() {
     var subtotal = 0;
-    cart.forEach(function(item) { subtotal += item.qty * item.price; });
+    Object.keys(cart).forEach(function(pid) { subtotal += cart[pid].qty * cart[pid].price; });
 
     var aplicarIva = document.getElementById('id_aplicar_iva').checked;
     var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
@@ -390,10 +378,15 @@ function recalcTotal() {
     document.getElementById('previewIvaRow').style.display = aplicarIva ? '' : 'none';
     document.getElementById('previewServicio').textContent = CURRENCY + servicio.toFixed(2);
     document.getElementById('previewServicioRow').style.display = aplicarServicio ? '' : 'none';
-    document.getElementById('previewDescuento').textContent = '\u2212' + CURRENCY + descuentoVal.toFixed(2);
-    document.getElementById('previewDescuentoRow').style.display = descuentoVal > 0 ? '' : 'none';
+    var descRow = document.getElementById('previewDescuentoRow');
+    if (descuentoVal > 0) {
+        descRow.style.display = '';
+        document.getElementById('previewDescuento').textContent = '\u2212' + CURRENCY + descuentoVal.toFixed(2);
+    } else {
+        descRow.style.display = 'none';
+    }
     document.getElementById('previewTotal').textContent = CURRENCY + total.toFixed(2);
-    document.getElementById('submitBtn').disabled = cart.length === 0;
+    document.getElementById('submitBtn').disabled = Object.keys(cart).length === 0;
 
     calcCambio(total);
 }
@@ -416,8 +409,5 @@ function calcCambio(total) {
         box.style.display = 'none';
     }
 }
-
-toggleEfectivo();
-document.getElementById('submitBtn').disabled = true;
 </script>
 {% endblock %}
