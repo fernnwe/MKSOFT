@@ -2,244 +2,360 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MKSOFT - Sistema de Gestion para Restaurantes</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MKSOFT — Sistema de Gestion para Restaurantes</title>
 <style>
-*,:after,:before{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#0a0e14;color:#e2e2e9;overflow-x:hidden;line-height:1.5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#090d12;color:#e8e8ed;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-:root{--p:#00e5b0;--on-p:#003828;--s:#00d0ea;--t:#bb8cff;--surf:#0a0e14;--on-surf:#e2e2e9;--on-surf-v:#c2c2c9;--out-v:#42434a;--surf-c-h:#21252c;--surf-c-l:#12161c}
-.btn-fill{display:inline-flex;align-items:center;gap:.5rem;background:var(--p);color:var(--on-p);border:none;border-radius:100px;padding:.75rem 1.5rem;font-size:.9375rem;font-weight:600;cursor:pointer;box-shadow:0 0 24px rgba(0,229,176,.25);transition:.2s}
-.btn-fill:hover{box-shadow:0 0 40px rgba(0,229,176,.4);transform:translateY(-1px)}
-.btn-out{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--on-surf);border:1px solid var(--out-v);border-radius:100px;padding:.75rem 1.5rem;font-size:.9375rem;font-weight:500;cursor:pointer;transition:.2s}
-.btn-out:hover{border-color:var(--p);color:var(--p)}
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.75rem 0;transition:.3s}
-.nav.scrolled{background:rgba(10,14,20,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(--out-v)}
-.hero{min-height:100vh;display:flex;align-items:center;padding:7rem 0 5rem;position:relative;overflow:hidden}
-.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
-.orb{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none}
-.orb1{width:600px;height:600px;top:-20%;right:-15%;background:radial-gradient(circle,rgba(0,229,176,.25) 0%,rgba(0,208,234,.1) 50%,transparent 70%);animation:orb 8s ease-in-out infinite}
-.orb2{width:400px;height:400px;bottom:10%;left:5%;background:radial-gradient(circle,rgba(187,140,255,.2) 0%,transparent 70%);animation:orb 8s ease-in-out 4s infinite}
-@keyframes orb{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
-.fade{animation:fadeUp .6s cubic-bezier(.2,0,0,1) both}.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.tag{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .875rem .25rem .25rem;border-radius:100px;font-size:.8125rem;font-weight:600;color:var(--on-surf);background:rgba(255,255,255,.08)}
-.icon-wrap{width:28px;height:28px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.card{border:1px solid var(--out-v);border-radius:16px;padding:2rem;background:var(--surf-c-l);transition:.3s;position:relative;overflow:hidden}
-.card:hover{border-color:var(--p);transform:translateY(-4px);box-shadow:0 4px 32px rgba(0,229,176,.12)}
-.c-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;font-size:1.5rem;background:rgba(0,208,234,.15);color:var(--s)}
-.step-num{width:72px;height:72px;margin:0 auto 1.5rem;border:2px solid var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--p);position:relative;z-index:1;background:rgba(0,229,176,.1)}
-.plan-card{max-width:480px;width:100%;padding:2.5rem 2rem;border:2px solid var(--p);border-radius:24px;text-align:center;position:relative;box-shadow:0 0 40px rgba(0,229,176,.15),0 8px 32px rgba(0,229,176,.08)}
-.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:.25rem 1rem;background:var(--p);border-radius:100px;font-size:.6875rem;font-weight:600;color:var(--on-p);text-transform:uppercase;letter-spacing:.05em}
-.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
-.step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;position:relative}
-.step-grid::before{content:'';position:absolute;top:36px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--out-v),transparent)}
-.faq-list{max-width:700px;margin:0 auto}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
-@media(max-width:1024px){.feature-grid,.step-grid{grid-template-columns:repeat(2,1fr)}.step-grid::before{display:none}.footer-grid{grid-template-columns:repeat(2,1fr);gap:2rem}}
-@media(max-width:768px){.feature-grid,.step-grid{grid-template-columns:1fr}.hero-stats{gap:1.5rem}.footer-grid{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:.75rem;text-align:center}.nav-links{display:none!important}.nav-actions{display:none!important}#mobileToggle{display:block!important}}
-@media print{#toolbar{display:none!important}}
+img{max-width:100%;display:block}
+
+:root{
+  --accent:#00e5b0;
+  --accent-dim:#00b894;
+  --accent-glow:rgba(0,229,176,.35);
+  --secondary:#00d0ea;
+  --tertiary:#bb8cff;
+  --surface:#090d12;
+  --surface-elevated:#11161e;
+  --surface-card:#161c26;
+  --surface-card-hover:#1c2430;
+  --border:rgba(255,255,255,.08);
+  --border-hover:rgba(255,255,255,.15);
+  --text:#e8e8ed;
+  --text-secondary:#9499a3;
+  --text-tertiary:#6b717d;
+  --radius:16px;
+  --radius-sm:10px;
+  --radius-full:100px;
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.section{padding:100px 0}
+
+/* Navigation */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .4s var(--ease)}
+.nav.scrolled{background:rgba(9,13,18,.88);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid var(--border);padding:10px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;letter-spacing:-.3px}
+.nav-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#003828}
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav-links a{padding:8px 18px;border-radius:var(--radius-full);font-size:14px;font-weight:500;color:var(--text-secondary);transition:all .2s}
+.nav-links a:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px;font-size:24px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border-radius:var(--radius-full);font-size:15px;font-weight:600;cursor:pointer;transition:all .3s var(--ease);border:none;line-height:1.2}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-dim));color:#003828;box-shadow:0 4px 24px var(--accent-glow)}
+.btn-primary:hover{box-shadow:0 8px 40px var(--accent-glow);transform:translateY(-2px)}
+.btn-secondary{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:rgba(255,255,255,.12);border-color:var(--border-hover);transform:translateY(-2px)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 0 80px}
+.hero-bg{position:absolute;inset:0;background-image:radial-gradient(ellipse at 20% 50%,rgba(0,229,176,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(0,208,234,.06) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(187,140,255,.06) 0%,transparent 50%);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 70%)}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:820px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border-radius:var(--radius-full);font-size:13px;font-weight:500;background:rgba(0,229,176,.1);border:1px solid rgba(0,229,176,.2);color:var(--accent);margin-bottom:32px}
+.hero-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(2.8rem,7vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin:0 0 24px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--secondary),var(--tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:clamp(1.05rem,1.5vw,1.25rem);color:var(--text-secondary);max-width:600px;margin:0 auto 40px;line-height:1.7}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:60px}
+.hero-stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat-value{font-size:28px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dim));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-stat-label{font-size:13px;color:var(--text-tertiary);margin-top:4px}
+
+/* Sections common */
+.section-label{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:16px}
+.section-label-line{height:1px;width:32px;background:linear-gradient(90deg,transparent,var(--accent))}
+.section-label-line:last-child{background:linear-gradient(90deg,var(--accent),transparent)}
+.section-label-text{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--accent)}
+.section-title{font-size:clamp(2rem,3.5vw,2.8rem);font-weight:700;letter-spacing:-.02em;line-height:1.15;text-align:center;margin:0 0 16px}
+.section-sub{font-size:1.05rem;color:var(--text-secondary);text-align:center;max-width:560px;margin:0 auto 56px;line-height:1.7}
+
+/* Features */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feature-card{padding:28px;border-radius:var(--radius);background:var(--surface-card);border:1px solid var(--border);transition:all .4s var(--ease);position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .4s}
+.feature-card:hover{background:var(--surface-card-hover);border-color:rgba(0,229,176,.2);transform:translateY(-4px)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{width:44px;height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;background:rgba(0,208,234,.12)}
+.feature-card h3{font-size:16px;font-weight:600;margin:0 0 8px;letter-spacing:-.2px}
+.feature-card p{font-size:14px;color:var(--text-secondary);line-height:1.65;margin:0}
+
+/* Alternate bg */
+.bg-alt{background:var(--surface-elevated)}
+
+/* How it works */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative;counter-reset:step}
+.steps-grid::before{content:'';position:absolute;top:38px;left:calc(16.66% + 20px);right:calc(16.66% + 20px);height:2px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.step{text-align:center}
+.step-num{width:76px;height:76px;margin:0 auto 20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;position:relative;z-index:1;background:linear-gradient(135deg,rgba(0,229,176,.12),rgba(0,229,176,.05));border:2px solid rgba(0,229,176,.3);color:var(--accent)}
+.step h3{font-size:17px;font-weight:600;margin:0 0 8px}
+.step p{font-size:14px;color:var(--text-secondary);line-height:1.6;margin:0;max-width:280px;margin:0 auto}
+
+/* Pricing */
+.pricing-card{max-width:500px;width:100%;margin:0 auto;padding:40px 36px;border-radius:20px;background:linear-gradient(135deg,var(--surface-card),var(--surface-card-hover));border:1px solid rgba(0,229,176,.25);position:relative;text-align:center}
+.pricing-card::before{content:'';position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,var(--accent),rgba(0,229,176,.1),var(--accent));z-index:-1;opacity:.5}
+.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);padding:5px 20px;border-radius:var(--radius-full);background:linear-gradient(135deg,var(--accent),var(--accent-dim));color:#003828;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.pricing-name{font-size:20px;font-weight:600;margin:0 0 8px}
+.pricing-desc{font-size:14px;color:var(--text-secondary);margin:0 0 24px}
+.pricing-price{font-size:44px;font-weight:800;letter-spacing:-.03em;margin-bottom:28px}
+.pricing-price span{font-size:16px;font-weight:400;color:var(--text-secondary);letter-spacing:0}
+.pricing-features{list-style:none;text-align:left;margin:0 0 32px;padding:0}
+.pricing-features li{display:flex;align-items:center;gap:12px;padding:12px 0;font-size:14px;color:var(--text-secondary);border-bottom:1px solid var(--border)}
+.pricing-features li:last-child{border-bottom:none}
+.pricing-features li::before{content:'✓';font-size:16px;font-weight:700;color:var(--accent);flex-shrink:0}
+.pricing-cta{width:100%;justify-content:center;padding:14px;font-size:16px}
+
+/* FAQ */
+.faq-list{max-width:680px;margin:0 auto}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;background:none;border:none;color:var(--text);font-family:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer;transition:color .2s}
+.faq-q:hover{color:var(--accent)}
+.faq-icon{font-size:20px;color:var(--text-tertiary);transition:transform .3s var(--ease);flex-shrink:0}
+.faq-item.active .faq-icon{transform:rotate(45deg);color:var(--accent)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s var(--ease),padding .3s}
+.faq-a-inner{padding-bottom:20px;font-size:15px;line-height:1.7;color:var(--text-secondary)}
+
+/* CTA */
+.cta-section{background:linear-gradient(135deg,rgba(0,229,176,.04),rgba(0,208,234,.04),rgba(187,140,255,.04));border-radius:24px;padding:64px 48px;text-align:center;position:relative;overflow:hidden;border:1px solid var(--border)}
+.cta-glow{position:absolute;top:-60%;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,176,.1) 0%,transparent 70%);pointer-events:none}
+.cta-section h2{font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;letter-spacing:-.02em;position:relative;margin:0 0 16px}
+.cta-section p{color:var(--text-secondary);max-width:480px;margin:0 auto 32px;position:relative;font-size:16px}
+
+/* Footer */
+footer{padding:60px 0 32px;border-top:1px solid var(--border)}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
+.footer-brand{max-width:260px}
+.footer-brand p{font-size:14px;color:var(--text-tertiary);margin:12px 0 0;line-height:1.6}
+.footer h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-tertiary);margin:0 0 16px}
+.footer ul{list-style:none;margin:0;padding:0}
+.footer li{margin-bottom:10px}
+.footer a{color:var(--text-secondary);font-size:14px;transition:color .2s}
+.footer a:hover{color:var(--accent)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--text-tertiary)}
+
+/* Animations */
+.reveal{opacity:0;transform:translateY(30px);transition:all .7s var(--ease)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Mobile */
+@media(max-width:1024px){
+  .features-grid,.steps-grid{grid-template-columns:repeat(2,1fr)}
+  .steps-grid::before{display:none}
+  .footer-grid{grid-template-columns:repeat(2,1fr);gap:32px}
+}
+@media(max-width:768px){
+  .features-grid{grid-template-columns:1fr}
+  .steps-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto}
+  .nav-links,.nav-actions{display:none!important}
+  .nav-mobile{display:block!important}
+  .hero-stats{gap:32px}
+  .cta-section{padding:40px 24px}
+  .footer-grid{grid-template-columns:1fr;gap:24px}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+  .pricing-card{padding:32px 24px}
+  .section{padding:64px 0}
+}
 </style>
 </head>
 <body>
 
 <nav class="nav" id="nav">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="display:flex;align-items:center;justify-content:space-between">
-<a href="{% url 'core:landing' %}" style="display:flex;align-items:center;gap:.625rem">
-<div style="width:40px;height:40px;border-radius:12px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:1.375rem;font-weight:800;color:var(--on-p);">M</div>
-<span style="font-size:1.125rem;font-weight:700;letter-spacing:-.01em;">MKSOFT</span>
+<div class="container">
+<div class="nav-inner">
+<a href="{% url 'core:landing' %}" class="nav-logo">
+<div class="nav-logo-mark">M</div>
+MKSOFT
 </a>
-<ul class="nav-links" style="display:flex;align-items:center;gap:.25rem;list-style:none">
-<li><a href="#features" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Funciones</a></li>
-<li><a href="#como-funciona" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Como Funciona</a></li>
-<li><a href="#precios" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Precios</a></li>
-<li><a href="#faq" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">FAQ</a></li>
+<ul class="nav-links">
+<li><a href="#features">Funciones</a></li>
+<li><a href="#como-funciona">Como Funciona</a></li>
+<li><a href="#precios">Precios</a></li>
+<li><a href="#faq">FAQ</a></li>
 </ul>
-<div class="nav-actions" style="display:flex;align-items:center;gap:.75rem">
-<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:.875rem;padding:.5rem 1.5rem">Iniciar Sesion</a>
+<div class="nav-actions">
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="padding:8px 20px;font-size:13px">Iniciar Sesion</a>
 </div>
-<button id="mobileToggle" style="display:none;background:none;border:none;color:var(--on-surf);cursor:pointer;padding:.5rem;font-size:1.5rem" aria-label="Menu">☰</button>
+<button class="nav-mobile" id="mobileToggle" aria-label="Menu">☰</button>
 </div>
-<div id="mobileMenu" style="display:none;position:fixed;top:64px;left:1rem;right:1rem;background:var(--surf-c-h);border:1px solid var(--out-v);border-radius:16px;padding:1rem;z-index:99;">
-<a href="#features" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Funciones</a>
-<a href="#como-funciona" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Como Funciona</a>
-<a href="#precios" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Precios</a>
-<a href="#faq" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">FAQ</a>
-<div style="height:1px;background:var(--out-v);margin:.5rem 0"></div>
-<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="justify-content:center;width:100%;margin-top:.5rem">Iniciar Sesion</a>
+<div id="mobileMenu" style="display:none;padding:12px 0">
+<a href="#features" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Funciones</a>
+<a href="#como-funciona" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Como Funciona</a>
+<a href="#precios" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Precios</a>
+<a href="#faq" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">FAQ</a>
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="margin-top:8px;width:100%">Iniciar Sesion</a>
 </div>
 </div>
 </nav>
 
 <section class="hero">
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
+<div class="hero-bg"></div>
 <div class="hero-grid"></div>
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:1">
-<div style="text-align:center;max-width:800px;margin:0 auto">
-<div class="fade tag" style="margin:0 auto 2rem">
-<span class="icon-wrap">⚡</span>
-Ideal para restaurantes, comideras, cafeterias y kioscos
+<div class="container hero-content">
+<div class="hero-badge"><span class="hero-badge-dot"></span> Ideal para restaurantes, comideras y cafeterias</div>
+<h1>Tu negocio merece un sistema <span>inteligente</span></h1>
+<p>Gestiona mesas, comandas, inventario, caja e impresion termica desde un solo lugar. Disenado para restaurantes, comideras, cafeterias y kioscos de comida rapida.</p>
+<div class="hero-actions">
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="font-size:16px;padding:14px 36px">Comenzar Ahora →</a>
+<a href="#features" class="btn btn-secondary" style="font-size:16px;padding:14px 36px">Explorar</a>
 </div>
-<h1 class="fade d1" style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin:0 0 1.5rem">
-Tu negocio merece un<br>sistema <span style="background:linear-gradient(135deg,var(--p),var(--s),var(--t));-webkit-background-clip:text;-webkit-text-fill-color:transparent">inteligente</span>
-</h1>
-<p class="fade d2" style="font-size:clamp(1rem,2vw,1.25rem);line-height:1.7;color:var(--on-surf-v);max-width:600px;margin:0 auto 2.5rem">
-Gestiona comandas, inventario, caja, facturacion e impresion termica desde un solo lugar. Disenado para restaurantes, comideras, cafeterias y kioscos de comida rapida.
-</p>
-<div class="fade d3" style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap">
-<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:1rem;padding:.875rem 2rem">Comenzar Ahora →</a>
-<a href="#features" class="btn-out" style="font-size:1rem;padding:.875rem 2rem">▶ Ver Funciones</a>
-</div>
-<div class="fade d4" style="display:flex;justify-content:center;gap:3rem;margin-top:4rem">
-<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">100%</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">En la nube</div></div>
-<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">24/7</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">Disponible</div></div>
-<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">5 min</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">Configuracion</div></div>
-</div>
+<div class="hero-stats">
+<div class="hero-stat"><div class="hero-stat-value">100% Nube</div><div class="hero-stat-label">Sin instalaciones</div></div>
+<div class="hero-stat"><div class="hero-stat-value">24/7</div><div class="hero-stat-label">Siempre disponible</div></div>
+<div class="hero-stat"><div class="hero-stat-value">5 min</div><div class="hero-stat-label">Configuracion</div></div>
 </div>
 </div>
 </section>
 
-<section id="features" style="padding:6rem 0">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
-<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">✦</span>Funcionalidades</div>
-<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Todo lo que necesitas para operar</h2>
-<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Mesas, comandas con envio a cocina, inventario con recetas y auto-deduccion, facturacion con cambio y moneda extranjera, control de caja, impresion termica directa y mas.</p>
-</div>
-<div class="feature-grid">
-<div class="card"><div class="c-icon">🍽️</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Gestion de Mesas</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Plano interactivo del restaurante. Cada mesa muestra su estado en tiempo real: libre, ocupada o reservada. Asigna meseros y combina mesas para grupos grandes.</p></div>
-<div class="card"><div class="c-icon">📝</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Comandas Digitales</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Los meseros crean ordenes desde el celular o tablet y las envian a cocina al instante. Prioridades: normal, urgente y VIP. Notas por item y generales.</p></div>
-<div class="card"><div class="c-icon">📊</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Inventario Inteligente</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Define recetas con ingredientes exactos. Al facturar, el inventario se deduce automaticamente. Alertas de stock bajo, historial de movimientos y compras a proveedores.</p></div>
-<div class="card"><div class="c-icon">💰</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Facturacion Completa</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Impuestos y servicio configurables. Pago en efectivo con calculo de cambio automatico. Soporte para moneda extranjera (USD, EUR) con tasa del dia. Facturas para llevar y en el local.</p></div>
-<div class="card"><div class="c-icon">🏦</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Control de Caja</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Apertura y cierre de caja con registro de gastos y retiros. Calculo automatico del efectivo esperado y deteccion de diferencias. Reporte de cierre diario completo.</p></div>
-<div class="card"><div class="c-icon">🖨️</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Impresion Termica</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Imprime tickets, comandas y cierres de caja directamente en tu impresora termica via agente local. Soporta impresoras USB y de red. Sin necesidad de instalar drivers especiales.</p></div>
-<div class="card"><div class="c-icon">📈</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Dashboard en Tiempo Real</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Ventas del dia, comandas activas, productos mas vendidos, alertas de inventario y graficos de rendimiento. Todo en una vista clara y actualizada al instante.</p></div>
-<div class="card"><div class="c-icon">📱</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Multiplataforma</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Funciona en cualquier dispositivo con internet: computadoras, tablets y celulares. Los meseros toman ordenes desde el movil. La cocina ve las comandas entrantes al instante.</p></div>
-<div class="card"><div class="c-icon">🔐</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Roles y Permisos</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Define que ve y hace cada usuario: administrador, mesero, cajero, cocina y mas. Cada quien accede solo a lo que necesita.</p></div>
+<section id="features" class="section">
+<div class="container">
+<div class="section-label"><span class="section-label-line"></span><span class="section-label-text">Funcionalidades</span><span class="section-label-line"></span></div>
+<h2 class="section-title">Todo lo que necesitas para operar</h2>
+<p class="section-sub">Un sistema completo que cubre cada aspecto de tu restaurante, desde la mesa hasta la factura.</p>
+<div class="features-grid">
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,229,176,.12)">🍽️</div><h3>Gestion de Mesas</h3><p>Plano interactivo del restaurante. Cada mesa muestra su estado en tiempo real: libre, ocupada o reservada.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,208,234,.12)">📝</div><h3>Comandas Digitales</h3><p>Los meseros crean ordenes desde el movil y las envian a cocina al instante. Prioridades normal, urgente y VIP.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(187,140,255,.12)">📊</div><h3>Inventario Inteligente</h3><p>Recetas con auto-deduccion al facturar. Alertas de stock bajo, compras a proveedores y cuentas por pagar.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,229,176,.12)">💰</div><h3>Facturacion Completa</h3><p>Impuestos y servicio configurables. Calculo de cambio automatico. Soporte para moneda extranjera (USD, EUR).</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,208,234,.12)">🏦</div><h3>Control de Caja</h3><p>Apertura y cierre de caja con gastos y retiros. Calculo del efectivo esperado y deteccion de diferencias.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(187,140,255,.12)">🖨️</div><h3>Impresion Termica</h3><p>Imprime tickets, comandas y cierres directo a tu impresora termica. Soporta USB y red TCP/IP.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,229,176,.12)">📈</div><h3>Dashboard en Vivo</h3><p>Ventas del dia, comandas activas, productos mas vendidos y alertas de inventario en una sola vista.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(0,208,234,.12)">📱</div><h3>Multiplataforma</h3><p>Funciona en computadoras, tablets y celulares. Los meseros toman ordenes desde su movil.</p></div>
+<div class="feature-card reveal"><div class="feature-icon" style="background:rgba(187,140,255,.12)">🔐</div><h3>Roles y Permisos</h3><p>Define que ve y hace cada usuario: administrador, mesero, cajero, cocina. Acceso granular.</p></div>
 </div>
 </div>
 </section>
 
-<section id="como-funciona" style="padding:6rem 0;background:var(--surf-c-l)">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
-<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">➜</span>Como Funciona</div>
-<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Operando en 3 simples pasos</h2>
-<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Configuracion rapida para que puedas enfocarte en lo que importa: tu restaurante.</p>
-</div>
-<div class="step-grid">
-<div style="text-align:center"><div class="step-num">1</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Crea tu cuenta</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Registra tu restaurante y recibe acceso inmediato con datos de ejemplo para empezar a explorar.</p></div>
-<div style="text-align:center"><div class="step-num">2</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Personaliza</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Configura tu menu, mesas, ingredientes, recetas y equipo de trabajo. Todo adaptado a tu negocio.</p></div>
-<div style="text-align:center"><div class="step-num">3</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Opera</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Empieza a recibir comandas, gestionar inventario, facturar e imprimir tickets de forma profesional.</p></div>
+<section id="como-funciona" class="section bg-alt">
+<div class="container">
+<div class="section-label"><span class="section-label-line"></span><span class="section-label-text">Como Funciona</span><span class="section-label-line"></span></div>
+<h2 class="section-title">Operando en 3 pasos</h2>
+<p class="section-sub">Configuracion rapida para que puedas enfocarte en lo que importa: tu restaurante.</p>
+<div class="steps-grid">
+<div class="step reveal"><div class="step-num">1</div><h3>Crea tu cuenta</h3><p>Registra tu restaurante y recibe acceso inmediato con datos de ejemplo para explorar.</p></div>
+<div class="step reveal"><div class="step-num">2</div><h3>Personaliza</h3><p>Configura tu menu, mesas, ingredientes, recetas y equipo. Todo adaptado a tu negocio.</p></div>
+<div class="step reveal"><div class="step-num">3</div><h3>Opera</h3><p>Recibe comandas, gestiona inventario, factura e imprime tickets de forma profesional.</p></div>
 </div>
 </div>
 </section>
 
-<section id="precios" style="padding:6rem 0">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
-<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">💰</span>Precio</div>
-<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Un plan simple, todo incluido</h2>
-<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Sin contratos de permanencia. Sin limites. Cancela cuando quieras.</p>
-</div>
-<div style="display:flex;justify-content:center">
-<div class="plan-card">
-<div class="plan-badge">Plan Unico</div>
-<h3 style="font-size:1.25rem;font-weight:600;margin:0 0 .5rem">Todo Ilimitado</h3>
-<p style="font-size:.8125rem;color:var(--on-surf-v);margin:0 0 1.5rem">Todo lo que tu restaurante necesita, sin restricciones</p>
-<div style="margin-bottom:2rem"><span style="font-size:3rem;font-weight:800;letter-spacing:-.02em">C$750</span><span style="font-size:.875rem;color:var(--on-surf-v)">/mes</span></div>
-<ul style="list-style:none;text-align:left;margin:0 0 2rem;padding:0">
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Mesas y usuarios ilimitados</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Comandas digitales con envio a cocina</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Inventario con recetas y auto-deduccion</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Facturacion con cambio y moneda extranjera</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Control de caja con gastos y retiros</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Impresion termica USB y red</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Reportes y dashboard en tiempo real</li>
-<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Soporte dedicado 24/7</li>
+<section id="precios" class="section">
+<div class="container">
+<div class="section-label"><span class="section-label-line"></span><span class="section-label-text">Precios</span><span class="section-label-line"></span></div>
+<h2 class="section-title">Un plan simple, todo incluido</h2>
+<p class="section-sub">Sin contratos de permanencia. Sin limites ocultos. Cancela cuando quieras.</p>
+<div class="pricing-card reveal">
+<div class="pricing-badge">Plan Unico</div>
+<h3 class="pricing-name">Todo Ilimitado</h3>
+<p class="pricing-desc">Todo lo que tu restaurante necesita, sin restricciones</p>
+<div class="pricing-price">C$750 <span>/mes</span></div>
+<ul class="pricing-features">
+<li>Mesas y usuarios ilimitados</li>
+<li>Comandas digitales con envio a cocina</li>
+<li>Inventario con recetas y auto-deduccion</li>
+<li>Facturacion con cambio y moneda extranjera</li>
+<li>Control de caja con gastos y retiros</li>
+<li>Impresion termica USB y red</li>
+<li>Dashboard y reportes en tiempo real</li>
+<li>Soporte dedicado 24/7</li>
 </ul>
-<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="width:100%;justify-content:center;padding:.875rem;font-size:.9375rem">Comenzar Ahora</a>
-</div>
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary pricing-cta">Comenzar Ahora</a>
 </div>
 </div>
 </section>
 
-<section id="faq" style="padding:6rem 0;background:var(--surf-c-l)">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
-<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">?</span>FAQ</div>
-<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0">Preguntas frecuentes</h2>
-</div>
+<section id="faq" class="section bg-alt">
+<div class="container">
+<div class="section-label"><span class="section-label-line"></span><span class="section-label-text">FAQ</span><span class="section-label-line"></span></div>
+<h2 class="section-title">Preguntas frecuentes</h2>
+<p class="section-sub">Resolvemos tus dudas para que puedas empezar con confianza.</p>
 <div class="faq-list">
-<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Que incluye el plan?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Todo. Mesas ilimitadas, usuarios ilimitados, comandas, inventario con recetas, facturacion con cambio y moneda extranjera, control de caja, impresion termica, dashboard y reportes. Sin cargos extra.</p></div>
+<div class="faq-item">
+<button class="faq-q">Que incluye el plan?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">Todo. Mesas ilimitadas, usuarios ilimitados, comandas, inventario con recetas y auto-deduccion, facturacion con cambio y moneda extranjera, caja, impresion termica, dashboard y reportes. Sin cargos adicionales.</div></div>
 </div>
-<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Necesito instalar algo?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">No. Todo funciona desde el navegador web en computadoras, tablets y celulares. Para impresion termica solo necesitas instalar un agente pequeno (opcional, con instalador automatico).</p></div>
+<div class="faq-item">
+<button class="faq-q">Necesito instalar algo?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">No. Todo funciona desde el navegador. Para impresion termica hay un agente opcional con instalador automatico incluido en el sistema.</div></div>
 </div>
-<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Como funciona la impresion termica?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Ejecutas el agente de impresion en la computadora conectada a la impresora termica. El agente recibe los datos del sistema web y los envia a la impresora. Soporta USB y redes TCP/IP. Compatible con Epson, Star, Bixolon y la mayoria de impresoras POS.</p></div>
+<div class="faq-item">
+<button class="faq-q">Como funciona la impresion termica?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">Ejecutas el agente de impresion en la PC conectada a la impresora. El sistema envia los datos al agente y este los imprime. Compatible con Epson, Star, Bixolon y la mayoria de impresoras POS. Soporta USB y red.</div></div>
 </div>
-<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Como se configura mi restaurante?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Al registrarte recibis datos de ejemplo. Solo personaliza tu menu, mesas, ingredientes y equipo desde el panel de configuracion. Hay una guia de ayuda disponible en el sistema.</p></div>
+<div class="faq-item">
+<button class="faq-q">Mis datos estan seguros?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">Cada restaurante tiene su propio espacio aislado. Tus datos nunca se comparten. El sistema hace respaldos automaticos diarios para tu tranquilidad.</div></div>
 </div>
-<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Mis datos estan seguros?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Cada restaurante tiene su propio espacio aislado. Tus datos nunca se comparten con otros clientes. Ademas, el sistema hace respaldos automaticos diarios de tu informacion.</p></div>
+<div class="faq-item">
+<button class="faq-q">Puedo usarlo en mi celular o tablet?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">Si. El sistema es totalmente adaptable. Los meseros pueden tomar ordenes desde su celular y la cocina recibe las comandas al instante desde cualquier dispositivo.</div></div>
 </div>
-<div class="faq-item" style="border-bottom:none">
-<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Puedo usar mi propio dominio?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
-<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Si. El sistema puede configurarse con tu propio dominio personalizado. Consulta con soporte para activarlo.</p></div>
-</div>
-</div>
-</div>
-</section>
-
-<section style="padding:6rem 0">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
-<div style="background:var(--surf-c-h);border:1px solid var(--out-v);border-radius:24px;padding:4rem 3rem;text-align:center;position:relative;overflow:hidden">
-<div style="position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(0,229,176,.12) 0%,transparent 70%);pointer-events:none"></div>
-<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;margin:0 0 1rem;position:relative">Listo para transformar tu restaurante?</h2>
-<p style="font-size:1.0625rem;color:var(--on-surf-v);max-width:500px;margin:0 auto 2rem;line-height:1.6;position:relative">Comienza ahora y descubre como MKSOFT puede simplificar la gestion de tu negocio.</p>
-<div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;position:relative">
-<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:1rem;padding:.875rem 2rem">Comenzar Gratis →</a>
+<div class="faq-item">
+<button class="faq-q">Que soporte ofrecen?<span class="faq-icon">+</span></button>
+<div class="faq-a"><div class="faq-a-inner">Todos los planes incluyen soporte tecnico completo. Ademas, el sistema incluye una guia de ayuda para configurar la impresion termica y otros aspectos.</div></div>
 </div>
 </div>
 </div>
 </section>
 
-<footer style="border-top:1px solid var(--out-v);padding:4rem 0 2rem">
-<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<section class="section">
+<div class="container">
+<div class="cta-section reveal">
+<div class="cta-glow"></div>
+<h2>Listo para transformar tu restaurante?</h2>
+<p>Comienza ahora y descubre como MKSOFT puede simplificar la gestion de tu negocio.</p>
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="font-size:16px;padding:14px 36px;position:relative">Comenzar Gratis →</a>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="container">
 <div class="footer-grid">
-<div style="max-width:280px">
-<div style="display:flex;align-items:center;gap:.625rem;margin-bottom:1rem">
-<div style="width:36px;height:36px;border-radius:12px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:var(--on-p)">M</div>
-<span style="font-size:1.125rem;font-weight:700">MKSOFT</span>
+<div class="footer-brand">
+<div style="display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700">
+<div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#003828">M</div>
+MKSOFT
 </div>
-<p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0 0 1rem">Sistema de gestion integral para restaurantes moderno, seguro y facil de usar.</p>
-<p style="font-size:.875rem;color:var(--on-surf-v)">¿Problemas con la impresion? <a href="{% url 'core:ayuda_impresion' %}" style="color:var(--p)">Guia de ayuda</a></p>
+<p>Sistema de gestion integral para restaurantes. Moderno, seguro y facil de usar.</p>
 </div>
-<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Producto</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="#features" style="color:var(--on-surf-v);font-size:.875rem">Funciones</a></li><li style="margin-bottom:.5rem"><a href="#precios" style="color:var(--on-surf-v);font-size:.875rem">Precios</a></li><li style="margin-bottom:.5rem"><a href="#faq" style="color:var(--on-surf-v);font-size:.875rem">FAQ</a></li></ul></div>
-<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Recursos</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="{% url 'core:ayuda_impresion' %}" style="color:var(--on-surf-v);font-size:.875rem">Guia de Impresion</a></li><li style="margin-bottom:.5rem"><a href="{% url 'core:cliente_login' %}" style="color:var(--on-surf-v);font-size:.875rem">Iniciar Sesion</a></li></ul></div>
-<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Legal</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="#" style="color:var(--on-surf-v);font-size:.875rem">Privacidad</a></li><li style="margin-bottom:.5rem"><a href="#" style="color:var(--on-surf-v);font-size:.875rem">Terminos</a></li></ul></div>
+<div><h4>Producto</h4><ul><li><a href="#features">Funciones</a></li><li><a href="#precios">Precios</a></li><li><a href="#faq">FAQ</a></li></ul></div>
+<div><h4>Recursos</h4><ul><li><a href="{% url 'core:ayuda_impresion' %}">Guia de Impresion</a></li><li><a href="{% url 'core:cliente_login' %}">Iniciar Sesion</a></li></ul></div>
+<div><h4>Legal</h4><ul><li><a href="#">Privacidad</a></li><li><a href="#">Terminos</a></li></ul></div>
 </div>
-<div class="footer-bottom" style="display:flex;justify-content:space-between;align-items:center;padding-top:2rem;border-top:1px solid var(--out-v);font-size:.8125rem;color:var(--on-surf-v)"><span>© 2026 MKSOFT. Todos los derechos reservados.</span><span>Hecho con dedicacion para restaurantes</span></div>
+<div class="footer-bottom"><span>© 2026 MKSOFT. Todos los derechos reservados.</span><span>Hecho con dedicacion para restaurantes</span></div>
 </div>
 </footer>
 
 <script>
-document.addEventListener('DOMContentLoaded',function(){var n=document.getElementById('nav');window.addEventListener('scroll',function(){n.classList.toggle('scrolled',window.scrollY>50)});
-var m=document.getElementById('mobileToggle'),mm=document.getElementById('mobileMenu');m&&m.addEventListener('click',function(){var o=mm.style.display==='block';mm.style.display=o?'none':'block';m.textContent=o?'☰':'✕'});
-mm&&mm.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){mm.style.display='none';m.textContent='☰'})});
-document.querySelectorAll('.faq-q').forEach(function(b){b.addEventListener('click',function(){var i=b.closest('.faq-item'),o=i.classList.contains('active');document.querySelectorAll('.faq-item').forEach(function(x){x.classList.remove('active');var a=x.querySelector('.faq-a');if(a)a.style.maxHeight='0';var ic=x.querySelector('.faq-icon');if(ic)ic.textContent='+'});
-if(!o){i.classList.add('active');var a=i.querySelector('.faq-a');if(a)a.style.maxHeight=a.scrollHeight+'px';var ic=i.querySelector('.faq-icon');if(ic)ic.textContent='−'}})})
+document.addEventListener('DOMContentLoaded',function(){
+  var nav=document.getElementById('nav');
+  window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>50)},{passive:true});
+
+  var mt=document.getElementById('mobileToggle'),mm=document.getElementById('mobileMenu');
+  mt.addEventListener('click',function(){var o=mm.style.display==='block';mm.style.display=o?'none':'block';mt.textContent=o?'☰':'✕'});
+  mm.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){mm.style.display='none';mt.textContent='☰'})});
+
+  document.querySelectorAll('.faq-q').forEach(function(b){
+    b.addEventListener('click',function(){
+      var i=b.closest('.faq-item'),o=i.classList.contains('active');
+      document.querySelectorAll('.faq-item').forEach(function(x){x.classList.remove('active');var a=x.querySelector('.faq-a');if(a)a.style.maxHeight='0'});
+      if(!o){i.classList.add('active');var a=i.querySelector('.faq-a');if(a)a.style.maxHeight=a.scrollHeight+'px'}
+    });
+  });
+
+  if('IntersectionObserver'in window){
+    var obs=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.1});
+    document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+  }else{document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('visible')})}
 });
 </script>
 </body>
