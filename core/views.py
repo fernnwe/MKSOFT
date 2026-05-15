@@ -324,6 +324,10 @@ class UsuarioResetPasswordView(PermissionRequiredMixin, LoginRequiredMixin, Deta
         usuario.password = make_password(password)
         usuario.visible_password = password
         usuario.save(update_fields=["password", "visible_password"])
+        cliente = getattr(usuario, "cliente", None)
+        if cliente and usuario.role == User.Role.ADMIN:
+            cliente.admin_password_visible = password
+            cliente.save(update_fields=["admin_password_visible"])
         messages.success(request, f"Contraseña de {usuario.get_full_name() or usuario.username} restablecida. Nueva contraseña: {password}")
         return redirect("core:usuarios")
 
@@ -408,11 +412,16 @@ class CambiarPasswordView(LoginRequiredMixin, View):
             messages.error(request, "La contraseña debe tener al menos 4 caracteres")
             return render(request, self.template_name)
 
-        request.user.password = make_password(nueva)
-        request.user.visible_password = nueva
-        request.user.save(update_fields=["password", "visible_password"])
+        user = request.user
+        user.password = make_password(nueva)
+        user.visible_password = nueva
+        user.save(update_fields=["password", "visible_password"])
+        cliente = getattr(user, "cliente", None)
+        if cliente:
+            cliente.admin_password_visible = nueva
+            cliente.save(update_fields=["admin_password_visible"])
         messages.success(request, "Contraseña cambiada exitosamente")
-        return redirect("core:usuario_detalle", pk=request.user.pk)
+        return redirect("core:usuario_detalle", pk=user.pk)
 
 
 class PermisosMeserosView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
@@ -1183,7 +1192,8 @@ class ClienteEnviarCredencialesView(PermissionRequiredMixin, LoginRequiredMixin,
 
     def post(self, request, pk):
         cliente = get_object_or_404(Cliente, pk=pk)
-        password = cliente.admin_password_visible
+        admin_user = User.objects.filter(cliente=cliente, role=User.Role.ADMIN).first()
+        password = admin_user.visible_password if admin_user else cliente.admin_password_visible
         if not cliente.admin_email:
             messages.error(request, "El cliente no tiene un email registrado")
             return redirect("core:superadmin_cliente_detalle", pk=cliente.pk)
