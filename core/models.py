@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Cliente(models.Model):
-    PRECIO_MENSUAL = 750
+    PRECIO_MENSUAL = 900
 
     class Estado(models.TextChoices):
         ACTIVO = "activo", "Activo"
