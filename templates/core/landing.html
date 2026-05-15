@@ -1,560 +1,246 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKSOFT - Sistema de Gestion para Restaurantes</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/md3.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
-    <style>
-        :root {
-            --md-ref-typeface-brand: 'Inter', system-ui, sans-serif;
-            --md-ref-typeface-plain: 'Inter', system-ui, sans-serif;
-            --md-sys-color-primary: #00e5b0;
-            --md-sys-color-on-primary: #003828;
-            --md-sys-color-primary-container: #00513b;
-            --md-sys-color-on-primary-container: #6effc6;
-            --md-sys-color-secondary: #00d0ea;
-            --md-sys-color-on-secondary: #003640;
-            --md-sys-color-secondary-container: #004e5c;
-            --md-sys-color-on-secondary-container: #5fe6ff;
-            --md-sys-color-tertiary: #bb8cff;
-            --md-sys-color-on-tertiary: #33006b;
-            --md-sys-color-tertiary-container: #4d009f;
-            --md-sys-color-on-tertiary-container: #e9d6ff;
-            --md-sys-color-surface: #0a0e14;
-            --md-sys-color-surface-dim: #0a0e14;
-            --md-sys-color-surface-bright: #30343b;
-            --md-sys-color-surface-container-lowest: #05090e;
-            --md-sys-color-surface-container-low: #12161c;
-            --md-sys-color-surface-container: #161a21;
-            --md-sys-color-surface-container-high: #21252c;
-            --md-sys-color-surface-container-highest: #2b2f37;
-            --md-sys-color-on-surface: #e2e2e9;
-            --md-sys-color-on-surface-variant: #c2c2c9;
-            --md-sys-color-outline: #8c8d95;
-            --md-sys-color-outline-variant: #42434a;
-            --md-sys-color-error: #ffb4ab;
-            --md-sys-color-on-error: #690005;
-            --md-sys-color-success: #66ffb2;
-        }
-        .md3-btn-filled { background:var(--md-sys-color-primary); color:var(--md-sys-color-on-primary); box-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent); }
-        .md3-btn-outlined { border-color:var(--md-sys-color-outline); color:var(--md-sys-color-on-surface); }
-        .md3-btn-outlined:hover { border-color:var(--md-sys-color-primary); color:var(--md-sys-color-primary); }
-        .nav.scrolled {
-            background: color-mix(in srgb, var(--md-sys-color-surface) 85%, transparent);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--md-sys-color-outline-variant);
-            padding: 0.5rem 0;
-        }
-
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 7rem 0 5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-links a:hover { background:var(--md-sys-color-surface-container-high); color:var(--md-sys-color-on-surface); }
-        .feature-card:hover { border-color:var(--md-sys-color-primary); transform:translateY(-4px); box-shadow:0 4px 32px color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent); }
-        .pricing-card-glow { box-shadow:0 0 40px color-mix(in srgb, var(--md-sys-color-primary) 20%, transparent), 0 8px 32px color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent); }
-        .hero-stat-value { color:var(--md-sys-color-primary); text-shadow:0 0 30px color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent); }
-        .nav-links a:hover { background:color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent); color:var(--md-sys-color-primary); }
-        .footer-links a:hover { color:var(--md-sys-color-primary); }
-        .faq-question:hover { color:var(--md-sys-color-primary); }
-
-        @media (max-width: 768px) {
-            .nav-links { display: none !important; }
-            .nav-actions { display: none !important; }
-            #mobileToggle { display: block !important; }
-        }
-
-        .hero-grid {
-            position: absolute; inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 80px 80px;
-            pointer-events: none;
-        }
-
-        .hero-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            pointer-events: none;
-        }
-        .hero-orb.orb-1 {
-            width: 600px; height: 600px;
-            top: -20%; right: -15%;
-            background: radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent) 0%, color-mix(in srgb, var(--md-sys-color-secondary) 10%, transparent) 50%, transparent 70%);
-            animation: orbPulse 8s ease-in-out infinite;
-        }
-        .hero-orb.orb-2 {
-            width: 400px; height: 400px;
-            bottom: 10%; left: 5%;
-            background: radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-tertiary) 20%, transparent) 0%, transparent 70%);
-            animation: orbPulse 8s ease-in-out 4s infinite;
-        }
-        @keyframes orbPulse {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        @keyframes md3-fade-up {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .anim-fade-up { animation: md3-fade-up 0.6s var(--md-sys-motion-easing-emphasized) both; }
-        .anim-delay-1 { animation-delay: 0.1s; }
-        .anim-delay-2 { animation-delay: 0.2s; }
-        .anim-delay-3 { animation-delay: 0.3s; }
-        .anim-delay-4 { animation-delay: 0.4s; }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.25rem;
-        }
-
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            position: relative;
-        }
-        .steps-grid::before {
-            content: '';
-            position: absolute;
-            top: 36px;
-            left: 15%;
-            right: 15%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--md-sys-color-outline-variant), transparent);
-        }
-
-        .faq-list { max-width: 700px; margin: 0 auto; }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 2.5rem;
-        }
-
-        @media (max-width: 1024px) {
-            .features-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); }
-            .steps-grid::before { display: none; }
-            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-        }
-        @media (max-width: 768px) {
-            .features-grid, .steps-grid { grid-template-columns: 1fr; }
-            .hero-stats { gap: 1.5rem; }
-            .footer-grid { grid-template-columns: 1fr; }
-            .footer-bottom { flex-direction: column; gap: 0.75rem; text-align: center; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKSOFT - Sistema de Gestion para Restaurantes</title>
+<style>
+*,:after,:before{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#0a0e14;color:#e2e2e9;overflow-x:hidden;line-height:1.5}
+a{text-decoration:none;color:inherit}
+:root{--p:#00e5b0;--on-p:#003828;--s:#00d0ea;--t:#bb8cff;--surf:#0a0e14;--on-surf:#e2e2e9;--on-surf-v:#c2c2c9;--out-v:#42434a;--surf-c-h:#21252c;--surf-c-l:#12161c}
+.btn-fill{display:inline-flex;align-items:center;gap:.5rem;background:var(--p);color:var(--on-p);border:none;border-radius:100px;padding:.75rem 1.5rem;font-size:.9375rem;font-weight:600;cursor:pointer;box-shadow:0 0 24px rgba(0,229,176,.25);transition:.2s}
+.btn-fill:hover{box-shadow:0 0 40px rgba(0,229,176,.4);transform:translateY(-1px)}
+.btn-out{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--on-surf);border:1px solid var(--out-v);border-radius:100px;padding:.75rem 1.5rem;font-size:.9375rem;font-weight:500;cursor:pointer;transition:.2s}
+.btn-out:hover{border-color:var(--p);color:var(--p)}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:.75rem 0;transition:.3s}
+.nav.scrolled{background:rgba(10,14,20,.9);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid var(--out-v)}
+.hero{min-height:100vh;display:flex;align-items:center;padding:7rem 0 5rem;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(100px);pointer-events:none}
+.orb1{width:600px;height:600px;top:-20%;right:-15%;background:radial-gradient(circle,rgba(0,229,176,.25) 0%,rgba(0,208,234,.1) 50%,transparent 70%);animation:orb 8s ease-in-out infinite}
+.orb2{width:400px;height:400px;bottom:10%;left:5%;background:radial-gradient(circle,rgba(187,140,255,.2) 0%,transparent 70%);animation:orb 8s ease-in-out 4s infinite}
+@keyframes orb{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+.fade{animation:fadeUp .6s cubic-bezier(.2,0,0,1) both}.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}.d4{animation-delay:.4s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.tag{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .875rem .25rem .25rem;border-radius:100px;font-size:.8125rem;font-weight:600;color:var(--on-surf);background:rgba(255,255,255,.08)}
+.icon-wrap{width:28px;height:28px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card{border:1px solid var(--out-v);border-radius:16px;padding:2rem;background:var(--surf-c-l);transition:.3s;position:relative;overflow:hidden}
+.card:hover{border-color:var(--p);transform:translateY(-4px);box-shadow:0 4px 32px rgba(0,229,176,.12)}
+.c-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;font-size:1.5rem;background:rgba(0,208,234,.15);color:var(--s)}
+.step-num{width:72px;height:72px;margin:0 auto 1.5rem;border:2px solid var(--p);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:var(--p);position:relative;z-index:1;background:rgba(0,229,176,.1)}
+.plan-card{max-width:480px;width:100%;padding:2.5rem 2rem;border:2px solid var(--p);border-radius:24px;text-align:center;position:relative;box-shadow:0 0 40px rgba(0,229,176,.15),0 8px 32px rgba(0,229,176,.08)}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:.25rem 1rem;background:var(--p);border-radius:100px;font-size:.6875rem;font-weight:600;color:var(--on-p);text-transform:uppercase;letter-spacing:.05em}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;position:relative}
+.step-grid::before{content:'';position:absolute;top:36px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--out-v),transparent)}
+.faq-list{max-width:700px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+@media(max-width:1024px){.feature-grid,.step-grid{grid-template-columns:repeat(2,1fr)}.step-grid::before{display:none}.footer-grid{grid-template-columns:repeat(2,1fr);gap:2rem}}
+@media(max-width:768px){.feature-grid,.step-grid{grid-template-columns:1fr}.hero-stats{gap:1.5rem}.footer-grid{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:.75rem;text-align:center}.nav-links{display:none!important}.nav-actions{display:none!important}#mobileToggle{display:block!important}}
+@media print{#toolbar{display:none!important}}
+</style>
 </head>
-<body style="background:var(--md-sys-color-surface); color:var(--md-sys-color-on-surface); font-family:var(--md-ref-typeface-plain); overflow-x:hidden;">
+<body>
 
-    <!-- NAV -->
-    <nav class="nav" id="nav" style="position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 0; transition:all 0.3s var(--md-sys-motion-easing-emphasized);">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-                <a href="{% url 'core:landing' %}" style="display:flex; align-items:center; gap:0.625rem; text-decoration:none;">
-                    <div style="width:40px; height:40px; border-radius:var(--md-sys-shape-corner-medium); background:var(--md-sys-color-primary); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);">
-                        <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary); font-size:1.375rem;">storefront</span>
-                    </div>
-                    <span style="font-size:1.125rem; font-weight:700; color:var(--md-sys-color-on-surface); letter-spacing:-0.01em;">MKSOFT</span>
-                </a>
+<nav class="nav" id="nav">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<a href="{% url 'core:landing' %}" style="display:flex;align-items:center;gap:.625rem">
+<div style="width:40px;height:40px;border-radius:12px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:1.375rem;font-weight:800;color:var(--on-p);">M</div>
+<span style="font-size:1.125rem;font-weight:700;letter-spacing:-.01em;">MKSOFT</span>
+</a>
+<ul class="nav-links" style="display:flex;align-items:center;gap:.25rem;list-style:none">
+<li><a href="#features" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Funciones</a></li>
+<li><a href="#como-funciona" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Como Funciona</a></li>
+<li><a href="#precios" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">Precios</a></li>
+<li><a href="#faq" style="color:var(--on-surf-v);font-size:.875rem;font-weight:500;padding:.5rem 1rem;border-radius:100px;transition:.2s">FAQ</a></li>
+</ul>
+<div class="nav-actions" style="display:flex;align-items:center;gap:.75rem">
+<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:.875rem;padding:.5rem 1.5rem">Iniciar Sesion</a>
+</div>
+<button id="mobileToggle" style="display:none;background:none;border:none;color:var(--on-surf);cursor:pointer;padding:.5rem;font-size:1.5rem" aria-label="Menu">☰</button>
+</div>
+<div id="mobileMenu" style="display:none;position:fixed;top:64px;left:1rem;right:1rem;background:var(--surf-c-h);border:1px solid var(--out-v);border-radius:16px;padding:1rem;z-index:99;">
+<a href="#features" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Funciones</a>
+<a href="#como-funciona" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Como Funciona</a>
+<a href="#precios" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">Precios</a>
+<a href="#faq" style="display:block;color:var(--on-surf-v);font-size:.9375rem;font-weight:500;padding:.75rem .5rem">FAQ</a>
+<div style="height:1px;background:var(--out-v);margin:.5rem 0"></div>
+<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="justify-content:center;width:100%;margin-top:.5rem">Iniciar Sesion</a>
+</div>
+</div>
+</nav>
 
-                <ul class="nav-links" style="display:flex; align-items:center; gap:0.25rem; list-style:none; margin:0; padding:0;">
-                    <li><a href="#features" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; font-weight:500; padding:0.5rem 1rem; border-radius:var(--md-sys-shape-corner-full); transition:all 0.2s;">Funciones</a></li>
-                    <li><a href="#como-funciona" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; font-weight:500; padding:0.5rem 1rem; border-radius:var(--md-sys-shape-corner-full); transition:all 0.2s;">Como Funciona</a></li>
-                    <li><a href="#precios" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; font-weight:500; padding:0.5rem 1rem; border-radius:var(--md-sys-shape-corner-full); transition:all 0.2s;">Precios</a></li>
-                    <li><a href="#faq" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; font-weight:500; padding:0.5rem 1rem; border-radius:var(--md-sys-shape-corner-full); transition:all 0.2s;">FAQ</a></li>
-                </ul>
+<section class="hero">
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="hero-grid"></div>
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:1">
+<div style="text-align:center;max-width:800px;margin:0 auto">
+<div class="fade tag" style="margin:0 auto 2rem">
+<span class="icon-wrap">⚡</span>
+Ideal para restaurantes, comideras, cafeterias y kioscos
+</div>
+<h1 class="fade d1" style="font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin:0 0 1.5rem">
+Tu negocio merece un<br>sistema <span style="background:linear-gradient(135deg,var(--p),var(--s),var(--t));-webkit-background-clip:text;-webkit-text-fill-color:transparent">inteligente</span>
+</h1>
+<p class="fade d2" style="font-size:clamp(1rem,2vw,1.25rem);line-height:1.7;color:var(--on-surf-v);max-width:600px;margin:0 auto 2.5rem">
+Gestiona comandas, inventario, caja, facturacion e impresion termica desde un solo lugar. Disenado para restaurantes, comideras, cafeterias y kioscos de comida rapida.
+</p>
+<div class="fade d3" style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap">
+<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:1rem;padding:.875rem 2rem">Comenzar Ahora →</a>
+<a href="#features" class="btn-out" style="font-size:1rem;padding:.875rem 2rem">▶ Ver Funciones</a>
+</div>
+<div class="fade d4" style="display:flex;justify-content:center;gap:3rem;margin-top:4rem">
+<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">100%</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">En la nube</div></div>
+<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">24/7</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">Disponible</div></div>
+<div style="text-align:center"><div style="font-size:2rem;font-weight:700;color:var(--p)">5 min</div><div style="font-size:.8125rem;color:var(--on-surf-v);margin-top:.25rem">Configuracion</div></div>
+</div>
+</div>
+</div>
+</section>
 
-                <div class="nav-actions" style="display:flex; align-items:center; gap:0.75rem;">
-                    <a href="{% url 'core:cliente_login' %}" class="md3-btn md3-btn-filled" style="font-size:0.875rem; padding:0.5rem 1.5rem;">Iniciar Sesion</a>
-                </div>
+<section id="features" style="padding:6rem 0">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
+<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">✦</span>Funcionalidades</div>
+<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Todo lo que necesitas para operar</h2>
+<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Mesas, comandas con envio a cocina, inventario con recetas y auto-deduccion, facturacion con cambio y moneda extranjera, control de caja, impresion termica directa y mas.</p>
+</div>
+<div class="feature-grid">
+<div class="card"><div class="c-icon">🍽️</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Gestion de Mesas</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Plano interactivo del restaurante. Cada mesa muestra su estado en tiempo real: libre, ocupada o reservada. Asigna meseros y combina mesas para grupos grandes.</p></div>
+<div class="card"><div class="c-icon">📝</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Comandas Digitales</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Los meseros crean ordenes desde el celular o tablet y las envian a cocina al instante. Prioridades: normal, urgente y VIP. Notas por item y generales.</p></div>
+<div class="card"><div class="c-icon">📊</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Inventario Inteligente</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Define recetas con ingredientes exactos. Al facturar, el inventario se deduce automaticamente. Alertas de stock bajo, historial de movimientos y compras a proveedores.</p></div>
+<div class="card"><div class="c-icon">💰</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Facturacion Completa</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Impuestos y servicio configurables. Pago en efectivo con calculo de cambio automatico. Soporte para moneda extranjera (USD, EUR) con tasa del dia. Facturas para llevar y en el local.</p></div>
+<div class="card"><div class="c-icon">🏦</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Control de Caja</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Apertura y cierre de caja con registro de gastos y retiros. Calculo automatico del efectivo esperado y deteccion de diferencias. Reporte de cierre diario completo.</p></div>
+<div class="card"><div class="c-icon">🖨️</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Impresion Termica</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Imprime tickets, comandas y cierres de caja directamente en tu impresora termica via agente local. Soporta impresoras USB y de red. Sin necesidad de instalar drivers especiales.</p></div>
+<div class="card"><div class="c-icon">📈</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Dashboard en Tiempo Real</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Ventas del dia, comandas activas, productos mas vendidos, alertas de inventario y graficos de rendimiento. Todo en una vista clara y actualizada al instante.</p></div>
+<div class="card"><div class="c-icon">📱</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Multiplataforma</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Funciona en cualquier dispositivo con internet: computadoras, tablets y celulares. Los meseros toman ordenes desde el movil. La cocina ve las comandas entrantes al instante.</p></div>
+<div class="card"><div class="c-icon">🔐</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Roles y Permisos</h3><p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0">Define que ve y hace cada usuario: administrador, mesero, cajero, cocina y mas. Cada quien accede solo a lo que necesita.</p></div>
+</div>
+</div>
+</section>
 
-                <button id="mobileToggle" style="background:none; border:none; color:var(--md-sys-color-on-surface); cursor:pointer; padding:0.5rem;" aria-label="Menu">
-                    <span class="material-symbols-outlined" id="mobileIcon">menu</span>
-                </button>
-            </div>
+<section id="como-funciona" style="padding:6rem 0;background:var(--surf-c-l)">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
+<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">➜</span>Como Funciona</div>
+<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Operando en 3 simples pasos</h2>
+<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Configuracion rapida para que puedas enfocarte en lo que importa: tu restaurante.</p>
+</div>
+<div class="step-grid">
+<div style="text-align:center"><div class="step-num">1</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Crea tu cuenta</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Registra tu restaurante y recibe acceso inmediato con datos de ejemplo para empezar a explorar.</p></div>
+<div style="text-align:center"><div class="step-num">2</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Personaliza</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Configura tu menu, mesas, ingredientes, recetas y equipo de trabajo. Todo adaptado a tu negocio.</p></div>
+<div style="text-align:center"><div class="step-num">3</div><h3 style="font-size:1.125rem;font-weight:600;margin:0 0 .5rem">Opera</h3><p style="font-size:.875rem;color:var(--on-surf-v);line-height:1.6;margin:0">Empieza a recibir comandas, gestionar inventario, facturar e imprimir tickets de forma profesional.</p></div>
+</div>
+</div>
+</section>
 
-            <div id="mobileMenu" style="display:none; position:fixed; top:64px; left:1rem; right:1rem; background:var(--md-sys-color-surface-container-high); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); padding:1rem; z-index:99; box-shadow:var(--md-sys-elevation-3);">
-                <a href="#features" style="display:flex; align-items:center; gap:0.75rem; color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.9375rem; font-weight:500; padding:0.75rem 0.5rem; border-radius:var(--md-sys-shape-corner-medium);"><span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">widgets</span> Funciones</a>
-                <a href="#como-funciona" style="display:flex; align-items:center; gap:0.75rem; color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.9375rem; font-weight:500; padding:0.75rem 0.5rem; border-radius:var(--md-sys-shape-corner-medium);"><span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">route</span> Como Funciona</a>
-                <a href="#precios" style="display:flex; align-items:center; gap:0.75rem; color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.9375rem; font-weight:500; padding:0.75rem 0.5rem; border-radius:var(--md-sys-shape-corner-medium);"><span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span> Precios</a>
-                <a href="#faq" style="display:flex; align-items:center; gap:0.75rem; color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.9375rem; font-weight:500; padding:0.75rem 0.5rem; border-radius:var(--md-sys-shape-corner-medium);"><span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">help</span> FAQ</a>
-                <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:0.5rem 0;"></div>
-                <a href="{% url 'core:cliente_login' %}" class="md3-btn md3-btn-filled" style="justify-content:center; width:100%; margin-top:0.5rem;">Iniciar Sesion</a>
-            </div>
-        </div>
-    </nav>
+<section id="precios" style="padding:6rem 0">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
+<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">💰</span>Precio</div>
+<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 1rem">Un plan simple, todo incluido</h2>
+<p style="font-size:1.0625rem;line-height:1.7;color:var(--on-surf-v);margin:0">Sin contratos de permanencia. Sin limites. Cancela cuando quieras.</p>
+</div>
+<div style="display:flex;justify-content:center">
+<div class="plan-card">
+<div class="plan-badge">Plan Unico</div>
+<h3 style="font-size:1.25rem;font-weight:600;margin:0 0 .5rem">Todo Ilimitado</h3>
+<p style="font-size:.8125rem;color:var(--on-surf-v);margin:0 0 1.5rem">Todo lo que tu restaurante necesita, sin restricciones</p>
+<div style="margin-bottom:2rem"><span style="font-size:3rem;font-weight:800;letter-spacing:-.02em">C$750</span><span style="font-size:.875rem;color:var(--on-surf-v)">/mes</span></div>
+<ul style="list-style:none;text-align:left;margin:0 0 2rem;padding:0">
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Mesas y usuarios ilimitados</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Comandas digitales con envio a cocina</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Inventario con recetas y auto-deduccion</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Facturacion con cambio y moneda extranjera</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Control de caja con gastos y retiros</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Impresion termica USB y red</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v);border-bottom:1px solid var(--out-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Reportes y dashboard en tiempo real</li>
+<li style="display:flex;align-items:center;gap:.75rem;padding:.625rem 0;font-size:.875rem;color:var(--on-surf-v)"><span style="font-size:1.125rem;flex-shrink:0;color:var(--p)">✓</span> Soporte dedicado 24/7</li>
+</ul>
+<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="width:100%;justify-content:center;padding:.875rem;font-size:.9375rem">Comenzar Ahora</a>
+</div>
+</div>
+</div>
+</section>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-orb orb-1"></div>
-        <div class="hero-orb orb-2"></div>
-        <div class="hero-grid"></div>
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem; position:relative; z-index:1;">
-            <div style="text-align:center; max-width:800px; margin:0 auto;">
-                <div class="anim-fade-up" style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 1rem 0.375rem 0.375rem; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-full); font-size:0.8125rem; font-weight:500; color:var(--md-sys-color-on-secondary-container); margin-bottom:2rem;">
-                    <span style="width:24px; height:24px; border-radius:50%; background:var(--md-sys-color-primary); display:flex; align-items:center; justify-content:center;">
-                        <span class="material-symbols-outlined" style="font-size:0.875rem; color:var(--md-sys-color-on-primary);">bolt</span>
-                    </span>
-                    Ideal para restaurantes, comideras, cafeterias y kioscos
-                </div>
+<section id="faq" style="padding:6rem 0;background:var(--surf-c-l)">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="text-align:center;max-width:600px;margin:0 auto 4rem">
+<div class="tag" style="margin:0 auto 1rem;width:fit-content"><span class="icon-wrap">?</span>FAQ</div>
+<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0">Preguntas frecuentes</h2>
+</div>
+<div class="faq-list">
+<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Que incluye el plan?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Todo. Mesas ilimitadas, usuarios ilimitados, comandas, inventario con recetas, facturacion con cambio y moneda extranjera, control de caja, impresion termica, dashboard y reportes. Sin cargos extra.</p></div>
+</div>
+<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Necesito instalar algo?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">No. Todo funciona desde el navegador web en computadoras, tablets y celulares. Para impresion termica solo necesitas instalar un agente pequeno (opcional, con instalador automatico).</p></div>
+</div>
+<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Como funciona la impresion termica?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Ejecutas el agente de impresion en la computadora conectada a la impresora termica. El agente recibe los datos del sistema web y los envia a la impresora. Soporta USB y redes TCP/IP. Compatible con Epson, Star, Bixolon y la mayoria de impresoras POS.</p></div>
+</div>
+<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Como se configura mi restaurante?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Al registrarte recibis datos de ejemplo. Solo personaliza tu menu, mesas, ingredientes y equipo desde el panel de configuracion. Hay una guia de ayuda disponible en el sistema.</p></div>
+</div>
+<div class="faq-item" style="border-bottom:1px solid var(--out-v)">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Mis datos estan seguros?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Cada restaurante tiene su propio espacio aislado. Tus datos nunca se comparten con otros clientes. Ademas, el sistema hace respaldos automaticos diarios de tu informacion.</p></div>
+</div>
+<div class="faq-item" style="border-bottom:none">
+<button class="faq-q" style="width:100%;background:none;border:none;color:var(--on-surf);font-family:inherit;font-size:1rem;font-weight:500;padding:1.25rem 0;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:1rem">Puedo usar mi propio dominio?<span class="faq-icon" style="font-size:1.25rem;color:var(--on-surf-v);transition:.3s">+</span></button>
+<div class="faq-a" style="max-height:0;overflow:hidden;transition:.3s"><p style="font-size:.9375rem;line-height:1.7;color:var(--on-surf-v);margin:0 0 1.25rem">Si. El sistema puede configurarse con tu propio dominio personalizado. Consulta con soporte para activarlo.</p></div>
+</div>
+</div>
+</div>
+</section>
 
-                <h1 class="anim-fade-up anim-delay-1" style="font-size:clamp(2.5rem,6vw,4.5rem); font-weight:800; line-height:1.05; letter-spacing:-0.03em; margin:0 0 1.5rem;">
-                    Tu negocio merece un<br>sistema <span style="background:linear-gradient(135deg,var(--md-sys-color-primary),var(--md-sys-color-secondary),var(--md-sys-color-tertiary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">inteligente</span>
-                </h1>
+<section style="padding:6rem 0">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div style="background:var(--surf-c-h);border:1px solid var(--out-v);border-radius:24px;padding:4rem 3rem;text-align:center;position:relative;overflow:hidden">
+<div style="position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(0,229,176,.12) 0%,transparent 70%);pointer-events:none"></div>
+<h2 style="font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-.02em;margin:0 0 1rem;position:relative">Listo para transformar tu restaurante?</h2>
+<p style="font-size:1.0625rem;color:var(--on-surf-v);max-width:500px;margin:0 auto 2rem;line-height:1.6;position:relative">Comienza ahora y descubre como MKSOFT puede simplificar la gestion de tu negocio.</p>
+<div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;position:relative">
+<a href="{% url 'core:cliente_login' %}" class="btn-fill" style="font-size:1rem;padding:.875rem 2rem">Comenzar Gratis →</a>
+</div>
+</div>
+</div>
+</section>
 
-                <p class="anim-fade-up anim-delay-2" style="font-size:clamp(1rem,2vw,1.25rem); line-height:1.7; color:var(--md-sys-color-on-surface-variant); max-width:600px; margin:0 auto 2.5rem;">
-                    Gestiona comandas, inventario con recetas y auto-deduccion, caja con gastos y retiros, y facturacion con cambio y moneda extranjera desde un solo lugar. Disenado para restaurantes, comideras, fritangas, cafeterias, kioscos de comida rapida y mas.
-                </p>
+<footer style="border-top:1px solid var(--out-v);padding:4rem 0 2rem">
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem">
+<div class="footer-grid">
+<div style="max-width:280px">
+<div style="display:flex;align-items:center;gap:.625rem;margin-bottom:1rem">
+<div style="width:36px;height:36px;border-radius:12px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:800;color:var(--on-p)">M</div>
+<span style="font-size:1.125rem;font-weight:700">MKSOFT</span>
+</div>
+<p style="font-size:.875rem;line-height:1.6;color:var(--on-surf-v);margin:0 0 1rem">Sistema de gestion integral para restaurantes moderno, seguro y facil de usar.</p>
+<p style="font-size:.875rem;color:var(--on-surf-v)">¿Problemas con la impresion? <a href="{% url 'core:ayuda_impresion' %}" style="color:var(--p)">Guia de ayuda</a></p>
+</div>
+<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Producto</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="#features" style="color:var(--on-surf-v);font-size:.875rem">Funciones</a></li><li style="margin-bottom:.5rem"><a href="#precios" style="color:var(--on-surf-v);font-size:.875rem">Precios</a></li><li style="margin-bottom:.5rem"><a href="#faq" style="color:var(--on-surf-v);font-size:.875rem">FAQ</a></li></ul></div>
+<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Recursos</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="{% url 'core:ayuda_impresion' %}" style="color:var(--on-surf-v);font-size:.875rem">Guia de Impresion</a></li><li style="margin-bottom:.5rem"><a href="{% url 'core:cliente_login' %}" style="color:var(--on-surf-v);font-size:.875rem">Iniciar Sesion</a></li></ul></div>
+<div><h4 style="font-size:.875rem;font-weight:600;margin:0 0 1rem;text-transform:uppercase;letter-spacing:.05em;color:var(--on-surf-v)">Legal</h4><ul style="list-style:none;margin:0;padding:0"><li style="margin-bottom:.5rem"><a href="#" style="color:var(--on-surf-v);font-size:.875rem">Privacidad</a></li><li style="margin-bottom:.5rem"><a href="#" style="color:var(--on-surf-v);font-size:.875rem">Terminos</a></li></ul></div>
+</div>
+<div class="footer-bottom" style="display:flex;justify-content:space-between;align-items:center;padding-top:2rem;border-top:1px solid var(--out-v);font-size:.8125rem;color:var(--on-surf-v)"><span>© 2026 MKSOFT. Todos los derechos reservados.</span><span>Hecho con dedicacion para restaurantes</span></div>
+</div>
+</footer>
 
-                <div class="anim-fade-up anim-delay-3" style="display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap;">
-                    <a href="{% url 'core:cliente_login' %}" class="md3-btn md3-btn-filled" style="font-size:1rem; padding:0.875rem 2rem; border-radius:var(--md-sys-shape-corner-extra-large);">
-                        Comenzar Ahora
-                        <span class="material-symbols-outlined" style="font-size:1.25rem;">arrow_forward</span>
-                    </a>
-                    <a href="#features" class="md3-btn md3-btn-outlined" style="font-size:1rem; padding:0.875rem 2rem; border-radius:var(--md-sys-shape-corner-extra-large);">
-                        <span class="material-symbols-outlined" style="font-size:1.25rem;">play_circle</span>
-                        Ver Funciones
-                    </a>
-                </div>
-
-                <div class="anim-fade-up anim-delay-4" style="display:flex; justify-content:center; gap:3rem; margin-top:4rem;">
-                    <div style="text-align:center;">
-                        <div class="hero-stat-value" style="font-size:2rem; font-weight:700;">100%</div>
-                        <div style="font-size:0.8125rem; color:var(--md-sys-color-on-surface-variant); margin-top:0.25rem;">En la nube</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div class="hero-stat-value" style="font-size:2rem; font-weight:700;">24/7</div>
-                        <div style="font-size:0.8125rem; color:var(--md-sys-color-on-surface-variant); margin-top:0.25rem;">Disponible</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div class="hero-stat-value" style="font-size:2rem; font-weight:700;">5 min</div>
-                        <div style="font-size:0.8125rem; color:var(--md-sys-color-on-surface-variant); margin-top:0.25rem;">Configuracion</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FEATURES -->
-    <section id="features" style="padding:6rem 0;">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="text-align:center; max-width:600px; margin:0 auto 4rem;">
-                <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8125rem; font-weight:600; color:var(--md-sys-color-primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; text-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 50%, transparent);">
-                    <span class="material-symbols-outlined" style="font-size:1.125rem;">widgets</span>
-                    Funcionalidades
-                </div>
-                <h2 style="font-size:clamp(2rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin:0 0 1rem;">Todo lo que necesitas para operar</h2>
-                <p style="font-size:1.0625rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0;">
-                    Un sistema completo que cubre cada aspecto de tu restaurante: mesas, comandas, inventario con recetas, facturacion con cambio y moneda extranjera, control de caja y reportes en tiempo real.
-                </p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">table_restaurant</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Gestion de Mesas</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Control visual del estado de cada mesa. Libres, ocupadas y reservadas en tiempo real.</p>
-                </div>
-
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">receipt_long</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Comandas Digitales</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Crea y gestiona ordenes al instante. Los meseros envian directamente a cocina.</p>
-                </div>
-
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">monitoring</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Inventario Inteligente</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Control de stock con alertas de bajo inventario, recetas con auto-deduccion de ingredientes al facturar y seguimiento de compras a proveedores.</p>
-                </div>
-
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">payments</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Facturacion Completa</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Facturas con impuestos y servicio configurables. Pago en efectivo con calculo de cambio automatico y soporte para moneda extranjera (USD, EUR).</p>
-                </div>
-
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">account_balance</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Control de Caja</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Apertura y cierre de caja con registro de gastos y retiros. Calculo automatico del efectivo esperado y deteccion de diferencias.</p>
-                </div>
-
-                <div class="feature-card" style="padding:2rem; background:var(--md-sys-color-surface-container-low); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); transition:all 0.3s var(--md-sys-motion-easing-emphasized); position:relative; overflow:hidden;">
-                    <div style="width:48px; height:48px; background:var(--md-sys-color-secondary-container); border-radius:var(--md-sys-shape-corner-medium); display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.5rem; color:var(--md-sys-color-on-secondary-container);">dashboard</span>
-                    </div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Dashboard en Tiempo Real</h3>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Vista general de ventas, comandas activas, alertas de inventario y reportes avanzados en un solo lugar.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section id="como-funciona" style="padding:6rem 0; background:var(--md-sys-color-surface-container-low);">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="text-align:center; max-width:600px; margin:0 auto 4rem;">
-                <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8125rem; font-weight:600; color:var(--md-sys-color-primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; text-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 50%, transparent);">
-                    <span class="material-symbols-outlined" style="font-size:1.125rem;">route</span>
-                    Como Funciona
-                </div>
-                <h2 style="font-size:clamp(2rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin:0 0 1rem;">Operando en 3 simples pasos</h2>
-                <p style="font-size:1.0625rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0;">
-                    Configuracion rapida para que puedas enfocarte en lo que importa: tu restaurante.
-                </p>
-            </div>
-
-            <div class="steps-grid">
-                <div style="text-align:center;">
-                    <div style="width:72px; height:72px; margin:0 auto 1.5rem; background:color-mix(in srgb, var(--md-sys-color-primary) 12%, var(--md-sys-color-surface-container-high)); border:2px solid var(--md-sys-color-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:var(--md-sys-color-primary); position:relative; z-index:1; box-shadow:0 0 24px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent);">1</div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Crea tu cuenta</h3>
-                    <p style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); line-height:1.6; margin:0;">Registra tu restaurante y recibe acceso inmediato con datos de ejemplo configurados.</p>
-                </div>
-                <div style="text-align:center;">
-                    <div style="width:72px; height:72px; margin:0 auto 1.5rem; background:color-mix(in srgb, var(--md-sys-color-primary) 12%, var(--md-sys-color-surface-container-high)); border:2px solid var(--md-sys-color-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:var(--md-sys-color-primary); position:relative; z-index:1; box-shadow:0 0 24px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent);">2</div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Personaliza</h3>
-                    <p style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); line-height:1.6; margin:0;">Configura tu menu, mesas, ingredientes y equipo. Todo adaptado a tu negocio.</p>
-                </div>
-                <div style="text-align:center;">
-                    <div style="width:72px; height:72px; margin:0 auto 1.5rem; background:color-mix(in srgb, var(--md-sys-color-primary) 12%, var(--md-sys-color-surface-container-high)); border:2px solid var(--md-sys-color-primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; color:var(--md-sys-color-primary); position:relative; z-index:1; box-shadow:0 0 24px color-mix(in srgb, var(--md-sys-color-primary) 25%, transparent);">3</div>
-                    <h3 style="font-size:1.125rem; font-weight:600; margin:0 0 0.5rem;">Opera</h3>
-                    <p style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); line-height:1.6; margin:0;">Empieza a recibir comandas, gestionar inventario y facturar de forma profesional.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PRICING -->
-    <section id="precios" style="padding:6rem 0;">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="text-align:center; max-width:600px; margin:0 auto 4rem;">
-                <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8125rem; font-weight:600; color:var(--md-sys-color-primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; text-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 50%, transparent);">
-                    <span class="material-symbols-outlined" style="font-size:1.125rem;">payments</span>
-                    Precio
-                </div>
-                <h2 style="font-size:clamp(2rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin:0 0 1rem;">Un plan simple, todo incluido</h2>
-                <p style="font-size:1.0625rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0;">
-                    Sin contratos de permanencia. Sin limites. Cancela cuando quieras.
-                </p>
-            </div>
-
-            <div style="display:flex; justify-content:center;">
-                <div class="pricing-card-glow" style="max-width:480px; width:100%; padding:2.5rem 2rem; background:var(--md-sys-color-surface-container-high); border:2px solid var(--md-sys-color-primary); border-radius:var(--md-sys-shape-corner-extra-large); text-align:center; position:relative;">
-                    <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); padding:0.25rem 1rem; background:var(--md-sys-color-primary); border-radius:var(--md-sys-shape-corner-full); font-size:0.6875rem; font-weight:600; color:var(--md-sys-color-on-primary); text-transform:uppercase; letter-spacing:0.05em;">Plan Unico</div>
-                    <h3 style="font-size:1.25rem; font-weight:600; margin:0 0 0.5rem;">Todo Ilimitado</h3>
-                    <p style="font-size:0.8125rem; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.5rem;">Todo lo que tu restaurante necesita, sin restricciones</p>
-                    <div style="margin-bottom:2rem;">
-                        <span style="font-size:3rem; font-weight:800; letter-spacing:-0.02em;">C$750</span>
-                        <span style="font-size:0.875rem; color:var(--md-sys-color-on-surface-variant);">/mes</span>
-                    </div>
-                    <ul style="list-style:none; text-align:left; margin:0 0 2rem; padding:0;">
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Mesas y usuarios ilimitados</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Comandas digitales con envio a cocina</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Inventario con recetas y auto-deduccion</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Facturacion con cambio y moneda extranjera</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Control de caja con gastos y retiros</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant); border-bottom:1px solid var(--md-sys-color-outline-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Reportes y dashboard en tiempo real</li>
-                        <li style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 0; font-size:0.875rem; color:var(--md-sys-color-on-surface-variant);"><span class="material-symbols-outlined" style="font-size:1.125rem; color:var(--md-sys-color-primary); flex-shrink:0;">check_circle</span> Soporte dedicado 24/7</li>
-                    </ul>
-                    <a href="{% url 'core:cliente_login' %}" class="md3-btn md3-btn-filled" style="width:100%; justify-content:center; padding:0.875rem; font-size:0.9375rem;">Comenzar Ahora</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" style="padding:6rem 0; background:var(--md-sys-color-surface-container-low);">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="text-align:center; max-width:600px; margin:0 auto 4rem;">
-                <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8125rem; font-weight:600; color:var(--md-sys-color-primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; text-shadow:0 0 20px color-mix(in srgb, var(--md-sys-color-primary) 50%, transparent);">
-                    <span class="material-symbols-outlined" style="font-size:1.125rem;">help</span>
-                    FAQ
-                </div>
-                <h2 style="font-size:clamp(2rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; line-height:1.1; margin:0;">Preguntas frecuentes</h2>
-            </div>
-
-            <div class="faq-list">
-                <div class="faq-item" style="border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                    <button class="faq-question" style="width:100%; background:none; border:none; color:var(--md-sys-color-on-surface); font-family:inherit; font-size:1rem; font-weight:500; padding:1.25rem 0; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; transition:color 0.2s;">
-                        Como se configura mi restaurante?
-                        <span class="material-symbols-outlined" style="font-size:1.25rem; color:var(--md-sys-color-on-surface-variant); transition:transform 0.3s;">add</span>
-                    </button>
-                    <div class="faq-answer" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease;">
-                        <p style="font-size:0.9375rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.25rem;">Al registrarte, tu cuenta se configura automaticamente con datos de ejemplo. Solo necesitas personalizar tu menu, mesas y equipo desde el panel de administracion.</p>
-                    </div>
-                </div>
-                <div class="faq-item" style="border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                    <button class="faq-question" style="width:100%; background:none; border:none; color:var(--md-sys-color-on-surface); font-family:inherit; font-size:1rem; font-weight:500; padding:1.25rem 0; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; transition:color 0.2s;">
-                        Puedo cambiar de plan en cualquier momento?
-                        <span class="material-symbols-outlined" style="font-size:1.25rem; color:var(--md-sys-color-on-surface-variant); transition:transform 0.3s;">add</span>
-                    </button>
-                    <div class="faq-answer" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease;">
-                        <p style="font-size:0.9375rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.25rem;">Si, puedes actualizar o cambiar tu plan cuando quieras. El cambio se aplica de forma inmediata y el cobro se ajusta proporcionalmente.</p>
-                    </div>
-                </div>
-                <div class="faq-item" style="border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                    <button class="faq-question" style="width:100%; background:none; border:none; color:var(--md-sys-color-on-surface); font-family:inherit; font-size:1rem; font-weight:500; padding:1.25rem 0; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; transition:color 0.2s;">
-                        Mis datos estan seguros?
-                        <span class="material-symbols-outlined" style="font-size:1.25rem; color:var(--md-sys-color-on-surface-variant); transition:transform 0.3s;">add</span>
-                    </button>
-                    <div class="faq-answer" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease;">
-                        <p style="font-size:0.9375rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.25rem;">Absolutamente. Cada restaurante tiene su propio espacio aislado. Tus datos nunca se comparten con otros clientes de la plataforma.</p>
-                    </div>
-                </div>
-                <div class="faq-item" style="border-bottom:1px solid var(--md-sys-color-outline-variant);">
-                    <button class="faq-question" style="width:100%; background:none; border:none; color:var(--md-sys-color-on-surface); font-family:inherit; font-size:1rem; font-weight:500; padding:1.25rem 0; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; transition:color 0.2s;">
-                        Que tipo de soporte ofrecen?
-                        <span class="material-symbols-outlined" style="font-size:1.25rem; color:var(--md-sys-color-on-surface-variant); transition:transform 0.3s;">add</span>
-                    </button>
-                    <div class="faq-answer" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease;">
-                        <p style="font-size:0.9375rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.25rem;">Todos los planes incluyen soporte tecnico. Los planes Pro y Premium reciben atencion prioritaria con tiempos de respuesta mas rapidos.</p>
-                    </div>
-                </div>
-                <div class="faq-item" style="border-bottom:none;">
-                    <button class="faq-question" style="width:100%; background:none; border:none; color:var(--md-sys-color-on-surface); font-family:inherit; font-size:1rem; font-weight:500; padding:1.25rem 0; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:1rem; transition:color 0.2s;">
-                        Necesito instalar algo?
-                        <span class="material-symbols-outlined" style="font-size:1.25rem; color:var(--md-sys-color-on-surface-variant); transition:transform 0.3s;">add</span>
-                    </button>
-                    <div class="faq-answer" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease;">
-                        <p style="font-size:0.9375rem; line-height:1.7; color:var(--md-sys-color-on-surface-variant); margin:0 0 1.25rem;">No. Todo funciona desde el navegador. Solo necesitas internet y un dispositivo. Funciona en computadoras, tablets y celulares.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section style="padding:6rem 0;">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div style="background:var(--md-sys-color-surface-container-high); border:1px solid var(--md-sys-color-outline-variant); border-radius:var(--md-sys-shape-corner-extra-large); padding:4rem 3rem; text-align:center; position:relative; overflow:hidden;">
-                <div style="position:absolute; top:-50%; left:50%; transform:translateX(-50%); width:400px; height:400px; background:radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent) 0%, transparent 70%); pointer-events:none;"></div>
-                <h2 style="font-size:clamp(2rem,4vw,3rem); font-weight:700; letter-spacing:-0.02em; margin:0 0 1rem; position:relative;">Listo para transformar tu restaurante?</h2>
-                <p style="font-size:1.0625rem; color:var(--md-sys-color-on-surface-variant); max-width:500px; margin:0 auto 2rem; line-height:1.6; position:relative;">
-                    Comienza ahora y descubre como MKSOFT puede simplificar la gestion de tu negocio.
-                </p>
-                <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; position:relative;">
-                    <a href="{% url 'core:cliente_login' %}" class="md3-btn md3-btn-filled" style="font-size:1rem; padding:0.875rem 2rem; border-radius:var(--md-sys-shape-corner-extra-large);">
-                        Comenzar Gratis
-                        <span class="material-symbols-outlined" style="font-size:1.25rem;">arrow_forward</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer style="border-top:1px solid var(--md-sys-color-outline-variant); padding:4rem 0 2rem;">
-        <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem;">
-            <div class="footer-grid">
-                <div style="max-width:280px;">
-                    <div style="display:flex; align-items:center; gap:0.625rem; margin-bottom:1rem;">
-                        <div style="width:36px; height:36px; border-radius:var(--md-sys-shape-corner-medium); background:var(--md-sys-color-primary); display:flex; align-items:center; justify-content:center;">
-                            <span class="material-symbols-outlined" style="color:var(--md-sys-color-on-primary); font-size:1.25rem;">storefront</span>
-                        </div>
-                        <span style="font-size:1.125rem; font-weight:700;">MKSOFT</span>
-                    </div>
-                    <p style="font-size:0.875rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); margin:0;">Sistema de gestion integral para restaurantes moderno, seguro y facil de usar.</p>
-                </div>
-                <div>
-                    <h4 style="font-size:0.875rem; font-weight:600; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--md-sys-color-on-surface-variant);">Producto</h4>
-                    <ul style="list-style:none; margin:0; padding:0;">
-                        <li style="margin-bottom:0.5rem;"><a href="#features" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Funciones</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#precios" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Precios</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#faq" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">FAQ</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 style="font-size:0.875rem; font-weight:600; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--md-sys-color-on-surface-variant);">Empresa</h4>
-                    <ul style="list-style:none; margin:0; padding:0;">
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Nosotros</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Blog</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Contacto</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 style="font-size:0.875rem; font-weight:600; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--md-sys-color-on-surface-variant);">Legal</h4>
-                    <ul style="list-style:none; margin:0; padding:0;">
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Privacidad</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Terminos</a></li>
-                        <li style="margin-bottom:0.5rem;"><a href="#" style="color:var(--md-sys-color-on-surface-variant); text-decoration:none; font-size:0.875rem; transition:color 0.2s;">Cookies</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:2rem; border-top:1px solid var(--md-sys-color-outline-variant); font-size:0.8125rem; color:var(--md-sys-color-on-surface-variant);">
-                <span>&copy; 2026 MKSOFT. Todos los derechos reservados.</span>
-                <span>Hecho con dedicacion para restaurantes</span>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var nav = document.getElementById('nav');
-            window.addEventListener('scroll', function() {
-                nav.classList.toggle('scrolled', window.scrollY > 50);
-            });
-
-            var mobileToggle = document.getElementById('mobileToggle');
-            var mobileMenu = document.getElementById('mobileMenu');
-            var mobileIcon = document.getElementById('mobileIcon');
-            mobileToggle.addEventListener('click', function() {
-                var open = mobileMenu.style.display === 'block';
-                mobileMenu.style.display = open ? 'none' : 'block';
-                mobileIcon.textContent = open ? 'menu' : 'close';
-            });
-            mobileMenu.querySelectorAll('a').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    mobileMenu.style.display = 'none';
-                    mobileIcon.textContent = 'menu';
-                });
-            });
-
-            document.querySelectorAll('.faq-question').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var item = btn.closest('.faq-item');
-                    var wasOpen = item.classList.contains('active');
-                    document.querySelectorAll('.faq-item').forEach(function(other) {
-                        other.classList.remove('active');
-                        var otherBody = other.querySelector('.faq-answer');
-                        if (otherBody) otherBody.style.maxHeight = '0';
-                        var otherIcon = other.querySelector('.material-symbols-outlined');
-                        if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
-                    });
-                    if (!wasOpen) {
-                        item.classList.add('active');
-                        var body = item.querySelector('.faq-answer');
-                        if (body) body.style.maxHeight = body.scrollHeight + 'px';
-                        var icon = item.querySelector('.material-symbols-outlined');
-                        if (icon) icon.style.transform = 'rotate(45deg)';
-                    }
-                });
-            });
-        });
-    </script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){var n=document.getElementById('nav');window.addEventListener('scroll',function(){n.classList.toggle('scrolled',window.scrollY>50)});
+var m=document.getElementById('mobileToggle'),mm=document.getElementById('mobileMenu');m&&m.addEventListener('click',function(){var o=mm.style.display==='block';mm.style.display=o?'none':'block';m.textContent=o?'☰':'✕'});
+mm&&mm.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){mm.style.display='none';m.textContent='☰'})});
+document.querySelectorAll('.faq-q').forEach(function(b){b.addEventListener('click',function(){var i=b.closest('.faq-item'),o=i.classList.contains('active');document.querySelectorAll('.faq-item').forEach(function(x){x.classList.remove('active');var a=x.querySelector('.faq-a');if(a)a.style.maxHeight='0';var ic=x.querySelector('.faq-icon');if(ic)ic.textContent='+'});
+if(!o){i.classList.add('active');var a=i.querySelector('.faq-a');if(a)a.style.maxHeight=a.scrollHeight+'px';var ic=i.querySelector('.faq-icon');if(ic)ic.textContent='−'}})})
+});
+</script>
 </body>
 </html>
