@@ -970,7 +970,7 @@ def facturas_export_excel(request):
     for row, f in enumerate(qs, 2):
         data = [
             f.folio,
-            f.fecha_emision.strftime("%d/%m/%Y %H:%M"),
+            timezone.localtime(f.fecha_emision).strftime("%d/%m/%Y %H:%M"),
             f.comanda.mesa.numero if f.comanda else "",
             f.cliente_nombre or "",
             f.get_metodo_pago_display(),

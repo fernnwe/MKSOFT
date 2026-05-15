@@ -1,6 +1,7 @@
 """ESC/POS receipt generator for thermal printers."""
 
 import socket
+from django.utils import timezone
 
 ESC = b'\x1b'
 GS = b'\x1d'
@@ -50,7 +51,7 @@ def build_factura(factura, config, cols=32):
             buf += _enc(f"Comanda: {factura.comanda.codigo}") + b'\n'
             if factura.comanda.mesa:
                 buf += _enc(f"Mesa: {factura.comanda.mesa.numero}") + b'\n'
-    buf += _enc(f"Fecha: {factura.fecha_emision.strftime('%d/%m/%Y %H:%M')}") + b'\n'
+    buf += _enc(f"Fecha: {timezone.localtime(factura.fecha_emision).strftime('%d/%m/%Y %H:%M')}") + b'\n'
 
     if factura.cliente_nombre:
         buf += _sep('-', cols) + b'\n'
@@ -208,7 +209,7 @@ def build_cierre(data, config, cols=32):
 
     buf += _enc("CIERRE DE CAJA") + b'\n'
     buf += _enc(data["fecha_seleccionada"].strftime('%d/%m/%Y')) + b'\n'
-    buf += _enc(f"Generado: {data['fecha_cierre'].strftime('%H:%M')}") + b'\n'
+    buf += _enc(f"Generado: {timezone.localtime(data['fecha_cierre']).strftime('%H:%M')}") + b'\n'
     buf += _enc(f"Usuario: {data['user']}") + b'\n'
     buf += _sep('-', cols) + b'\n'
 
@@ -277,7 +278,7 @@ def build_comanda(comanda, config, cols=32):
     elif comanda.prioridad == 'vip':
         buf += _enc("*** VIP ***") + b'\n'
     buf += ESC + b'a' + b'\x00'
-    buf += _enc(comanda.fecha_creacion.strftime('%d/%m/%Y %H:%M')) + b'\n'
+    buf += _enc(timezone.localtime(comanda.fecha_creacion).strftime('%d/%m/%Y %H:%M')) + b'\n'
     buf += _sep('-', cols) + b'\n'
 
     for item in comanda.items.filter(cancelado=False):
