@@ -46,8 +46,13 @@ svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-lin
 .nav-links a{padding:8px 18px;border-radius:var(--radius-full);font-size:14px;font-weight:500;color:var(--text-secondary);transition:all .2s}
 .nav-links a:hover{background:rgba(255,255,255,.06);color:var(--text)}
 .nav-actions{display:flex;align-items:center;gap:12px}
-.nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px;width:40px;height:40px;align-items:center;justify-content:center}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px;width:40px;height:40px;align-items:center;justify-content:center;flex-shrink:0}
 .nav-mobile svg{width:24px;height:24px}
+#mobileMenu{display:none;padding:16px 0 8px;background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius);margin-top:8px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+#mobileMenu .mm-link{display:block;padding:14px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500;transition:all .2s}
+#mobileMenu .mm-link:hover{background:rgba(255,255,255,.06);color:var(--text)}
+#mobileMenu .mm-btn{margin-top:8px;width:100%;justify-content:center}
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border-radius:var(--radius-full);font-size:15px;font-weight:600;cursor:pointer;transition:all .3s var(--ease);border:none;line-height:1.2}
@@ -160,7 +165,8 @@ footer{padding:60px 0 32px;border-top:1px solid var(--border)}
 @media(max-width:768px){
   .features-grid{grid-template-columns:1fr}
   .steps-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto}
-  .nav-links,.nav-actions{display:none!important}
+  .nav-links{display:none!important}
+  .nav-actions{display:none!important}
   .nav-mobile{display:flex!important}
   .hero-stats{gap:32px}
   .cta-section{padding:40px 24px}
@@ -186,6 +192,7 @@ MKSOFT
 <li><a href="#precios">Precios</a></li>
 <li><a href="#faq">FAQ</a></li>
 </ul>
+<div class="nav-right">
 <div class="nav-actions">
 <a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="padding:8px 20px;font-size:13px">Iniciar Sesion</a>
 </div>
@@ -194,12 +201,13 @@ MKSOFT
 <svg viewBox="0 0 24 24" id="close-icon" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 </button>
 </div>
-<div id="mobileMenu" style="display:none;padding:12px 0">
-<a href="#features" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Funciones</a>
-<a href="#como-funciona" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Como Funciona</a>
-<a href="#precios" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">Precios</a>
-<a href="#faq" style="display:block;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:15px;font-weight:500">FAQ</a>
-<a href="{% url 'core:cliente_login' %}" class="btn btn-primary" style="margin-top:8px;width:100%">Iniciar Sesion</a>
+</div>
+<div id="mobileMenu">
+<a href="#features" class="mm-link">Funciones</a>
+<a href="#como-funciona" class="mm-link">Como Funciona</a>
+<a href="#precios" class="mm-link">Precios</a>
+<a href="#faq" class="mm-link">FAQ</a>
+<a href="{% url 'core:cliente_login' %}" class="btn btn-primary mm-btn">Iniciar Sesion</a>
 </div>
 </div>
 </nav>
