@@ -7,17 +7,15 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#090d12;color:#e8e8ed;min-height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
-:root{--accent:#00e5b0;--accent-dim:#00b894;--accent-glow:rgba(0,229,176,.35);--secondary:#00d0ea;--tertiary:#bb8cff;--surface:#090d12;--surface-elevated:#11161e;--surface-card:#161c26;--surface-card-hover:#1c2430;--border:rgba(255,255,255,.08);--border-hover:rgba(255,255,255,.15);--text:#e8e8ed;--text-secondary:#9499a3;--text-tertiary:#6b717d;--radius:16px;--radius-sm:10px;--radius-full:100px;--ease:cubic-bezier(.22,1,.36,1)}
-
+:root{--accent:#00e5b0;--accent-dim:#00b894;--accent-glow:rgba(0,229,176,.35);--secondary:#00d0ea;--tertiary:#bb8cff;--surface:#090d12;--surface-elevated:#11161e;--surface-card:#161c26;--border:rgba(255,255,255,.08);--text:#e8e8ed;--text-secondary:#9499a3;--text-tertiary:#6b717d;--radius:16px;--radius-sm:10px;--radius-full:100px;--ease:cubic-bezier(.22,1,.36,1)}
+svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
 .bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
 .bg-orb{position:absolute;border-radius:50%;filter:blur(100px)}
 .bg-orb-1{width:500px;height:500px;top:-15%;left:10%;background:radial-gradient(circle,rgba(0,229,176,.1),transparent 65%);animation:orbFloat 25s ease-in-out infinite}
 .bg-orb-2{width:400px;height:400px;bottom:-10%;right:5%;background:radial-gradient(circle,rgba(0,208,234,.08),transparent 65%);animation:orbFloat 20s ease-in-out infinite reverse}
-
 @keyframes orbFloat{0%,100%{transform:translate(0,0)}33%{transform:translate(25px,-30px)}66%{transform:translate(-15px,20px)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes errorSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-
 .login-wrap{position:relative;z-index:1;display:flex;width:100%;min-height:100vh}
 .hero-side{flex:1;display:flex;flex-direction:column;justify-content:center;padding:4rem 3rem;max-width:560px;position:relative}
 .hero-side::after{content:'';position:absolute;right:0;top:10%;bottom:10%;width:1px;background:linear-gradient(180deg,transparent,var(--border),transparent)}
@@ -25,48 +23,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .hero-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#003828;box-shadow:0 2px 10px var(--accent-glow)}
 .hero-logo-text{font-size:1.125rem;font-weight:700;letter-spacing:-.3px}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 7px;border-radius:var(--radius-full);font-size:11px;font-weight:600;background:rgba(0,229,176,.1);border:1px solid rgba(0,229,176,.2);color:var(--accent);margin-bottom:24px;text-transform:uppercase;letter-spacing:.05em}
+.hero-badge svg{width:14px;height:14px;color:var(--accent)}
 .hero-side h1{font-size:clamp(2rem,3.5vw,2.75rem);font-weight:700;line-height:1.1;letter-spacing:-.02em;margin:0 0 16px}
 .hero-side h1 span{background:linear-gradient(135deg,var(--accent),var(--secondary),var(--tertiary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-side p{font-size:1rem;line-height:1.6;color:var(--text-secondary);margin:0 0 40px;max-width:420px}
 .hero-features{display:flex;flex-direction:column;gap:12px}
 .hero-feat{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all .2s}
 .hero-feat:hover{border-color:rgba(0,208,234,.25)}
-.hero-feat-icon{width:40px;height:40px;min-width:40px;border-radius:10px;background:rgba(0,208,234,.12);display:flex;align-items:center;justify-content:center;font-size:18px}
+.hero-feat-icon{width:40px;height:40px;min-width:40px;border-radius:10px;background:rgba(0,208,234,.12);display:flex;align-items:center;justify-content:center;color:var(--secondary)}
+.hero-feat-icon svg{width:20px;height:20px}
 .hero-feat-text{font-size:14px;line-height:1.4}
 .hero-feat-text strong{color:var(--text);font-weight:600}
 .hero-feat-text span{color:var(--text-secondary)}
-
 .form-side{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
 .form-card{width:100%;max-width:400px;background:var(--surface-card);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;box-shadow:0 16px 64px rgba(0,0,0,.4);animation:fadeUp .5s var(--ease) both}
-.form-icon{width:56px;height:56px;margin:0 auto 20px;background:rgba(0,229,176,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 24px rgba(0,229,176,.15)}
+.form-icon{width:56px;height:56px;margin:0 auto 20px;background:rgba(0,229,176,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:0 0 24px rgba(0,229,176,.15)}
+.form-icon svg{width:26px;height:26px}
 .form-header{text-align:center;margin-bottom:28px}
 .form-header h2{font-size:1.5rem;font-weight:600;margin:0 0 6px}
 .form-header p{font-size:13px;color:var(--text-secondary);margin:0}
-
-/* Mobile brand */
 .brand-mobile{display:none;flex-direction:column;align-items:center;margin-bottom:2rem;text-align:center}
 .brand-mobile .brand-inner{display:flex;align-items:center;gap:10px}
-
 .form-group{margin-bottom:16px}
 .form-group label{display:block;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
 .input-wrap{position:relative;display:flex;align-items:center}
-.input-icon{position:absolute;left:14px;color:var(--text-tertiary);pointer-events:none;font-size:18px;z-index:1}
+.input-icon{position:absolute;left:14px;color:var(--text-tertiary);pointer-events:none;z-index:1;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.input-icon svg{width:18px;height:18px}
 .input-wrap input{width:100%;height:48px;padding:0 14px 0 44px;font-size:14px;font-family:inherit;color:var(--text);background:var(--surface-elevated);border:1px solid var(--border);border-radius:12px;outline:none;transition:all .2s}
 .input-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,176,.12)}
 .input-wrap input::placeholder{color:var(--text-tertiary)}
-.pass-toggle{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);padding:6px;border-radius:8px;font-size:14px;transition:all .2s;z-index:1}
+.pass-toggle{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);padding:6px;border-radius:8px;transition:all .2s;z-index:1;display:flex;align-items:center;justify-content:center}
+.pass-toggle svg{width:18px;height:18px}
 .pass-toggle:hover{color:var(--text);background:rgba(255,255,255,.06)}
 .form-error{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,180,171,.08);border:1px solid rgba(255,180,171,.18);border-radius:12px;color:#ffb4ab;font-size:13px;font-weight:500;margin-bottom:16px;animation:errorSlide .4s var(--ease)}
+.form-error svg{width:16px;height:16px;flex-shrink:0}
 .btn-submit{width:100%;height:48px;background:linear-gradient(135deg,var(--accent),var(--accent-dim));color:#003828;border:none;border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s var(--ease);box-shadow:0 4px 16px var(--accent-glow);margin-top:4px}
 .btn-submit:hover{box-shadow:0 6px 28px var(--accent-glow);transform:translateY(-2px)}
 .btn-submit:active{transform:translateY(0)}
-
-/* Footer links */
+.btn-submit svg{width:18px;height:18px}
 .form-footer{margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
 .form-footer-link{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:rgba(187,140,255,.06);border:1px solid rgba(187,140,255,.15);border-radius:10px;color:var(--tertiary);font-size:13px;font-weight:500;text-decoration:none;transition:all .2s}
 .form-footer-link:hover{background:rgba(187,140,255,.1);border-color:rgba(187,140,255,.25)}
+.form-footer-link svg{width:16px;height:16px}
 .form-footer-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:11px;color:var(--text-tertiary)}
-
+.form-footer-note svg{width:14px;height:14px;color:var(--accent)}
 @media(max-width:768px){
   body{overflow:auto;height:auto}
   .login-wrap{flex-direction:column}
@@ -82,60 +82,62 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 
 <div class="login-wrap">
 <div class="hero-side">
-<div class="hero-logo"><div class="hero-logo-mark">⚙️</div><span class="hero-logo-text">MKSOFT</span></div>
+<div class="hero-logo"><div class="hero-logo-mark"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#003828"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><span class="hero-logo-text">MKSOFT</span></div>
 <div style="max-width:420px">
-<div class="hero-badge">🛡️ Panel de Administrador</div>
+<div class="hero-badge"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Panel de Administrador</div>
 <h1>Gestiona toda la <span>plataforma</span> desde aqui</h1>
 <p>Control total de clientes, suscripciones, pagos y configuracion del sistema. Solo personal autorizado.</p>
 <div class="hero-features">
-<div class="hero-feat"><div class="hero-feat-icon">👥</div><div class="hero-feat-text"><strong>Gestion de Clientes</strong><br><span>Crea y administra restaurantes</span></div></div>
-<div class="hero-feat"><div class="hero-feat-icon">💳</div><div class="hero-feat-text"><strong>Control de Pagos</strong><br><span>Registra ingresos y suscripciones</span></div></div>
-<div class="hero-feat"><div class="hero-feat-icon">⚙️</div><div class="hero-feat-text"><strong>Configuracion Global</strong><br><span>Ajustes de sistema y planes</span></div></div>
+<div class="hero-feat"><div class="hero-feat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="hero-feat-text"><strong>Gestion de Clientes</strong><br><span>Crea y administra restaurantes</span></div></div>
+<div class="hero-feat"><div class="hero-feat-icon"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="hero-feat-text"><strong>Control de Pagos</strong><br><span>Registra ingresos y suscripciones</span></div></div>
+<div class="hero-feat"><div class="hero-feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div class="hero-feat-text"><strong>Configuracion Global</strong><br><span>Ajustes de sistema y planes</span></div></div>
 </div>
 </div>
 </div>
 
 <div class="form-side">
 <div style="width:100%;max-width:400px">
-<div class="brand-mobile"><div class="brand-inner"><div class="hero-logo-mark" style="width:36px;height:36px;font-size:16px">⚙️</div><span class="hero-logo-text">MKSOFT</span></div></div>
+<div class="brand-mobile"><div class="brand-inner"><div class="hero-logo-mark"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#003828"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><span class="hero-logo-text">MKSOFT</span></div></div>
 
 <div class="form-card">
-<div class="form-icon">🔒</div>
+<div class="form-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
 <div class="form-header"><h2>Bienvenido, Admin</h2><p>Ingresa tus credenciales de administrador</p></div>
 
 <form method="post" action="{% url 'core:login' %}">
 {% csrf_token %}
 
 {% if form.errors %}
-<div class="form-error"><span style="flex-shrink:0">✕</span><span>Usuario o contraseña incorrectos</span></div>
+<div class="form-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Usuario o contraseña incorrectos</span></div>
 {% endif %}
 
 {% if messages %}
 {% for message in messages %}
-<div class="form-error"><span style="flex-shrink:0">✕</span><span>{{ message }}</span></div>
+<div class="form-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>{{ message }}</span></div>
 {% endfor %}
 {% endif %}
 
 <div class="form-group">
 <label>Usuario</label>
-<div class="input-wrap"><span class="input-icon">👤</span><input type="text" name="username" placeholder="admin@restau.pos" autofocus autocomplete="username" required></div>
+<div class="input-wrap"><span class="input-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><input type="text" name="username" placeholder="admin@restau.pos" autofocus autocomplete="username" required></div>
 </div>
 
 <div class="form-group">
 <label>Contraseña</label>
 <div class="input-wrap">
-<span class="input-icon">🔑</span>
+<span class="input-icon"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
 <input type="password" name="password" id="password-input" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
-<button type="button" class="pass-toggle" id="password-toggle" aria-label="Mostrar contraseña">👁️</button>
+<button type="button" class="pass-toggle" id="password-toggle" aria-label="Mostrar contraseña">
+<svg viewBox="0 0 24 24" id="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+</button>
 </div>
 </div>
 
-<button type="submit" class="btn-submit"><span>Iniciar Sesion</span><span>→</span></button>
+<button type="submit" class="btn-submit"><span>Iniciar Sesion</span><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
 </form>
 
 <div class="form-footer">
-<a href="{% url 'core:cliente_login' %}" class="form-footer-link">🏪 Acceso para restaurantes</a>
-<div class="form-footer-note">✓ Acceso restringido a personal autorizado</div>
+<a href="{% url 'core:cliente_login' %}" class="form-footer-link"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Acceso para restaurantes</a>
+<div class="form-footer-note"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Acceso restringido a personal autorizado</div>
 </div>
 </div>
 </div>
@@ -144,8 +146,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-  var t=document.getElementById('password-toggle'),i=document.getElementById('password-input');
-  if(t&&i){t.addEventListener('click',function(){var p=i.getAttribute('type')==='password';i.setAttribute('type',p?'text':'password');t.textContent=p?'🙈':'👁️'})}
+  var t=document.getElementById('password-toggle'),i=document.getElementById('password-input'),e=document.getElementById('eye-icon');
+  if(t&&i&&e){t.addEventListener('click',function(){var p=i.getAttribute('type')==='password';i.setAttribute('type',p?'text':'password');e.innerHTML=p?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>':'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'})}
 });
 </script>
 </body>
