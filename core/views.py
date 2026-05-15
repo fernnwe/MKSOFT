@@ -526,6 +526,10 @@ class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
         return render(request, self.template_name, {"object": config, "form": form})
 
 
+class AyudaImpresionView(LoginRequiredMixin, TemplateView):
+    template_name = "core/ayuda_impresion.html"
+
+
 class RestablecerFabricaView(PermissionRequiredMixin, LoginRequiredMixin, View):
     template_name = "core/config_restaurante_reset.html"
     permission = "can_manage_users"

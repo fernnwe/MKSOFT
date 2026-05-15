@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Ayuda - Impresión ESC/POS{% endblock %}
+{% block appbar_title %}Ayuda: Configurar Impresión Térmica{% endblock %}
+{% block content %}
+<div class="px-3 px-md-4" style="max-width:800px; margin:0 auto;">
+
+<div class="md3-card-elevated" style="padding:24px; margin-bottom:16px;">
+    <h2 style="margin:0 0 8px; font-size:20px;">Configurar Impresora Térmica</h2>
+    <p style="color:#666; margin-bottom:16px;">Sigue estos pasos para imprimir tickets y comandas directamente en tu impresora térmica.</p>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">1. Requisitos</h3>
+    <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
+        <li>Windows 7, 10 u 11</li>
+        <li>Python 3.8 o superior instalado</li>
+        <li>Impresora térmica conectada por USB o red</li>
+    </ul>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">2. Instalar dependencia</h3>
+    <p style="margin-bottom:8px;">Abre una terminal (CMD o PowerShell) como administrador y ejecuta:</p>
+    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px;">pip install pywin32</pre>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">3. Iniciar el agente de impresión</h3>
+    <p style="margin-bottom:8px;">Opción A — Con doble clic (para probar):</p>
+    <p style="background:#f5f5f5; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:12px;">Navega a la carpeta del sistema y haz doble clic en <strong>printer_agent.py</strong>.</p>
+
+    <p style="margin-bottom:8px;">Opción B — Manual desde terminal:</p>
+    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px; margin-bottom:12px;">cd C:\ruta\del\sistema
+python printer_agent.py</pre>
+
+    <p style="margin-bottom:8px;">Opción C — Instalar inicio automático (recomendado):</p>
+    <p style="background:#f5f5f5; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:16px;">Haz doble clic en <strong>install_agent.bat</strong> (una sola vez). A partir de ahora el agente se iniciará solo al encender la computadora.</p>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">4. Verificar que funciona</h3>
+    <p style="margin-bottom:8px;">Cuando el agente esté corriendo verás en la terminal:</p>
+    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px; margin-bottom:16px;">MKSOFT Printer Agent corriendo en http://127.0.0.1:8765
+Impresora detectada: EPSON TM-T20II</pre>
+    <p>Si no detecta la impresora automáticamente, verifica que esté encendida y conectada. El agente busca impresoras con nombres que contengan: TM, Thermal, POS, Ticket, Receipt, Epson, Star, Bixolon, Zebra.</p>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">5. Probar impresión</h3>
+    <p style="margin-bottom:16px;">Abre cualquier factura o comanda y haz clic en el botón <span style="display:inline-block; padding:2px 8px; background:#2e7d32; color:#fff; border-radius:4px; font-size:12px;">Imprimir</span> de la barra de herramientas. El sistema enviará el ticket directamente a la impresora térmica.</p>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+
+    <h3 style="margin:0 0 8px;">6. Solución de problemas</h3>
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tr style="background:#f5f5f5;"><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Problema</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Solución</th></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"Agente no disponible"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta <code>printer_agent.py</code> o <code>install_agent.bat</code></td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"pywin32 no instalado"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta <code>pip install pywin32</code></td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"No se detectó impresora térmica"</td><td style="padding:8px; border-bottom:1px solid #eee;">Verifica conexión USB/nombre de la impresora</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">La impresión sale en blanco</td><td style="padding:8px; border-bottom:1px solid #eee;">Revisa que el papel térmico esté bien colocado</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">Caracteres extraños</td><td style="padding:8px; border-bottom:1px solid #eee;">La impresora no soporta ESC/POS. Usa impresora térmica compatible</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;">Error "Permission denied"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta la terminal como administrador</td></tr>
+        <tr><td style="padding:8px;">Puerto 8765 ocupado</td><td style="padding:8px;">Cierra otros programas o usa <code>python printer_agent.py --port 8766</code></td></tr>
+    </table>
+</div>
+
+<div class="md3-card-elevated" style="padding:24px;">
+    <h3 style="margin:0 0 8px;">Impresión por red (TCP/IP)</h3>
+    <p>Si tu impresora está en red con IP fija, puedes imprimir directamente añadiendo <code>?host=192.168.1.100</code> a la URL de impresión. El puerto por defecto es <code>9100</code>.</p>
+    <p style="margin-top:8px; font-size:12px; color:#666;">Ejemplo: <code>{% url 'facturacion:escpos' 1 %}?host=192.168.1.100</code></p>
+</div>
+
+</div>
+{% endblock %}

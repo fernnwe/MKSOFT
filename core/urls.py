@@ -28,6 +28,7 @@ urlpatterns = [
     path("permisos-meseros/", views.PermisosMeserosView.as_view(), name="permisos_meseros"),
     path("permisos-meseros/<int:pk>/actualizar/", views.ActualizarPermisosView.as_view(), name="actualizar_permisos"),
     path("configuracion/", views.ConfigRestauranteView.as_view(), name="config_restaurante"),
+    path("ayuda-impresion/", views.AyudaImpresionView.as_view(), name="ayuda_impresion"),
     path("configuracion/restablecer/", views.RestablecerFabricaView.as_view(), name="restablecer_fabrica"),
     path("configuracion/restaurar-respaldo/", views.RestaurarUltimoRespaldoView.as_view(), name="restaurar_ultimo_respaldo"),
     path("superadmin/", views.SuperAdminListView.as_view(), name="superadmin_dashboard"),

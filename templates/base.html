@@ -144,6 +144,10 @@
                 <span class="material-symbols-outlined">settings</span>
                 Configuración
             </a>
+            <a href="{% url 'core:ayuda_impresion' %}" class="md3-nav-item {% if request.resolver_match.url_name == 'ayuda_impresion' %}active{% endif %}">
+                <span class="material-symbols-outlined">print</span>
+                Ayuda Impresión
+            </a>
             {% endif %}
             {% endif %}
         </div>
