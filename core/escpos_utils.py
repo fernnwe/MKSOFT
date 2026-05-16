@@ -257,6 +257,21 @@ def build_cierre(data, config, cols=32):
     buf += ESC + b'E' + b'\x00'
     buf += _sep('-', cols) + b'\n'
 
+    aperturas = data.get("aperturas_dia", [])
+    if aperturas:
+        buf += _enc("APERTURAS DEL DIA") + b'\n'
+        for ap in aperturas:
+            hora = timezone.localtime(ap.fecha_apertura).strftime('%H:%M')
+            nombre = ap.usuario_apertura.get_full_name() or ap.usuario_apertura.username
+            buf += _enc(f"{hora} - {nombre}") + b'\n'
+            buf += _key_val("Monto inicial:", f"{s}{ap.monto_inicial:.2f}", cols)
+            if ap.estado == "cerrada":
+                buf += _key_val("Cierre:", f"{s}{ap.monto_cierre_efectivo:.2f}", cols)
+                buf += _key_val("Diferencia:", f"{s}{ap.diferencia:.2f}", cols)
+            else:
+                buf += _key_val("Estado:", "ABIERTA", cols)
+        buf += _sep('-', cols) + b'\n'
+
     _footer(buf, cols)
     return bytes(buf)
 
