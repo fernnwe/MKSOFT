@@ -630,9 +630,6 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
         context["total_compras"] = total_compras
         context["compras_detalladas"] = compras_recibidas.prefetch_related("items").order_by("fecha")
 
-        context["balance_neto"] = total_ventas - total_compras
-        context["balance_color"] = "success" if (total_ventas - total_compras) >= 0 else "danger"
-
         aperturas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end).select_related("usuario_apertura")
         context["aperturas_dia"] = aperturas_dia
 
@@ -654,6 +651,10 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
         context["movimientos"] = movimientos
         context["total_gastos_mov"] = total_gastos
         context["total_retiros_mov"] = total_retiros
+
+        balance_neto = total_ventas - total_compras - total_gastos - total_retiros
+        context["balance_neto"] = balance_neto
+        context["balance_color"] = "success" if balance_neto >= 0 else "danger"
 
         return context
 
@@ -811,7 +812,6 @@ class CierreTicketView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
         context["compras_canceladas_count"] = compras_canceladas.count()
         context["total_compras"] = total_compras
         context["compras_detalladas"] = compras_recibidas.prefetch_related("items").order_by("fecha")
-        context["balance_neto"] = total_ventas - total_compras
 
         caja_abierta = cajas_qs.filter(estado=CajaApertura.Estado.ABIERTA).first()
         movimientos = CajaMovimiento.objects.none()
@@ -832,6 +832,8 @@ class CierreTicketView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
         context["movimientos"] = movimientos
         context["total_gastos_mov"] = total_gastos_mov
         context["total_retiros_mov"] = total_retiros_mov
+
+        context["balance_neto"] = total_ventas - total_compras - total_gastos_mov - total_retiros_mov
 
         aperturas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end).select_related("usuario_apertura")
         context["aperturas_dia"] = aperturas_dia
