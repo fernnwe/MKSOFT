@@ -1746,12 +1746,14 @@ select.md3-input:focus ~ .md3-label {
     .md3-nav-drawer {
         position: fixed;
         left: 0;
-        top: var(--nav-height);
-        height: calc(100vh - var(--nav-height));
+        top: 0;
+        height: 100vh;
+        height: 100dvh;
         width: var(--nav-drawer-width);
         max-width: none;
         box-shadow: none;
         border-right: 1px solid var(--md-sys-color-outline-variant);
+        z-index: 900;
     }
 
     .md3-nav-drawer.open {
@@ -1760,6 +1762,7 @@ select.md3-input:focus ~ .md3-label {
 
     .md3-nav-drawer-header {
         padding: 18px 16px 16px;
+        padding-top: calc(18px + var(--nav-height));
     }
 
     .md3-menu-btn {
@@ -1795,6 +1798,8 @@ select.md3-input:focus ~ .md3-label {
     /* Navigation Rail for >= 1024px */
     .md3-nav-rail {
         display: flex;
+        top: 0;
+        padding-top: var(--nav-height);
     }
 
     .md3-top-app-bar {
