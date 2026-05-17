@@ -207,15 +207,15 @@ img {
    ============================================ */
 .md3-top-app-bar {
     position: fixed;
-    top: env(safe-area-inset-top, 0);
+    top: 0;
     left: 0;
     right: 0;
-    height: calc(var(--nav-height) + env(safe-area-inset-top, 0));
+    height: var(--nav-height);
     background: linear-gradient(135deg, var(--md-navbar-bg-start), var(--md-navbar-bg-mid), var(--md-navbar-bg-end));
     color: var(--md-navbar-text);
     display: flex;
     align-items: center;
-    padding: env(safe-area-inset-top, 0) 8px 0;
+    padding: 0 8px;
     z-index: 1000;
     border-bottom: none;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
@@ -490,7 +490,6 @@ img {
 
 .md3-nav-drawer-header {
     padding: 20px 16px 16px;
-    padding-top: calc(20px + env(safe-area-inset-top, 0));
     background: linear-gradient(135deg, var(--md-navbar-bg-start), var(--md-navbar-bg-mid), var(--md-navbar-bg-end));
     position: relative;
     overflow: hidden;
@@ -599,10 +598,9 @@ img {
 }
 
 .md3-nav-drawer-section {
-    padding: 6px 0;
+    padding: 6px 0 12px;
     flex: 1;
     overflow-y: auto;
-    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .md3-nav-divider {
@@ -694,7 +692,6 @@ img {
 
 .md3-nav-drawer-footer {
     padding: 8px 8px 12px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
     border-top: 1px solid var(--md-sys-color-outline-variant);
     background: var(--md-sys-color-surface-container);
     margin-top: auto;
@@ -793,8 +790,7 @@ img {
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0));
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    height: var(--bottom-nav-height);
     background: var(--md-sys-color-surface-container);
     display: flex;
     align-items: flex-start;
@@ -865,10 +861,10 @@ img {
    MAIN CONTENT
    ============================================ */
 .md3-main {
-    padding-top: calc(var(--nav-height) + env(safe-area-inset-top, 0) + 8px);
+    padding-top: calc(var(--nav-height) + 8px);
     min-height: 100vh;
     min-height: 100dvh;
-    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0) + 12px);
+    padding-bottom: calc(var(--bottom-nav-height) + 12px);
 }
 
 .content-wrap {
