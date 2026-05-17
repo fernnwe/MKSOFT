@@ -97,6 +97,14 @@
             navOverlay.classList.remove('visible');
         });
 
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && navDrawer.classList.contains('open')) {
+                navDrawer.classList.remove('open');
+                navOverlay.classList.remove('visible');
+            }
+        });
+
         // Auto-close on desktop resize
         function handleResize() {
             if (window.innerWidth >= 1024) {
