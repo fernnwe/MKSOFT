@@ -4,10 +4,17 @@ from django.conf import settings
 def restaurant_context(request):
     try:
         from core.models import ConfigRestaurante
+        from facturacion.models import CajaApertura
         cliente = None
         if request.user.is_authenticated and hasattr(request.user, 'cliente'):
             cliente = request.user.cliente
         config = ConfigRestaurante.get_config(cliente)
+        caja_abierta = None
+        if request.user.is_authenticated:
+            caja_qs = CajaApertura.objects.filter(estado=CajaApertura.Estado.ABIERTA)
+            if cliente:
+                caja_qs = caja_qs.filter(cliente=cliente)
+            caja_abierta = caja_qs.first()
         return {
             "RESTAURANT_NAME": config.nombre,
             "RESTAURANT_RFC": config.rfc,
@@ -17,6 +24,7 @@ def restaurant_context(request):
             "CURRENCY_SYMBOL": config.simbolo_moneda,
             "TAX_RATE": config.tasa_impuesto,
             "PORCENTAJE_SERVICIO": config.porcentaje_servicio,
+            "caja_abierta": caja_abierta,
         }
     except Exception:
         return {
@@ -28,4 +36,5 @@ def restaurant_context(request):
             "CURRENCY_SYMBOL": settings.CURRENCY_SYMBOL,
             "TAX_RATE": settings.TAX_RATE,
             "PORCENTAJE_SERVICIO": settings.PORCENTAJE_SERVICIO,
+            "caja_abierta": None,
         }
