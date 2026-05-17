@@ -98,15 +98,15 @@
     --md-sys-color-scrim: rgba(0, 0, 0, 0.6);
 
     /* Restaurant Navbar Warm Theme - Dark */
-    --md-navbar-bg-start: #7C2D12;
-    --md-navbar-bg-mid: #9A3412;
-    --md-navbar-bg-end: #5D2E0B;
+    --md-navbar-bg-start: #A63D17;
+    --md-navbar-bg-mid: #C2410C;
+    --md-navbar-bg-end: #92400E;
     --md-navbar-text: #FFFFFF;
     --md-navbar-text-muted: rgba(255,255,255,0.7);
     --md-navbar-icon-bg: rgba(255,255,255,0.12);
-    --md-navbar-active-bg: #431407;
-    --md-navbar-active-text: #FED7AA;
-    --md-navbar-active-bar: #FB923C;
+    --md-navbar-active-bg: #5E1D00;
+    --md-navbar-active-text: #FFB590;
+    --md-navbar-active-bar: #FFB590;
 }
 
 /* --- Shape & Motion Tokens --- */
