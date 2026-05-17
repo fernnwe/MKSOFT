@@ -3,21 +3,21 @@
    Generated from the MD3 Design Kit specification
    ============================================ */
 
-/* --- Light Theme (default) --- */
+/* --- Light Theme (Warm Restaurant) --- */
 :root,
 [data-md3-theme="light"] {
-    --md-sys-color-primary: #6750A4;
+    --md-sys-color-primary: #C2410C;
     --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #EADDFF;
-    --md-sys-color-on-primary-container: #21005D;
-    --md-sys-color-secondary: #625B71;
+    --md-sys-color-primary-container: #FFDBCD;
+    --md-sys-color-on-primary-container: #3E0D00;
+    --md-sys-color-secondary: #8E4A27;
     --md-sys-color-on-secondary: #FFFFFF;
-    --md-sys-color-secondary-container: #E8DEF8;
-    --md-sys-color-on-secondary-container: #1D192B;
-    --md-sys-color-tertiary: #7D5260;
+    --md-sys-color-secondary-container: #F5E0D6;
+    --md-sys-color-on-secondary-container: #361200;
+    --md-sys-color-tertiary: #9C6E00;
     --md-sys-color-on-tertiary: #FFFFFF;
-    --md-sys-color-tertiary-container: #FFD8E4;
-    --md-sys-color-on-tertiary-container: #31111D;
+    --md-sys-color-tertiary-container: #FFDF9A;
+    --md-sys-color-on-tertiary-container: #321F00;
     --md-sys-color-error: #B3261E;
     --md-sys-color-on-error: #FFFFFF;
     --md-sys-color-error-container: #F9DEDC;
@@ -30,41 +30,41 @@
     --md-sys-color-on-warning: #FFFFFF;
     --md-sys-color-warning-container: #F5DEB2;
     --md-sys-color-on-warning-container: #291800;
-    --md-sys-color-background: #FEF7FF;
-    --md-sys-color-on-background: #1D1B20;
-    --md-sys-color-surface: #FEF7FF;
-    --md-sys-color-on-surface: #1D1B20;
-    --md-sys-color-surface-variant: #E7E0EC;
-    --md-sys-color-on-surface-variant: #49454F;
+    --md-sys-color-background: #FFF8F5;
+    --md-sys-color-on-background: #211C19;
+    --md-sys-color-surface: #FFF8F5;
+    --md-sys-color-on-surface: #211C19;
+    --md-sys-color-surface-variant: #F2EBE4;
+    --md-sys-color-on-surface-variant: #524E47;
     --md-sys-color-surface-container-lowest: #FFFFFF;
-    --md-sys-color-surface-container-low: #F7F2FA;
-    --md-sys-color-surface-container: #F3EDF7;
-    --md-sys-color-surface-container-high: #ECE6F0;
-    --md-sys-color-surface-container-highest: #E6E0E9;
-    --md-sys-color-outline: #79747E;
-    --md-sys-color-outline-variant: #CAC4D0;
-    --md-sys-color-inverse-surface: #322F35;
-    --md-sys-color-inverse-on-surface: #F5EFF7;
-    --md-sys-color-inverse-primary: #D0BCFF;
-    --md-sys-color-surface-tint: #6750A4;
+    --md-sys-color-surface-container-low: #FAF2ED;
+    --md-sys-color-surface-container: #F4ECE7;
+    --md-sys-color-surface-container-high: #EFE6E1;
+    --md-sys-color-surface-container-highest: #E9E0DB;
+    --md-sys-color-outline: #847A73;
+    --md-sys-color-outline-variant: #D1C4BB;
+    --md-sys-color-inverse-surface: #322F2D;
+    --md-sys-color-inverse-on-surface: #F5EFEA;
+    --md-sys-color-inverse-primary: #FFB590;
+    --md-sys-color-surface-tint: #C2410C;
 
     --md-sys-color-scrim: rgba(0, 0, 0, 0.4);
 }
 
-/* --- Dark Theme --- */
+/* --- Dark Theme (Warm Restaurant) --- */
 [data-md3-theme="dark"] {
-    --md-sys-color-primary: #D0BCFF;
-    --md-sys-color-on-primary: #381E72;
-    --md-sys-color-primary-container: #4F378B;
-    --md-sys-color-on-primary-container: #EADDFF;
-    --md-sys-color-secondary: #CCC2DC;
-    --md-sys-color-on-secondary: #332D41;
-    --md-sys-color-secondary-container: #4A4458;
-    --md-sys-color-on-secondary-container: #E8DEF8;
-    --md-sys-color-tertiary: #EFB8C8;
-    --md-sys-color-on-tertiary: #492532;
-    --md-sys-color-tertiary-container: #633B48;
-    --md-sys-color-on-tertiary-container: #FFD8E4;
+    --md-sys-color-primary: #FFB590;
+    --md-sys-color-on-primary: #5E1D00;
+    --md-sys-color-primary-container: #8B2E00;
+    --md-sys-color-on-primary-container: #FFDBCD;
+    --md-sys-color-secondary: #E7B59A;
+    --md-sys-color-on-secondary: #442310;
+    --md-sys-color-secondary-container: #6A3418;
+    --md-sys-color-on-secondary-container: #F5E0D6;
+    --md-sys-color-tertiary: #F0C050;
+    --md-sys-color-on-tertiary: #3E2C00;
+    --md-sys-color-tertiary-container: #5D4200;
+    --md-sys-color-on-tertiary-container: #FFDF9A;
     --md-sys-color-error: #F2B8B5;
     --md-sys-color-on-error: #601410;
     --md-sys-color-error-container: #8C1D18;
@@ -77,23 +77,23 @@
     --md-sys-color-on-warning: #3E2C00;
     --md-sys-color-warning-container: #5D4200;
     --md-sys-color-on-warning-container: #F5DEB2;
-    --md-sys-color-background: #141218;
-    --md-sys-color-on-background: #E6E0E9;
-    --md-sys-color-surface: #141218;
-    --md-sys-color-on-surface: #E6E0E9;
-    --md-sys-color-surface-variant: #49454F;
-    --md-sys-color-on-surface-variant: #CAC4D0;
-    --md-sys-color-surface-container-lowest: #0F0D13;
-    --md-sys-color-surface-container-low: #1D1B20;
-    --md-sys-color-surface-container: #211F26;
-    --md-sys-color-surface-container-high: #2B2930;
-    --md-sys-color-surface-container-highest: #36343B;
-    --md-sys-color-outline: #938F99;
-    --md-sys-color-outline-variant: #49454F;
-    --md-sys-color-inverse-surface: #E6E0E9;
-    --md-sys-color-inverse-on-surface: #322F35;
-    --md-sys-color-inverse-primary: #6750A4;
-    --md-sys-color-surface-tint: #D0BCFF;
+    --md-sys-color-background: #14110D;
+    --md-sys-color-on-background: #E5E1DB;
+    --md-sys-color-surface: #14110D;
+    --md-sys-color-on-surface: #E5E1DB;
+    --md-sys-color-surface-variant: #524E47;
+    --md-sys-color-on-surface-variant: #C9C4BE;
+    --md-sys-color-surface-container-lowest: #0F0C0A;
+    --md-sys-color-surface-container-low: #1C1A18;
+    --md-sys-color-surface-container: #211F1C;
+    --md-sys-color-surface-container-high: #2C2926;
+    --md-sys-color-surface-container-highest: #373430;
+    --md-sys-color-outline: #938F89;
+    --md-sys-color-outline-variant: #524E47;
+    --md-sys-color-inverse-surface: #E5E1DB;
+    --md-sys-color-inverse-on-surface: #322F2D;
+    --md-sys-color-inverse-primary: #C2410C;
+    --md-sys-color-surface-tint: #FFB590;
 
     --md-sys-color-scrim: rgba(0, 0, 0, 0.6);
 

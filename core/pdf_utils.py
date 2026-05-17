@@ -14,21 +14,21 @@ from reportlab.platypus.flowables import HRFlowable
 
 
 COLORS = {
-    "primary": colors.HexColor("#6750A4"),
-    "primary_light": colors.HexColor("#EADDFF"),
-    "secondary": colors.HexColor("#625B71"),
-    "surface": colors.HexColor("#FFFBFE"),
-    "on_surface": colors.HexColor("#1C1B1F"),
-    "on_surface_variant": colors.HexColor("#49454F"),
-    "outline_variant": colors.HexColor("#CAC4D0"),
+    "primary": colors.HexColor("#C2410C"),
+    "primary_light": colors.HexColor("#FFDBCD"),
+    "secondary": colors.HexColor("#8E4A27"),
+    "surface": colors.HexColor("#FFF8F5"),
+    "on_surface": colors.HexColor("#211C19"),
+    "on_surface_variant": colors.HexColor("#524E47"),
+    "outline_variant": colors.HexColor("#D1C4BB"),
     "success": colors.HexColor("#386A20"),
     "success_light": colors.HexColor("#C4F0A3"),
     "error": colors.HexColor("#BA1A1A"),
     "error_light": colors.HexColor("#FFDAD6"),
     "white": colors.white,
     "light_gray": colors.HexColor("#F5F5F5"),
-    "row_alt": colors.HexColor("#F7F2FA"),
-    "header_bg": colors.HexColor("#6750A4"),
+    "row_alt": colors.HexColor("#FAF2ED"),
+    "header_bg": colors.HexColor("#C2410C"),
     "header_text": colors.white,
 }
 
