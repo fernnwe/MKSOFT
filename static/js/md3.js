@@ -11,14 +11,13 @@
     const THEME_KEY = 'md3-theme';
 
     function getPreferredTheme() {
-        const stored = localStorage.getItem(THEME_KEY);
-        if (stored) return stored;
+        try { var stored = localStorage.getItem(THEME_KEY); if (stored) return stored; } catch(e) {}
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
     function setTheme(theme) {
         document.documentElement.setAttribute('data-md3-theme', theme);
-        localStorage.setItem(THEME_KEY, theme);
+        try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
         // Update toggle button icon if it exists
         const btn = document.querySelector('.md3-theme-toggle .material-symbols-outlined');
         if (btn) {
@@ -45,12 +44,16 @@
     window.md3ToggleTheme = toggleTheme;
 
     // --- Ripple Effect ---
+    var touchFired = false;
+
     function createRipple(e) {
         const el = e.currentTarget;
         const rect = el.getBoundingClientRect();
         const size = Math.max(rect.width, rect.height);
-        const x = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left - size / 2;
-        const y = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top - size / 2;
+        const cx = e.clientX != null ? e.clientX : (e.touches?.[0]?.clientX ?? rect.left + rect.width / 2);
+        const cy = e.clientY != null ? e.clientY : (e.touches?.[0]?.clientY ?? rect.top + rect.height / 2);
+        const x = cx - rect.left - size / 2;
+        const y = cy - rect.top - size / 2;
 
         const ripple = document.createElement('span');
         ripple.className = 'md3-ripple';
@@ -70,10 +73,18 @@
         els.forEach(function (el) {
             if (!el.classList.contains('md3-ripple-ready')) {
                 el.classList.add('md3-ripple-ready');
-                el.style.position = el.style.position || 'relative';
+                if (getComputedStyle(el).position === 'static') {
+                    el.style.position = 'relative';
+                }
                 el.style.overflow = 'hidden';
-                el.addEventListener('mousedown', createRipple);
-                el.addEventListener('touchstart', createRipple, { passive: true });
+                el.addEventListener('touchstart', function (e) {
+                    touchFired = true;
+                    createRipple(e);
+                }, { passive: true });
+                el.addEventListener('mousedown', function (e) {
+                    if (touchFired) { touchFired = false; return; }
+                    createRipple(e);
+                });
             }
         });
     }
@@ -140,7 +151,11 @@
         if (!topAppBar) return;
 
         window.addEventListener('scroll', function () {
-            topAppBar.classList.toggle('scrolled', window.scrollY > 8);
+            if (window.scrollY > 8) {
+                topAppBar.classList.add('scrolled');
+            } else {
+                topAppBar.classList.remove('scrolled');
+            }
         }, { passive: true });
     }
 
@@ -165,17 +180,23 @@
     };
 
     // --- Dialog ---
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     window.md3ShowDialog = function (opts) {
         opts = opts || {};
         var overlay = document.createElement('div');
         overlay.className = 'md3-dialog-overlay';
         overlay.innerHTML =
             '<div class="md3-dialog">' +
-            (opts.title ? '<div class="md3-dialog-header"><h2 class="md3-dialog-title">' + opts.title + '</h2></div>' : '') +
-            (opts.content ? '<div class="md3-dialog-content">' + opts.content + '</div>' : '') +
+            (opts.title ? '<div class="md3-dialog-header"><h2 class="md3-dialog-title">' + escapeHtml(opts.title) + '</h2></div>' : '') +
+            (opts.content ? '<div class="md3-dialog-content">' + escapeHtml(opts.content) + '</div>' : '') +
             '<div class="md3-dialog-actions">' +
-            (opts.cancelText ? '<button class="md3-btn md3-btn-outlined md3-dialog-cancel">' + opts.cancelText + '</button>' : '') +
-            (opts.confirmText ? '<button class="md3-btn md3-btn-filled md3-dialog-confirm">' + opts.confirmText + '</button>' : '') +
+            (opts.cancelText ? '<button class="md3-btn md3-btn-outlined md3-dialog-cancel">' + escapeHtml(opts.cancelText) + '</button>' : '') +
+            (opts.confirmText ? '<button class="md3-btn md3-btn-filled md3-dialog-confirm">' + escapeHtml(opts.confirmText) + '</button>' : '') +
             '</div></div>';
 
         document.body.appendChild(overlay);

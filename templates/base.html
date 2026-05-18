@@ -32,7 +32,7 @@
             <div class="md3-nav-drawer-user-avatar">{{ user.first_name|default:user.username|slice:":1"|upper }}</div>
             <div class="md3-nav-drawer-user-info">
                 <div class="md3-nav-drawer-user-name">{{ user.get_full_name|default:user.username }}</div>
-                <div class="md3-nav-drawer-user-role">{{ user.rol.nombre|default:"Usuario" }}</div>
+                <div class="md3-nav-drawer-user-role">{{ user.get_role_display|default:"Usuario" }}</div>
             </div>
         </div>
 
@@ -233,7 +233,7 @@
                 </div>
                 <div class="md3-top-app-bar-text">
                     <h1 class="md3-top-app-bar-title">{% block appbar_title %}{{ RESTAURANT_NAME }}{% endblock %}</h1>
-                    <span class="md3-top-app-bar-subtitle">Sistema de gestion</span>
+                    <span class="md3-top-app-bar-subtitle">Sistema de Gesti&oacute;n</span>
                 </div>
             </div>
             <div class="md3-top-app-bar-actions">
@@ -251,7 +251,7 @@
                             </div>
                             <div class="md3-avatar-dropdown-header-info">
                                 <div class="md3-avatar-dropdown-header-name">{{ user.get_full_name|default:user.username }}</div>
-                                <div class="md3-avatar-dropdown-header-role">{{ user.rol.nombre|default:"Usuario" }}</div>
+                                <div class="md3-avatar-dropdown-header-role">{{ user.get_role_display|default:"Usuario" }}</div>
                             </div>
                         </div>
                         <div class="md3-avatar-dropdown-items">
@@ -312,19 +312,19 @@
         </a>
         {% endif %}
         {% if user.can_view_mesas %}
-        <a href="{% url 'mesas:plano' %}" class="md3-bottom-nav-item {% if 'mesas' in request.resolver_match.app_name %}active{% endif %}">
+        <a href="{% url 'mesas:plano' %}" class="md3-bottom-nav-item {% if 'mesas' in request.path %}active{% endif %}">
             <span class="nav-indicator"><span class="material-symbols-outlined">table_restaurant</span></span>
             Mesas
         </a>
         {% endif %}
         {% if user.can_view_cocina %}
-        <a href="{% url 'comandas:cocina' %}" class="md3-bottom-nav-item {% if 'cocina' in request.resolver_match.app_name %}active{% endif %}">
+        <a href="{% url 'comandas:cocina' %}" class="md3-bottom-nav-item {% if 'cocina' in request.path %}active{% endif %}">
             <span class="nav-indicator"><span class="material-symbols-outlined">countertops</span></span>
             Cocina
         </a>
         {% endif %}
         {% if user.can_view_comandas %}
-        <a href="{% url 'comandas:list' %}" class="md3-bottom-nav-item {% if request.resolver_match.app_name == 'comandas' and 'cocina' not in request.path %}active{% endif %}">
+        <a href="{% url 'comandas:list' %}" class="md3-bottom-nav-item {% if 'comandas' in request.path and 'cocina' not in request.path %}active{% endif %}">
             <span class="nav-indicator"><span class="material-symbols-outlined">receipt_long</span></span>
             Comandas
         </a>
