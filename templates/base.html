@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://unpkg.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/md3.css' %}" fetchpriority="high">
     {% block extra_css %}{% endblock %}
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
@@ -368,6 +369,11 @@
         // WebSocket base URL (used by child templates)
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsBase = `${wsProtocol}//${window.location.host}`;
+    </script>
+    <script>
+        window.addEventListener('unhandledrejection', function(e) {
+            console.warn('[MKSOFT] Unhandled promise rejection:', e.reason);
+        });
     </script>
     {% endif %}
     {% block extra_js %}{% endblock %}
