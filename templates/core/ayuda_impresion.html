@@ -2,18 +2,269 @@
 {% load static %}
 {% block title %}Ayuda - Impresi&oacute;n ESC/POS{% endblock %}
 {% block appbar_title %}Ayuda: Configurar Impresi&oacute;n T&eacute;rmica{% endblock %}
+{% block extra_js %}
+<script>
+const AGENT_URL = 'http://127.0.0.1:8765';
+
+async function checkAgent() {
+    const dot = document.getElementById('agentDot');
+    const name = document.getElementById('agentPrinter');
+    const statusText = document.getElementById('agentStatusText');
+    const testBtn = document.getElementById('testPrintBtn');
+    const detectBtn = document.getElementById('detectBtn');
+    dot.className = 'agent-dot agent-dot-unknown';
+    statusText.textContent = 'Verificando...';
+    testBtn.disabled = true;
+    detectBtn.disabled = true;
+    try {
+        const r = await fetch(AGENT_URL + '/status', { signal: AbortSignal.timeout(3000) });
+        const info = await r.json();
+        if (info.win32print === false) {
+            dot.className = 'agent-dot agent-dot-warn';
+            statusText.textContent = 'pywin32 no instalado';
+            name.textContent = 'pip install pywin32';
+        } else if (info.printer) {
+            dot.className = 'agent-dot agent-dot-ok';
+            statusText.textContent = 'Agente activo';
+            name.textContent = 'Impresora: ' + info.printer;
+            testBtn.disabled = false;
+            detectBtn.disabled = false;
+        } else {
+            dot.className = 'agent-dot agent-dot-warn';
+            statusText.textContent = 'Agente activo, sin impresora detectada';
+            name.textContent = 'Ninguna impresora t&eacute;rmica encontrada';
+            detectBtn.disabled = false;
+        }
+    } catch {
+        dot.className = 'agent-dot agent-dot-error';
+        statusText.textContent = 'Agente no disponible';
+        name.textContent = 'Ejecuta printer_agent.py';
+    }
+}
+
+async function detectPrinters() {
+    const list = document.getElementById('printerList');
+    const select = document.getElementById('printerSelect');
+    list.innerHTML = '<span style="color:var(--md-sys-color-on-surface-variant);">Buscando...</span>';
+    select.innerHTML = '<option value="">Selecciona una impresora</option>';
+    try {
+        const r = await fetch(AGENT_URL + '/printers', { signal: AbortSignal.timeout(3000) });
+        const data = await r.json();
+        if (data.printers.length === 0) {
+            list.innerHTML = '<span style="color:var(--md-sys-color-on-surface-variant);">No se encontraron impresoras</span>';
+            return;
+        }
+        list.innerHTML = '<span style="color:var(--md-sys-color-success);font-weight:500;">' + data.printers.length + ' impresora(s) detectada(s)</span>';
+        data.printers.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p;
+            select.appendChild(opt);
+        });
+    } catch {
+        list.innerHTML = '<span style="color:var(--md-sys-color-error);">Error al conectar con el agente</span>';
+    }
+}
+
+async function testPrint() {
+    const panel = document.getElementById('printerPanel');
+    const select = document.getElementById('printerSelect');
+    const btn = document.getElementById('testPrintBtn');
+    const status = document.getElementById('testStatus');
+    panel.style.display = 'block';
+    btn.disabled = true;
+    status.className = 'test-status';
+    status.textContent = 'Enviando...';
+
+    // Build a minimal ESC/POS test page
+    var enc = new TextEncoder();
+    var lines = [
+        '\x1B\x40', // Initialize printer
+        '\x1B\x61\x01', // Center alignment
+        '\x1B\x21\x30', // Double height + double width
+        '*** PRUEBA ***\n',
+        '\x1B\x21\x00', // Normal
+        'MKSOFT\n',
+        'Sistema de Gestion\n',
+        '----------------\n',
+        '\x1B\x61\x00', // Left align
+        'Fecha: ' + new Date().toLocaleDateString() + '\n',
+        'Hora: ' + new Date().toLocaleTimeString() + '\n',
+        '\n',
+        '\x1B\x61\x01', // Center
+        '\x1B\x21\x10', // Double height
+        'CORRECTO!\n',
+        '\x1B\x21\x00',
+        '\nSi lees esto, la impresora\nfunciona correctamente.\n',
+        '\n\n\n',
+        '\x1B\x6D', // Partial cut
+    ];
+    var data = enc.encode(lines.join(''));
+
+    try {
+        const r = await fetch(AGENT_URL + '/print', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: data,
+            signal: AbortSignal.timeout(10000)
+        });
+        const result = await r.json();
+        if (result.success) {
+            status.className = 'test-status test-status-ok';
+            status.textContent = 'Impreso correctamente!';
+        } else {
+            status.className = 'test-status test-status-error';
+            status.textContent = 'Error: ' + (result.error || 'desconocido');
+        }
+    } catch (e) {
+        status.className = 'test-status test-status-error';
+        status.textContent = 'Error de conexi&oacute;n: ' + e.message;
+    }
+    btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    checkAgent();
+});
+</script>
+<style>
+.agent-card {
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.agent-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+.agent-dot-ok { background: var(--md-sys-color-success); box-shadow: 0 0 8px var(--md-sys-color-success); }
+.agent-dot-warn { background: var(--md-sys-color-warning); box-shadow: 0 0 8px var(--md-sys-color-warning); }
+.agent-dot-error { background: var(--md-sys-color-error); box-shadow: 0 0 8px var(--md-sys-color-error); }
+.agent-dot-unknown { background: var(--md-sys-color-outline); }
+.agent-info { flex: 1; min-width: 0; }
+.agent-title { font-size: 15px; font-weight: 600; color: var(--md-sys-color-on-surface); }
+.agent-sub { font-size: 13px; color: var(--md-sys-color-on-surface-variant); margin-top: 2px; }
+.agent-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.step-number {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--md-sys-color-primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; flex-shrink: 0;
+}
+.step-heading { font-size: 16px; font-weight: 600; color: var(--md-sys-color-on-surface); }
+.divider { height: 1px; background: var(--md-sys-color-outline-variant); margin: 16px 0; }
+.code-block {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 12px 16px; border-radius: var(--md-sys-shape-corner-medium);
+    overflow-x: auto; font-size: 13px;
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+.option-group {
+    margin: 0 0 12px 14px;
+    border-left: 3px solid var(--md-sys-color-outline-variant);
+    padding-left: 16px;
+}
+.option-label { margin-bottom: 6px; font-weight: 500; color: var(--md-sys-color-on-surface); }
+.option-box {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 8px 14px; border-radius: var(--md-sys-shape-corner-small);
+    font-size: 13px; margin-bottom: 12px;
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+.option-box:last-child { margin-bottom: 0; }
+.test-status {
+    margin-top: 8px; padding: 8px 14px; border-radius: var(--md-sys-shape-corner-small);
+    font-size: 13px; display: none;
+}
+.test-status-ok { display: block; background: var(--md-sys-color-success-container); color: var(--md-sys-color-on-success-container); }
+.test-status-error { display: block; background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+.printer-panel {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 8px; align-items: center;
+    margin-top: 12px;
+}
+.printer-panel select {
+    width: 100%; padding: 8px 12px; border-radius: var(--md-sys-shape-corner-small);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface); font-size: 13px; font-family: inherit;
+}
+@media (max-width: 600px) {
+    .printer-panel { grid-template-columns: 1fr; }
+}
+.badge-rec {
+    display: inline-block; padding: 1px 8px; border-radius: 8px;
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    font-size: 11px; font-weight: 600;
+}
+.inline-code {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 1px 6px; border-radius: 4px; font-size: 12px;
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="content-wrap" style="max-width:800px;margin:0 auto;">
 
-<div class="md3-card" style="padding:24px;margin-bottom:16px;">
-    <div class="md3-page-title" style="margin-bottom:4px;">Configurar Impresora T&eacute;rmica</div>
-    <p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:20px;">Sigue estos pasos para imprimir tickets y comandas directamente en tu impresora t&eacute;rmica.</p>
+<div class="md3-page-title" style="margin-bottom:4px;">Configurar Impresora T&eacute;rmica</div>
+<p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:20px;">Sigue estos pasos para imprimir tickets y comandas directamente en tu impresora t&eacute;rmica.</p>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+<!-- Agent Status -->
+<div class="agent-card">
+    <span class="agent-dot agent-dot-unknown" id="agentDot"></span>
+    <div class="agent-info">
+        <div class="agent-title" id="agentStatusText">Verificando...</div>
+        <div class="agent-sub" id="agentPrinter">Conectando con el agente de impresi&oacute;n</div>
+    </div>
+    <div class="agent-actions">
+        <button class="md3-btn md3-btn-outlined md3-btn-sm" onclick="checkAgent()">
+            <span class="material-symbols-outlined" style="font-size:18px;">refresh</span>
+            Verificar
+        </button>
+        <button class="md3-btn md3-btn-tonal md3-btn-sm" id="detectBtn" onclick="detectPrinters()" disabled>
+            <span class="material-symbols-outlined" style="font-size:18px;">search</span>
+            Detectar
+        </button>
+        <button class="md3-btn md3-btn-filled md3-btn-sm" id="testPrintBtn" onclick="testPrint()" disabled>
+            <span class="material-symbols-outlined" style="font-size:18px;">print</span>
+            Probar
+        </button>
+    </div>
+</div>
+
+<!-- Printer Selection -->
+<div class="md3-card" style="padding:20px 24px;margin-bottom:20px;display:none;" id="printerPanel">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:20px;">print</span>
+        <span style="font-size:15px;font-weight:600;color:var(--md-sys-color-on-surface);">Seleccionar impresora</span>
+    </div>
+    <div class="printer-panel">
+        <select id="printerSelect">
+            <option value="">Impresora detectada autom&aacute;ticamente</option>
+        </select>
+        <span id="printerList" style="font-size:13px;"></span>
+    </div>
+    <div id="testStatus" class="test-status"></div>
+</div>
+
+
+
+<div class="md3-card" style="padding:24px;margin-bottom:16px;">
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">1</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Requisitos</span>
+        <span class="step-number">1</span>
+        <span class="step-heading">Requisitos</span>
     </div>
     <ul style="margin:0 0 16px 40px;padding:0;line-height:1.8;color:var(--md-sys-color-on-surface);">
         <li>Windows 7, 10 u 11</li>
@@ -21,79 +272,77 @@
         <li>Impresora t&eacute;rmica conectada por USB o red</li>
     </ul>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+    <div class="divider"></div>
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">2</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Instalar dependencia</span>
+        <span class="step-number">2</span>
+        <span class="step-heading">Instalar dependencia</span>
     </div>
     <p style="margin-bottom:8px;color:var(--md-sys-color-on-surface);">Abre una terminal (CMD o PowerShell) como administrador y ejecuta:</p>
-    <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">pip install pywin32</pre>
+    <pre class="code-block">pip install pywin32</pre>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+    <div class="divider"></div>
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">3</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Iniciar el agente de impresi&oacute;n</span>
+        <span class="step-number">3</span>
+        <span class="step-heading">Iniciar el agente de impresi&oacute;n</span>
     </div>
 
-    <div style="margin:0 0 12px 14px;border-left:3px solid var(--md-sys-color-outline-variant);padding-left:16px;">
-        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n A &mdash; Con doble clic (para probar):</p>
-        <p style="background:var(--md-sys-color-surface-container-high);padding:8px 14px;border-radius:var(--md-sys-shape-corner-small);font-size:13px;margin-bottom:12px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">Navega a la carpeta del sistema y haz doble clic en <strong>printer_agent.py</strong>.</p>
+    <div class="option-group">
+        <p class="option-label">Opci&oacute;n A &mdash; Con doble clic (para probar):</p>
+        <p class="option-box">Navega a la carpeta del sistema y haz doble clic en <strong>printer_agent.py</strong>.</p>
     </div>
 
-    <div style="margin:0 0 12px 14px;border-left:3px solid var(--md-sys-color-outline-variant);padding-left:16px;">
-        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n B &mdash; Manual desde terminal:</p>
-        <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;margin-bottom:12px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">cd C:\ruta\del\sistema
+    <div class="option-group">
+        <p class="option-label">Opci&oacute;n B &mdash; Manual desde terminal:</p>
+        <pre class="code-block" style="margin-bottom:12px;">cd C:\ruta\del\sistema
 python printer_agent.py</pre>
     </div>
 
-    <div style="margin:0 0 16px 14px;border-left:3px solid var(--md-sys-color-tertiary);padding-left:16px;">
-        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n C &mdash; Instalar inicio autom&aacute;tico <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);font-size:11px;font-weight:600;">Recomendado</span></p>
-        <p style="background:var(--md-sys-color-surface-container-high);padding:8px 14px;border-radius:var(--md-sys-shape-corner-small);font-size:13px;margin-bottom:0;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">Haz doble clic en <strong>install_agent.bat</strong> (una sola vez). A partir de ahora el agente se iniciar&aacute; solo al encender la computadora.</p>
+    <div class="option-group" style="border-left-color:var(--md-sys-color-tertiary);">
+        <p class="option-label">Opci&oacute;n C &mdash; Inicio autom&aacute;tico <span class="badge-rec">Recomendado</span></p>
+        <p class="option-box">Haz doble clic en <strong>install_agent.bat</strong> (una sola vez). A partir de ahora el agente se iniciar&aacute; solo al encender la computadora.</p>
     </div>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+    <div class="divider"></div>
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">4</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Verificar que funciona</span>
+        <span class="step-number">4</span>
+        <span class="step-heading">Verificar que funciona</span>
     </div>
     <p style="margin-bottom:8px;color:var(--md-sys-color-on-surface);">Cuando el agente est&eacute; corriendo ver&aacute;s en la terminal:</p>
-    <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;margin-bottom:16px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">MKSOFT Printer Agent corriendo en http://127.0.0.1:8765
+    <pre class="code-block" style="margin-bottom:16px;">MKSOFT Printer Agent corriendo en http://127.0.0.1:8765
 Impresora detectada: EPSON TM-T20II</pre>
     <p style="color:var(--md-sys-color-on-surface);">Si no detecta la impresora autom&aacute;ticamente, verifica que est&eacute; encendida y conectada. El agente busca impresoras con nombres que contengan: TM, Thermal, POS, Ticket, Receipt, Epson, Star, Bixolon, Zebra.</p>
+    <p style="margin-top:8px;color:var(--md-sys-color-on-surface);">Usa el bot&oacute;n <strong>Detectar</strong> de la tarjeta superior para ver todas las impresoras disponibles en el sistema.</p>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+    <div class="divider"></div>
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">5</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Probar impresi&oacute;n</span>
+        <span class="step-number">5</span>
+        <span class="step-heading">Probar impresi&oacute;n</span>
     </div>
-    <p style="margin-bottom:16px;color:var(--md-sys-color-on-surface);">Abre cualquier factura o comanda y haz clic en el bot&oacute;n <span style="display:inline-block;padding:2px 10px;background:var(--md-sys-color-primary);color:#fff;border-radius:6px;font-size:12px;font-weight:500;">Imprimir</span> de la barra de herramientas. El sistema enviar&aacute; el ticket directamente a la impresora t&eacute;rmica.</p>
+    <p style="margin-bottom:16px;color:var(--md-sys-color-on-surface);">Usa el bot&oacute;n <strong>Probar</strong> de la tarjeta superior para imprimir una p&aacute;gina de prueba. Tambi&eacute;n puedes abrir cualquier factura o comanda y hacer clic en el bot&oacute;n <span style="display:inline-block;padding:2px 10px;background:var(--md-sys-color-primary);color:#fff;border-radius:6px;font-size:12px;font-weight:500;">Imprimir</span> de la barra de herramientas.</p>
 
-    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
+    <div class="divider"></div>
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">6</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Soluci&oacute;n de problemas</span>
+        <span class="step-number">6</span>
+        <span class="step-heading">Soluci&oacute;n de problemas</span>
     </div>
     <div class="md3-table-wrapper">
         <table class="md3-table">
             <thead>
-                <tr>
-                    <th>Problema</th>
-                    <th>Soluci&oacute;n</th>
-                </tr>
+                <tr><th>Problema</th><th>Soluci&oacute;n</th></tr>
             </thead>
             <tbody>
-                <tr><td>&ldquo;Agente no disponible&rdquo;</td><td>Ejecuta <code>printer_agent.py</code> o <code>install_agent.bat</code></td></tr>
-                <tr><td>&ldquo;pywin32 no instalado&rdquo;</td><td>Ejecuta <code>pip install pywin32</code></td></tr>
-                <tr><td>&ldquo;No se detect&oacute; impresora t&eacute;rmica&rdquo;</td><td>Verifica conexi&oacute;n USB / nombre de la impresora</td></tr>
+                <tr><td>&ldquo;Agente no disponible&rdquo;</td><td>Ejecuta <code class="inline-code">printer_agent.py</code> o <code class="inline-code">install_agent.bat</code></td></tr>
+                <tr><td>&ldquo;pywin32 no instalado&rdquo;</td><td>Ejecuta <code class="inline-code">pip install pywin32</code></td></tr>
+                <tr><td>&ldquo;No se detect&oacute; impresora t&eacute;rmica&rdquo;</td><td>Usa el bot&oacute;n <strong>Detectar</strong> para ver todas las impresoras</td></tr>
                 <tr><td>La impresi&oacute;n sale en blanco</td><td>Revisa que el papel t&eacute;rmico est&eacute; bien colocado</td></tr>
                 <tr><td>Caracteres extra&ntilde;os</td><td>La impresora no soporta ESC/POS. Usa impresora t&eacute;rmica compatible</td></tr>
                 <tr><td>Error &ldquo;Permission denied&rdquo;</td><td>Ejecuta la terminal como administrador</td></tr>
-                <tr><td>Puerto 8765 ocupado</td><td>Cierra otros programas o usa <code>python printer_agent.py --port 8766</code></td></tr>
+                <tr><td>Puerto 8765 ocupado</td><td>Cierra otros programas o usa <code class="inline-code">python printer_agent.py --port 8766</code></td></tr>
             </tbody>
         </table>
     </div>
@@ -102,10 +351,10 @@ Impresora detectada: EPSON TM-T20II</pre>
 <div class="md3-card" style="padding:24px;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
         <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:22px;">lan</span>
-        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Impresi&oacute;n por red (TCP/IP)</span>
+        <span class="step-heading">Impresi&oacute;n por red (TCP/IP)</span>
     </div>
-    <p style="color:var(--md-sys-color-on-surface);margin-bottom:8px;">Si tu impresora est&aacute; en red con IP fija, puedes imprimir directamente a&ntilde;adiendo <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">?host=192.168.1.100</code> a la URL de impresi&oacute;n. El puerto por defecto es <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">9100</code>.</p>
-    <p style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Ejemplo: <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">{% url 'facturacion:escpos' 1 %}?host=192.168.1.100</code></p>
+    <p style="color:var(--md-sys-color-on-surface);margin-bottom:8px;">Si tu impresora est&aacute; en red con IP fija, puedes imprimir directamente a&ntilde;adiendo <code class="inline-code">?host=192.168.1.100</code> a la URL de impresi&oacute;n. El puerto por defecto es <code class="inline-code">9100</code>.</p>
+    <p style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Ejemplo: <code class="inline-code">{% url 'facturacion:escpos' 1 %}?host=192.168.1.100</code></p>
 </div>
 
 </div>
