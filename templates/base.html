@@ -13,6 +13,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
     <link rel="stylesheet" href="{% static 'css/md3.css' %}" fetchpriority="high">
+    <style>
+        @media (max-width: 767px) {
+            .md3-nav-drawer-icon-wrap { width:56px !important; height:56px !important; }
+            .md3-top-app-bar-logo { width:42px !important; height:42px !important; }
+        }
+    </style>
     {% block extra_css %}{% endblock %}
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
 </head>
