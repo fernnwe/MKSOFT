@@ -498,7 +498,7 @@ class ActualizarPermisosView(PermissionRequiredMixin, LoginRequiredMixin, View):
 class ConfigRestauranteForm(forms.ModelForm):
     class Meta:
         model = ConfigRestaurante
-        fields = ["nombre", "rfc", "direccion", "telefono", "email", "simbolo_moneda", "dias_credito_proveedor", "logo"]
+        fields = ["nombre", "rfc", "direccion", "telefono", "email", "simbolo_moneda", "dias_credito_proveedor"]
 
 
 class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
