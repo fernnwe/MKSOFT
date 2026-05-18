@@ -505,8 +505,15 @@ class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
     template_name = "core/config_restaurante.html"
     permission = "can_manage_users"
 
-    def get(self, request):
+    def dispatch(self, request, *args, **kwargs):
         cliente = getattr(request.user, 'cliente', None)
+        if not cliente:
+            messages.error(request, "No tienes un restaurante asignado. La configuracion es por cada restaurante.")
+            return redirect("core:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        cliente = request.user.cliente
         config = ConfigRestaurante.get_config(cliente)
         form = ConfigRestauranteForm(instance=config)
         from respaldos.models import DatabaseBackup
@@ -521,7 +528,7 @@ class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
         })
 
     def post(self, request):
-        cliente = getattr(request.user, 'cliente', None)
+        cliente = request.user.cliente
         config = ConfigRestaurante.get_config(cliente)
         form = ConfigRestauranteForm(request.POST, request.FILES, instance=config)
         if form.is_valid():

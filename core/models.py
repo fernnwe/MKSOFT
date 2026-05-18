@@ -76,7 +76,7 @@ class PagoCliente(models.Model):
 
 
 class ConfigRestaurante(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="configs")
+    cliente = models.OneToOneField(Cliente, on_delete=models.CASCADE, related_name="config")
     nombre = models.CharField(max_length=200, default="Mi Restaurante")
     rfc = models.CharField(max_length=13, default="XAXX010101000", blank=True, verbose_name="RUC")
     direccion = models.TextField(default="Calle Principal #123", blank=True)
@@ -104,19 +104,17 @@ class ConfigRestaurante(models.Model):
                 config = cls.objects.create(cliente=cliente, nombre=cliente.nombre_negocio, simbolo_moneda=cliente.simbolo_moneda)
             return config
         from django.conf import settings
-        config = cls.objects.first()
-        if not config:
-            config = cls(
-                nombre=settings.RESTAURANT_NAME,
-                rfc=settings.RESTAURANT_RFC,
-                direccion=settings.RESTAURANT_ADDRESS,
-                telefono=settings.RESTAURANT_PHONE,
-                simbolo_moneda=settings.CURRENCY_SYMBOL,
-                tasa_impuesto=settings.TAX_RATE,
-                porcentaje_servicio=settings.PORCENTAJE_SERVICIO,
-                dias_credito_proveedor=getattr(settings, "DIAS_CREDITO_PROVEEDOR", 30),
-            )
-        return config
+        return cls(
+            nombre=settings.RESTAURANT_NAME,
+            rfc=settings.RESTAURANT_RFC,
+            direccion=settings.RESTAURANT_ADDRESS,
+            telefono=settings.RESTAURANT_PHONE,
+            email="",
+            simbolo_moneda=settings.CURRENCY_SYMBOL,
+            tasa_impuesto=settings.TAX_RATE,
+            porcentaje_servicio=settings.PORCENTAJE_SERVICIO,
+            dias_credito_proveedor=getattr(settings, "DIAS_CREDITO_PROVEEDOR", 30),
+        )
 
 
 class User(AbstractUser):
