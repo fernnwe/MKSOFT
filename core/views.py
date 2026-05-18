@@ -539,7 +539,7 @@ class AyudaImpresionView(LoginRequiredMixin, TemplateView):
     template_name = "core/ayuda_impresion.html"
 
 
-class TutorialUsoView(LoginRequiredMixin, TemplateView):
+class TutorialUsoView(TemplateView):
     template_name = "core/tutorial_uso.html"
 
 
