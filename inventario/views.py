@@ -456,8 +456,9 @@ class CompraCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
 
 
 @require_GET
+@login_required
 def ingredientes_api(request):
-    cliente = getattr(request.user, "cliente", None) if request.user.is_authenticated else None
+    cliente = getattr(request.user, "cliente", None)
     qs = Ingrediente.objects.filter(activo=True).order_by("categoria", "nombre")
     if cliente:
         qs = qs.filter(cliente=cliente)
@@ -826,6 +827,7 @@ class CuentaPorPagarDeleteView(ClienteScopeMixin, PermissionRequiredMixin, Login
         return redirect(self.success_url)
 
 
+@login_required
 def inventario_pdf(request):
     from django.http import HttpResponse
     from core.pdf_utils import generate_inventario_pdf
@@ -842,6 +844,7 @@ def inventario_pdf(request):
     return response
 
 
+@login_required
 def compras_pdf(request):
     from django.http import HttpResponse
     from core.pdf_utils import generate_compras_pdf

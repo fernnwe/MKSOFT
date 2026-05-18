@@ -85,7 +85,6 @@ class ConfigRestaurante(models.Model):
     simbolo_moneda = models.CharField(max_length=5, default="C$")
     tasa_impuesto = models.FloatField(default=0.15, help_text="Ej: 0.15 para 15%")
     porcentaje_servicio = models.FloatField(default=0.10, help_text="Ej: 0.10 para 10%")
-    logo = models.ImageField(upload_to="restaurante/", blank=True, null=True)
     dias_credito_proveedor = models.PositiveIntegerField(default=30, help_text="Dias para pagar a proveedores (cuentas por pagar)")
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 

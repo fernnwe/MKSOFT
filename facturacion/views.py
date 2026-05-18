@@ -315,6 +315,7 @@ class FacturaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         return super().post(request, *args, **kwargs)
 
 
+@login_required
 def imprimir_factura(request, pk):
     cliente = getattr(request.user, 'cliente', None)
     qs = Factura.objects.all()
@@ -324,6 +325,7 @@ def imprimir_factura(request, pk):
     return render(request, "facturacion/imprimir.html", {"factura": factura})
 
 
+@login_required
 def factura_escpos(request, pk):
     try:
         from core.escpos_utils import build_factura
@@ -343,6 +345,7 @@ def factura_escpos(request, pk):
         return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
 
 
+@login_required
 def factura_escpos_tcp(request, pk):
     """Print directly to a network printer via TCP (port 9100)."""
     from core.escpos_utils import build_factura, send_tcp
@@ -365,6 +368,7 @@ def factura_escpos_tcp(request, pk):
         return HttpResponse(f"Error al imprimir: {e}", status=500)
 
 
+@login_required
 def cierre_escpos(request):
     try:
         from core.escpos_utils import build_cierre
@@ -384,6 +388,7 @@ def cierre_escpos(request):
         return HttpResponse(f"Error ESC/POS: {e}\n\n{tb}", content_type="text/plain", status=500)
 
 
+@login_required
 def cierre_escpos_tcp(request):
     from core.escpos_utils import build_cierre, send_tcp
     from core.models import ConfigRestaurante

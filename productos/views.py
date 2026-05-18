@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db import IntegrityError, models
@@ -173,6 +174,7 @@ class CategoriaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequi
         return redirect(self.success_url)
 
 
+@login_required
 def productos_pdf(request):
     from django.http import HttpResponse
     from core.pdf_utils import generate_productos_pdf

@@ -185,11 +185,4 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
 
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
-    sentry_sdk.init(
-        dsn=os.getenv("SENTRY_DSN", ""),
-        integrations=[DjangoIntegration()],
-        traces_sample_rate=0.5,
-        send_default_pii=False,
-    )
+
