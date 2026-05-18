@@ -489,7 +489,7 @@ img {
 }
 
 .md3-nav-drawer-header {
-    padding: 20px 16px 16px;
+    padding: 24px 16px 20px;
     background: linear-gradient(135deg, var(--md-navbar-bg-start), var(--md-navbar-bg-mid), var(--md-navbar-bg-end));
     position: relative;
     overflow: hidden;
@@ -1678,8 +1678,8 @@ select.md3-input:focus ~ .md3-label {
     }
 
     .md3-nav-drawer-header {
-        padding: 14px 16px 12px;
-        padding-top: calc(12px + var(--nav-height));
+        padding: 20px 16px;
+        padding-top: calc(20px + var(--nav-height));
     }
 
     .md3-nav-drawer-section {
