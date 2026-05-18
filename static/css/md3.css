@@ -1237,36 +1237,7 @@ select.md3-input:focus ~ .md3-label {
     background: var(--md-sys-color-surface-container);
 }
 
-/* ============================================
-   FAB (Floating Action Button)
-   ============================================ */
-.md3-fab {
-    position: fixed;
-    bottom: calc(var(--bottom-nav-height) + 16px);
-    right: 16px;
-    width: 56px;
-    height: 56px;
-    border-radius: var(--md-sys-shape-corner-large);
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.1);
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: box-shadow var(--md-sys-motion-duration-short),
-                transform var(--md-sys-motion-duration-short);
-    z-index: 999;
-}
-.md3-fab:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 6px 12px rgba(0,0,0,0.15);
-    transform: scale(1.05);
-}
-.md3-fab .material-symbols-outlined {
-    font-size: 28px;
-}
+
 
 /* ============================================
    PAGE HEADER
@@ -1371,95 +1342,9 @@ select.md3-input:focus ~ .md3-label {
     flex-wrap: wrap;
 }
 
-/* ============================================
-   SWITCH
-   ============================================ */
-.md3-switch {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
 
-.md3-switch input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
 
-.md3-switch-track {
-    width: 52px;
-    height: 32px;
-    background: var(--md-sys-color-surface-container-highest);
-    border: 2px solid var(--md-sys-color-outline);
-    border-radius: var(--md-sys-shape-corner-full);
-    transition: all var(--md-sys-motion-duration-short);
-    position: relative;
-    flex-shrink: 0;
-}
 
-.md3-switch-thumb {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 24px;
-    height: 24px;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-outline);
-    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-emphasized);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.md3-switch input:checked + .md3-switch-track {
-    background: var(--md-sys-color-primary);
-    border-color: var(--md-sys-color-primary);
-}
-
-.md3-switch input:checked + .md3-switch-track .md3-switch-thumb {
-    left: 22px;
-    background: var(--md-sys-color-on-primary);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.md3-switch-label {
-    font-size: 14px;
-    color: var(--md-sys-color-on-surface);
-}
-
-/* ============================================
-   PROGRESS / LINEAR PROGRESS INDICATOR
-   ============================================ */
-.md3-linear-progress {
-    width: 100%;
-    height: 4px;
-    background: var(--md-sys-color-surface-container-highest);
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
-}
-
-.md3-linear-progress-bar {
-    height: 100%;
-    background: var(--md-sys-color-primary);
-    border-radius: 2px;
-    transition: width 0.3s var(--md-sys-motion-easing-emphasized);
-}
-
-.md3-linear-progress.indeterminate .md3-linear-progress-bar {
-    animation: md3-progress-indeterminate 2s var(--md-sys-motion-easing-emphasized) infinite;
-    width: 40%;
-}
-
-@keyframes md3-progress-indeterminate {
-    0% { transform: translateX(-100%); }
-    60% { transform: translateX(250%); }
-    100% { transform: translateX(450%); }
-}
 
 /* ============================================
    RIPPLE EFFECT
@@ -1853,75 +1738,15 @@ select.md3-input:focus ~ .md3-label {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes md3-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes md3-scale-in {
-    from { opacity: 0; transform: scale(0.92); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes md3-slide-in-right {
-    from { opacity: 0; transform: translateX(24px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes md3-count-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes md3-shimmer {
-    0% { background-position: -200px 0; }
-    100% { background-position: calc(200px + 100%) 0; }
-}
-
 @keyframes md3-badge-pulse {
     0% { box-shadow: 0 0 0 0 var(--md-sys-color-primary); }
     70% { box-shadow: 0 0 0 8px transparent; }
     100% { box-shadow: 0 0 0 0 transparent; }
 }
 
-@keyframes md3-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 /* --- Entrance animations for cards --- */
 .md3-animate-in {
     animation: md3-fade-in-up 0.4s var(--md-sys-motion-easing-emphasized) both;
-}
-
-.md3-animate-stagger > * {
-    animation: md3-fade-in-up 0.4s var(--md-sys-motion-easing-emphasized) both;
-}
-
-.md3-animate-stagger > *:nth-child(1) { animation-delay: 0s; }
-.md3-animate-stagger > *:nth-child(2) { animation-delay: 0.05s; }
-.md3-animate-stagger > *:nth-child(3) { animation-delay: 0.1s; }
-.md3-animate-stagger > *:nth-child(4) { animation-delay: 0.15s; }
-.md3-animate-stagger > *:nth-child(5) { animation-delay: 0.2s; }
-.md3-animate-stagger > *:nth-child(6) { animation-delay: 0.25s; }
-.md3-animate-stagger > *:nth-child(7) { animation-delay: 0.3s; }
-.md3-animate-stagger > *:nth-child(8) { animation-delay: 0.35s; }
-.md3-animate-stagger > *:nth-child(9) { animation-delay: 0.4s; }
-.md3-animate-stagger > *:nth-child(10) { animation-delay: 0.45s; }
-
-/* --- Skeleton Loading --- */
-.md3-skeleton {
-    background: linear-gradient(90deg,
-        var(--md-sys-color-surface-container-highest) 25%,
-        var(--md-sys-color-surface-container) 50%,
-        var(--md-sys-color-surface-container-highest) 75%
-    );
-    background-size: 200px 100%;
-    animation: md3-shimmer 1.5s ease-in-out infinite;
-    border-radius: var(--md-sys-shape-corner-small);
-    color: transparent !important;
-    user-select: none;
-    pointer-events: none;
 }
 
 /* --- Tooltip --- */
@@ -1949,47 +1774,6 @@ select.md3-input:focus ~ .md3-label {
 .md3-tooltip:hover::after {
     opacity: 1;
     transform: translateX(-50%) scale(1);
-}
-
-/* --- Segmented Buttons --- */
-.md3-segmented {
-    display: inline-flex;
-    border-radius: var(--md-sys-shape-corner-full);
-    border: 1px solid var(--md-sys-color-outline);
-    overflow: hidden;
-    background: var(--md-sys-color-surface);
-}
-
-.md3-segmented-item {
-    padding: 0 16px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--md-sys-color-on-surface-variant);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all var(--md-sys-motion-duration-short);
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-}
-.md3-segmented-item:not(:last-child) {
-    border-right: 1px solid var(--md-sys-color-outline);
-}
-.md3-segmented-item:hover {
-    background: var(--md-sys-color-surface-container-high);
-}
-.md3-segmented-item.active {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-}
-.md3-segmented-item .material-symbols-outlined {
-    font-size: 18px;
 }
 
 /* --- Stat Card (for dashboard) --- */
@@ -2159,42 +1943,6 @@ select.md3-input:focus ~ .md3-label {
     border-bottom: none;
 }
 
-/* --- Interactive Card Link --- */
-.md3-card-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    border-radius: var(--md-sys-shape-corner-medium);
-    transition: all 0.3s var(--md-sys-motion-easing-emphasized);
-}
-.md3-card-link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-}
-
-/* --- State Layer (for interactive elements) --- */
-.md3-state-layer {
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-.md3-state-layer::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: currentColor;
-    opacity: 0;
-    transition: opacity 0.15s;
-    pointer-events: none;
-}
-.md3-state-layer:hover::after {
-    opacity: 0.08;
-}
-.md3-state-layer:active::after {
-    opacity: 0.12;
-}
-
 /* --- Page Transition --- */
 .md3-page-transition {
     animation: md3-fade-in-up 0.35s var(--md-sys-motion-easing-emphasized);
@@ -2203,16 +1951,6 @@ select.md3-input:focus ~ .md3-label {
 /* --- Badge Pulse (for notifications) --- */
 .md3-badge-pulse {
     animation: md3-badge-pulse 2s ease-in-out infinite;
-}
-
-/* --- Spinner --- */
-.md3-spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid var(--md-sys-color-outline-variant);
-    border-top-color: var(--md-sys-color-primary);
-    border-radius: 50%;
-    animation: md3-spin 0.8s linear infinite;
 }
 
 /* --- Tab Bar --- */
