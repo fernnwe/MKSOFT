@@ -1,73 +1,111 @@
 {% extends "base.html" %}
-{% block title %}Ayuda - Impresión ESC/POS{% endblock %}
-{% block appbar_title %}Ayuda: Configurar Impresión Térmica{% endblock %}
+{% load static %}
+{% block title %}Ayuda - Impresi&oacute;n ESC/POS{% endblock %}
+{% block appbar_title %}Ayuda: Configurar Impresi&oacute;n T&eacute;rmica{% endblock %}
 {% block content %}
-<div class="px-3 px-md-4" style="max-width:800px; margin:0 auto;">
+<div class="content-wrap" style="max-width:800px;margin:0 auto;">
 
-<div class="md3-card-elevated" style="padding:24px; margin-bottom:16px;">
-    <h2 style="margin:0 0 8px; font-size:20px;">Configurar Impresora Térmica</h2>
-    <p style="color:#666; margin-bottom:16px;">Sigue estos pasos para imprimir tickets y comandas directamente en tu impresora térmica.</p>
+<div class="md3-card" style="padding:24px;margin-bottom:16px;">
+    <div class="md3-page-title" style="margin-bottom:4px;">Configurar Impresora T&eacute;rmica</div>
+    <p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:20px;">Sigue estos pasos para imprimir tickets y comandas directamente en tu impresora t&eacute;rmica.</p>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">1. Requisitos</h3>
-    <ul style="margin:0 0 16px; padding-left:20px; line-height:1.8;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">1</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Requisitos</span>
+    </div>
+    <ul style="margin:0 0 16px 40px;padding:0;line-height:1.8;color:var(--md-sys-color-on-surface);">
         <li>Windows 7, 10 u 11</li>
         <li>Python 3.8 o superior instalado</li>
-        <li>Impresora térmica conectada por USB o red</li>
+        <li>Impresora t&eacute;rmica conectada por USB o red</li>
     </ul>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">2. Instalar dependencia</h3>
-    <p style="margin-bottom:8px;">Abre una terminal (CMD o PowerShell) como administrador y ejecuta:</p>
-    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px;">pip install pywin32</pre>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">2</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Instalar dependencia</span>
+    </div>
+    <p style="margin-bottom:8px;color:var(--md-sys-color-on-surface);">Abre una terminal (CMD o PowerShell) como administrador y ejecuta:</p>
+    <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">pip install pywin32</pre>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">3. Iniciar el agente de impresión</h3>
-    <p style="margin-bottom:8px;">Opción A — Con doble clic (para probar):</p>
-    <p style="background:#f5f5f5; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:12px;">Navega a la carpeta del sistema y haz doble clic en <strong>printer_agent.py</strong>.</p>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">3</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Iniciar el agente de impresi&oacute;n</span>
+    </div>
 
-    <p style="margin-bottom:8px;">Opción B — Manual desde terminal:</p>
-    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px; margin-bottom:12px;">cd C:\ruta\del\sistema
+    <div style="margin:0 0 12px 14px;border-left:3px solid var(--md-sys-color-outline-variant);padding-left:16px;">
+        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n A &mdash; Con doble clic (para probar):</p>
+        <p style="background:var(--md-sys-color-surface-container-high);padding:8px 14px;border-radius:var(--md-sys-shape-corner-small);font-size:13px;margin-bottom:12px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">Navega a la carpeta del sistema y haz doble clic en <strong>printer_agent.py</strong>.</p>
+    </div>
+
+    <div style="margin:0 0 12px 14px;border-left:3px solid var(--md-sys-color-outline-variant);padding-left:16px;">
+        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n B &mdash; Manual desde terminal:</p>
+        <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;margin-bottom:12px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">cd C:\ruta\del\sistema
 python printer_agent.py</pre>
+    </div>
 
-    <p style="margin-bottom:8px;">Opción C — Instalar inicio automático (recomendado):</p>
-    <p style="background:#f5f5f5; padding:8px 12px; border-radius:4px; font-size:13px; margin-bottom:16px;">Haz doble clic en <strong>install_agent.bat</strong> (una sola vez). A partir de ahora el agente se iniciará solo al encender la computadora.</p>
+    <div style="margin:0 0 16px 14px;border-left:3px solid var(--md-sys-color-tertiary);padding-left:16px;">
+        <p style="margin-bottom:6px;font-weight:500;color:var(--md-sys-color-on-surface);">Opci&oacute;n C &mdash; Instalar inicio autom&aacute;tico <span style="display:inline-block;padding:1px 8px;border-radius:8px;background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);font-size:11px;font-weight:600;">Recomendado</span></p>
+        <p style="background:var(--md-sys-color-surface-container-high);padding:8px 14px;border-radius:var(--md-sys-shape-corner-small);font-size:13px;margin-bottom:0;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">Haz doble clic en <strong>install_agent.bat</strong> (una sola vez). A partir de ahora el agente se iniciar&aacute; solo al encender la computadora.</p>
+    </div>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">4. Verificar que funciona</h3>
-    <p style="margin-bottom:8px;">Cuando el agente esté corriendo verás en la terminal:</p>
-    <pre style="background:#f5f5f5; padding:12px; border-radius:4px; overflow-x:auto; font-size:13px; margin-bottom:16px;">MKSOFT Printer Agent corriendo en http://127.0.0.1:8765
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">4</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Verificar que funciona</span>
+    </div>
+    <p style="margin-bottom:8px;color:var(--md-sys-color-on-surface);">Cuando el agente est&eacute; corriendo ver&aacute;s en la terminal:</p>
+    <pre style="background:var(--md-sys-color-surface-container-high);padding:12px 16px;border-radius:var(--md-sys-shape-corner-medium);overflow-x:auto;font-size:13px;margin-bottom:16px;color:var(--md-sys-color-on-surface);border:1px solid var(--md-sys-color-outline-variant);">MKSOFT Printer Agent corriendo en http://127.0.0.1:8765
 Impresora detectada: EPSON TM-T20II</pre>
-    <p>Si no detecta la impresora automáticamente, verifica que esté encendida y conectada. El agente busca impresoras con nombres que contengan: TM, Thermal, POS, Ticket, Receipt, Epson, Star, Bixolon, Zebra.</p>
+    <p style="color:var(--md-sys-color-on-surface);">Si no detecta la impresora autom&aacute;ticamente, verifica que est&eacute; encendida y conectada. El agente busca impresoras con nombres que contengan: TM, Thermal, POS, Ticket, Receipt, Epson, Star, Bixolon, Zebra.</p>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">5. Probar impresión</h3>
-    <p style="margin-bottom:16px;">Abre cualquier factura o comanda y haz clic en el botón <span style="display:inline-block; padding:2px 8px; background:#2e7d32; color:#fff; border-radius:4px; font-size:12px;">Imprimir</span> de la barra de herramientas. El sistema enviará el ticket directamente a la impresora térmica.</p>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">5</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Probar impresi&oacute;n</span>
+    </div>
+    <p style="margin-bottom:16px;color:var(--md-sys-color-on-surface);">Abre cualquier factura o comanda y haz clic en el bot&oacute;n <span style="display:inline-block;padding:2px 10px;background:var(--md-sys-color-primary);color:#fff;border-radius:6px;font-size:12px;font-weight:500;">Imprimir</span> de la barra de herramientas. El sistema enviar&aacute; el ticket directamente a la impresora t&eacute;rmica.</p>
 
-    <hr style="margin:16px 0; border:none; border-top:1px solid #ddd;">
+    <div style="height:1px;background:var(--md-sys-color-outline-variant);margin:16px 0;"></div>
 
-    <h3 style="margin:0 0 8px;">6. Solución de problemas</h3>
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
-        <tr style="background:#f5f5f5;"><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Problema</th><th style="text-align:left; padding:8px; border-bottom:2px solid #ddd;">Solución</th></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"Agente no disponible"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta <code>printer_agent.py</code> o <code>install_agent.bat</code></td></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"pywin32 no instalado"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta <code>pip install pywin32</code></td></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">"No se detectó impresora térmica"</td><td style="padding:8px; border-bottom:1px solid #eee;">Verifica conexión USB/nombre de la impresora</td></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">La impresión sale en blanco</td><td style="padding:8px; border-bottom:1px solid #eee;">Revisa que el papel térmico esté bien colocado</td></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">Caracteres extraños</td><td style="padding:8px; border-bottom:1px solid #eee;">La impresora no soporta ESC/POS. Usa impresora térmica compatible</td></tr>
-        <tr><td style="padding:8px; border-bottom:1px solid #eee;">Error "Permission denied"</td><td style="padding:8px; border-bottom:1px solid #eee;">Ejecuta la terminal como administrador</td></tr>
-        <tr><td style="padding:8px;">Puerto 8765 ocupado</td><td style="padding:8px;">Cierra otros programas o usa <code>python printer_agent.py --port 8766</code></td></tr>
-    </table>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <span style="width:28px;height:28px;border-radius:50%;background:var(--md-sys-color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">6</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Soluci&oacute;n de problemas</span>
+    </div>
+    <div class="md3-table-wrapper">
+        <table class="md3-table">
+            <thead>
+                <tr>
+                    <th>Problema</th>
+                    <th>Soluci&oacute;n</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>&ldquo;Agente no disponible&rdquo;</td><td>Ejecuta <code>printer_agent.py</code> o <code>install_agent.bat</code></td></tr>
+                <tr><td>&ldquo;pywin32 no instalado&rdquo;</td><td>Ejecuta <code>pip install pywin32</code></td></tr>
+                <tr><td>&ldquo;No se detect&oacute; impresora t&eacute;rmica&rdquo;</td><td>Verifica conexi&oacute;n USB / nombre de la impresora</td></tr>
+                <tr><td>La impresi&oacute;n sale en blanco</td><td>Revisa que el papel t&eacute;rmico est&eacute; bien colocado</td></tr>
+                <tr><td>Caracteres extra&ntilde;os</td><td>La impresora no soporta ESC/POS. Usa impresora t&eacute;rmica compatible</td></tr>
+                <tr><td>Error &ldquo;Permission denied&rdquo;</td><td>Ejecuta la terminal como administrador</td></tr>
+                <tr><td>Puerto 8765 ocupado</td><td>Cierra otros programas o usa <code>python printer_agent.py --port 8766</code></td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="md3-card-elevated" style="padding:24px;">
-    <h3 style="margin:0 0 8px;">Impresión por red (TCP/IP)</h3>
-    <p>Si tu impresora está en red con IP fija, puedes imprimir directamente añadiendo <code>?host=192.168.1.100</code> a la URL de impresión. El puerto por defecto es <code>9100</code>.</p>
-    <p style="margin-top:8px; font-size:12px; color:#666;">Ejemplo: <code>{% url 'facturacion:escpos' 1 %}?host=192.168.1.100</code></p>
+<div class="md3-card" style="padding:24px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);font-size:22px;">lan</span>
+        <span style="font-size:16px;font-weight:600;color:var(--md-sys-color-on-surface);">Impresi&oacute;n por red (TCP/IP)</span>
+    </div>
+    <p style="color:var(--md-sys-color-on-surface);margin-bottom:8px;">Si tu impresora est&aacute; en red con IP fija, puedes imprimir directamente a&ntilde;adiendo <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">?host=192.168.1.100</code> a la URL de impresi&oacute;n. El puerto por defecto es <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">9100</code>.</p>
+    <p style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Ejemplo: <code style="background:var(--md-sys-color-surface-container-high);padding:1px 6px;border-radius:4px;">{% url 'facturacion:escpos' 1 %}?host=192.168.1.100</code></p>
 </div>
 
 </div>
