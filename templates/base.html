@@ -147,6 +147,10 @@
                 <span class="material-symbols-outlined">settings</span>
                 Configuración
             </a>
+            <a href="{% url 'core:tutorial_uso' %}" class="md3-nav-item {% if request.resolver_match.url_name == 'tutorial_uso' %}active{% endif %}">
+                <span class="material-symbols-outlined">school</span>
+                Tutorial
+            </a>
             <a href="{% url 'core:ayuda_impresion' %}" class="md3-nav-item {% if request.resolver_match.url_name == 'ayuda_impresion' %}active{% endif %}">
                 <span class="material-symbols-outlined">print</span>
                 Ayuda Impresión

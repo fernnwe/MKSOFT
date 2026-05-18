@@ -539,6 +539,10 @@ class AyudaImpresionView(LoginRequiredMixin, TemplateView):
     template_name = "core/ayuda_impresion.html"
 
 
+class TutorialUsoView(LoginRequiredMixin, TemplateView):
+    template_name = "core/tutorial_uso.html"
+
+
 class RestablecerFabricaView(PermissionRequiredMixin, LoginRequiredMixin, View):
     template_name = "core/config_restaurante_reset.html"
     permission = "can_manage_users"
@@ -796,7 +800,8 @@ class RestaurarUltimoRespaldoView(PermissionRequiredMixin, LoginRequiredMixin, V
             messages.success(request, "Respaldo restaurado exitosamente. Redirigiendo...")
         except Exception as e:
             ultimo.estado = DatabaseBackup.Estado.FALLIDO
-            ultimo.save(update_fields=["estado"])
+            ultimo.notas = f"Error al restaurar: {str(e)}"
+            ultimo.save(update_fields=["estado", "notas"])
             messages.error(request, f"Error al restaurar: {str(e)}")
 
         return redirect("core:config_restaurante")

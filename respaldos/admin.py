@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.shortcuts import redirect
+from django.urls import reverse
 from .models import DatabaseBackup
 
 
@@ -26,5 +28,5 @@ class DatabaseBackupAdmin(admin.ModelAdmin):
         if queryset.count() == 1:
             backup = queryset.first()
             if backup.archivo:
-                return None
-        self.message_user(request, "Selecciona un respaldo para descargar")
+                return redirect("respaldos:descargar", backup_id=backup.pk)
+        self.message_user(request, "Selecciona exactamente un respaldo para descargar")

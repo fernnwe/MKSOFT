@@ -341,7 +341,7 @@ def descargar_respaldo(request, backup_id):
         open(backup.archivo.path, "rb"),
         content_type="application/octet-stream",
     )
-    ext = ".json" if backup.tipo == DatabaseBackup.Tipo.TENANT else ".sqlite3"
+    ext = ".json"
     response["Content-Disposition"] = f'attachment; filename="{backup.nombre}{ext}"'
     return response
 

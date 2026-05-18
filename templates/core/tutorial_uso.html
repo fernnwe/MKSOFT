@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Tutorial de uso{% endblock %}
+{% block appbar_title %}Tutorial del Sistema{% endblock %}
+{% block extra_js %}
+<style>
+.tut-step {
+    background: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 24px;
+    margin-bottom: 16px;
+}
+.tut-step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.tut-step-number {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--md-sys-color-primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0;
+}
+.tut-step-title {
+    font-size: 17px; font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+}
+.tut-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+@media (max-width: 700px) {
+    .tut-grid { grid-template-columns: 1fr; }
+}
+.tut-card {
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex; gap: 14px; align-items: flex-start;
+}
+.tut-card-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 20px;
+    color: #fff;
+}
+.tut-card-icon.mesa { background: var(--md-sys-color-tertiary); }
+.tut-card-icon.comanda { background: var(--md-sys-color-primary); }
+.tut-card-icon.cocina { background: var(--md-sys-color-warning); }
+.tut-card-icon.factura { background: var(--md-sys-color-success); }
+.tut-card-icon.inventario { background: var(--md-sys-color-secondary); }
+.tut-card-icon.admin { background: var(--md-sys-color-error); }
+.tut-card-icon.wallet { background: #7c4dff; }
+.tut-card-title {
+    font-weight: 600; font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 4px;
+}
+.tut-card-desc {
+    font-size: 13px; line-height: 1.5;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.role-card {
+    background: var(--md-sys-color-surface-container-low);
+    border: 2px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+.role-card:hover {
+    border-color: var(--md-sys-color-primary);
+}
+.role-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px; font-size: 28px; color: #fff;
+}
+.role-icon.mesero { background: var(--md-sys-color-tertiary); }
+.role-icon.cajero { background: var(--md-sys-color-primary); }
+.role-icon.cocinero { background: var(--md-sys-color-warning); }
+.role-icon.admin { background: var(--md-sys-color-secondary); }
+.role-name { font-size: 16px; font-weight: 600; color: var(--md-sys-color-on-surface); }
+.role-desc { font-size: 13px; color: var(--md-sys-color-on-surface-variant); margin-top: 6px; line-height: 1.5; }
+.flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--md-sys-color-outline); font-size: 28px;
+    padding: 4px 0;
+}
+@media (min-width: 701px) {
+    .flow-arrow { padding: 0 4px; font-size: 32px; }
+}
+.flow-row {
+    display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+    align-items: center; gap: 4px;
+}
+@media (max-width: 700px) {
+    .flow-row { grid-template-columns: 1fr; }
+}
+.flow-step {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 14px 12px;
+    text-align: center;
+}
+.flow-step-icon {
+    font-size: 24px; margin-bottom: 4px;
+    color: var(--md-sys-color-primary);
+}
+.flow-step-label {
+    font-size: 12px; font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+.flow-step-desc {
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+.divider { height: 1px; background: var(--md-sys-color-outline-variant); margin: 16px 0; }
+.tip-box {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start;
+    margin-top: 12px;
+}
+.tip-box .material-symbols-outlined { font-size: 20px; flex-shrink: 0; }
+.tip-box p { margin: 0; font-size: 13px; line-height: 1.5; }
+.inline-code {
+    background: var(--md-sys-color-surface-container-high);
+    padding: 1px 6px; border-radius: 4px; font-size: 12px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrap" style="max-width:820px;margin:0 auto;">
+
+<div class="md3-page-title" style="margin-bottom:4px;">Tutorial de uso</div>
+<p style="color:var(--md-sys-color-on-surface-variant);margin-bottom:24px;">
+    Conoce el flujo de trabajo del sistema: desde que el mesero toma una orden hasta que se cierra la cuenta.
+</p>
+
+<!-- Roles Section -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px;">
+    <div class="role-card">
+        <div class="role-icon mesero">
+            <span class="material-symbols-outlined">person</span>
+        </div>
+        <div class="role-name">Mesero</div>
+        <div class="role-desc">Toma la orden en la mesa y la env&iacute;a a cocina</div>
+    </div>
+    <div class="role-card">
+        <div class="role-icon cocinero">
+            <span class="material-symbols-outlined">countertops</span>
+        </div>
+        <div class="role-name">Cocina</div>
+        <div class="role-desc">Recibe las comandas y prepara los platos</div>
+    </div>
+    <div class="role-card">
+        <div class="role-icon cajero">
+            <span class="material-symbols-outlined">payments</span>
+        </div>
+        <div class="role-name">Cajero</div>
+        <div class="role-desc">Genera la factura y cobra al cliente</div>
+    </div>
+    <div class="role-card">
+        <div class="role-icon admin">
+            <span class="material-symbols-outlined">settings</span>
+        </div>
+        <div class="role-name">Administrador</div>
+        <div class="role-desc">Configura el sistema, usuarios e inventario</div>
+    </div>
+</div>
+
+<!-- Flow Diagram -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">1</span>
+        <span class="tut-step-title">Flujo de atenci&oacute;n al cliente</span>
+    </div>
+    <p style="color:var(--md-sys-color-on-surface-variant);font-size:14px;margin-bottom:16px;">
+        As&iacute; funciona el ciclo completo desde que el cliente llega hasta que paga:
+    </p>
+
+    <div class="flow-row">
+        <div class="flow-step">
+            <div class="flow-step-icon"><span class="material-symbols-outlined">table_bar</span></div>
+            <div class="flow-step-label">1. Ocupar mesa</div>
+            <div class="flow-step-desc">El mesero asigna una mesa al cliente</div>
+        </div>
+        <div class="flow-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
+        <div class="flow-step">
+            <div class="flow-step-icon"><span class="material-symbols-outlined">edit_note</span></div>
+            <div class="flow-step-label">2. Tomar orden</div>
+            <div class="flow-step-desc">Registra los productos en una comanda</div>
+        </div>
+        <div class="flow-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
+        <div class="flow-step">
+            <div class="flow-step-icon"><span class="material-symbols-outlined">countertops</span></div>
+            <div class="flow-step-label">3. Cocina</div>
+            <div class="flow-step-desc">Cocina recibe y prepara</div>
+        </div>
+        <div class="flow-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
+        <div class="flow-step">
+            <div class="flow-step-icon"><span class="material-symbols-outlined">payments</span></div>
+            <div class="flow-step-label">4. Facturar</div>
+            <div class="flow-step-desc">Cajero genera la cuenta y cobra</div>
+        </div>
+    </div>
+
+    <div class="tip-box">
+        <span class="material-symbols-outlined">lightbulb</span>
+        <p><strong>Importante:</strong> El mesero <strong>no</strong> imprime el voucher. La factura la genera el cajero en la PC de facturaci&oacute;n, y el mesero la retira para entregarla al cliente.</p>
+    </div>
+</div>
+
+<!-- Step 2: Mesas -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">2</span>
+        <span class="tut-step-title">Gestión de mesas</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon mesa"><span class="material-symbols-outlined">table_restaurant</span></div>
+            <div>
+                <div class="tut-card-title">Plano del sal&oacute;n</div>
+                <div class="tut-card-desc">Vista gr&aacute;fica de todas las mesas con su estado: <span style="color:var(--md-sys-color-success);font-weight:500;">libre</span>, <span style="color:var(--md-sys-color-warning);font-weight:500;">ocupada</span> o <span style="color:var(--md-sys-color-error);font-weight:500;">facturando</span>.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon mesa"><span class="material-symbols-outlined">touch_app</span></div>
+            <div>
+                <div class="tut-card-title">Acciones r&aacute;pidas</div>
+                <div class="tut-card-desc">Toca una mesa para abrir el men&uacute;: ocupar, crear comanda, ver cuenta, facturar o liberar.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 3: Comandas -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">3</span>
+        <span class="tut-step-title">Comandas (pedidos)</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon comanda"><span class="material-symbols-outlined">add_circle</span></div>
+            <div>
+                <div class="tut-card-title">Crear comanda</div>
+                <div class="tut-card-desc">Selecciona productos del men&uacute;, ajusta cantidades y agrega notas. La comanda se env&iacute;a a cocina autom&aacute;ticamente.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon comanda"><span class="material-symbols-outlined">receipt_long</span></div>
+            <div>
+                <div class="tut-card-title">Lista de comandas</div>
+                <div class="tut-card-desc">Historial de pedidos con filtros por estado: abiertas, en cocina, cerradas.</div>
+            </div>
+        </div>
+    </div>
+    <div class="tip-box">
+        <span class="material-symbols-outlined">info</span>
+        <p><strong>Nota:</strong> Una comanda puede tener varios estados. Cuando el mesero la crea, pasa a <em>En cocina</em>. Al prepararse, cocina la marca como <em>Lista</em>. Al facturarse, se cierra autom&aacute;ticamente.</p>
+    </div>
+</div>
+
+<!-- Step 4: Cocina -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">4</span>
+        <span class="tut-step-title">Vista de cocina</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon cocina"><span class="material-symbols-outlined">countertops</span></div>
+            <div>
+                <div class="tut-card-title">Pantalla de cocina</div>
+                <div class="tut-card-desc">Muestra en tiempo real las comandas pendientes. Cada pedido aparece con el n&uacute;mero de mesa, productos y notas.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon cocina"><span class="material-symbols-outlined">check_circle</span></div>
+            <div>
+                <div class="tut-card-title">Marcar como listo</div>
+                <div class="tut-card-desc">El cocinero marca la comanda como lista cuando termina de preparar el plato.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 5: Facturación -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">5</span>
+        <span class="tut-step-title">Facturaci&oacute;n y cobro</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon factura"><span class="material-symbols-outlined">description</span></div>
+            <div>
+                <div class="tut-card-title">Generar factura</div>
+                <div class="tut-card-desc">Selecciona los productos consumidos, asigna mesero y el sistema calcula subtotal, IVA (15%), servicio (10%) y total.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon factura"><span class="material-symbols-outlined">payments</span></div>
+            <div>
+                <div class="tut-card-title">Registrar pago</div>
+                <div class="tut-card-desc">Efectivo, tarjeta o ambos. El sistema calcula el cambio y registra el pago. Se imprime el voucher desde la PC de caja.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon wallet"><span class="material-symbols-outlined">savings</span></div>
+            <div>
+                <div class="tut-card-title">Cierre de caja</div>
+                <div class="tut-card-desc">Al final del turno, el cajero genera un reporte con total de ventas, formas de pago y diferencias.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon factura"><span class="material-symbols-outlined">takeout_dining</span></div>
+            <div>
+                <div class="tut-card-title">Para llevar</div>
+                <div class="tut-card-desc">Crea facturas sin mesa asignada para pedidos de carry-out. Mismo proceso de cobro.</div>
+            </div>
+        </div>
+    </div>
+    <div class="tip-box">
+        <span class="material-symbols-outlined">print</span>
+        <p><strong>Impresi&oacute;n:</strong> Los vouchers se imprimen desde la PC de facturaci&oacute;n donde corre el agente de impresi&oacute;n. Revisa la secci&oacute;n <a href="{% url 'core:ayuda_impresion' %}" style="color:var(--md-sys-color-primary);font-weight:500;">Ayuda Impresi&oacute;n</a> para configurarlo.</p>
+    </div>
+</div>
+
+<!-- Step 6: Inventario -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">6</span>
+        <span class="tut-step-title">Inventario y compras</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon inventario"><span class="material-symbols-outlined">pallet</span></div>
+            <div>
+                <div class="tut-card-title">Control de stock</div>
+                <div class="tut-card-desc">Registra ingredientes y recetas. El sistema descuenta autom&aacute;ticamente del inventario al facturar.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon inventario"><span class="material-symbols-outlined">shopping_cart</span></div>
+            <div>
+                <div class="tut-card-title">Compras</div>
+                <div class="tut-card-desc">Registra compras de ingredientes a proveedores, con seguimiento de cuentas por pagar.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon inventario"><span class="material-symbols-outlined">swap_horiz</span></div>
+            <div>
+                <div class="tut-card-title">Movimientos</div>
+                <div class="tut-card-desc">Ajustes manuales de inventario: entradas, salidas, mermas y transferencias.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon inventario"><span class="material-symbols-outlined">business</span></div>
+            <div>
+                <div class="tut-card-title">Proveedores</div>
+                <div class="tut-card-desc">Directorio de proveedores con datos de contacto e historial de compras.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Step 7: Administración -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">7</span>
+        <span class="tut-step-title">Administraci&oacute;n del sistema</span>
+    </div>
+    <div class="tut-grid">
+        <div class="tut-card">
+            <div class="tut-card-icon admin"><span class="material-symbols-outlined">group</span></div>
+            <div>
+                <div class="tut-card-title">Usuarios</div>
+                <div class="tut-card-desc">Crea y gestiona usuarios del restaurante. Asigna roles (Mesero, Cajero, Cocinero, Admin) con permisos espec&iacute;ficos.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon admin"><span class="material-symbols-outlined">admin_panel_settings</span></div>
+            <div>
+                <div class="tut-card-title">Permisos</div>
+                <div class="tut-card-desc">Configura qu&eacute; puede ver y hacer cada rol: acceso a dashboard, mesas, comandas, cocina, facturaci&oacute;n e inventario.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon admin"><span class="material-symbols-outlined">settings</span></div>
+            <div>
+                <div class="tut-card-title">Configuraci&oacute;n</div>
+                <div class="tut-card-desc">Datos del restaurante, nombre, direcci&oacute;n, RUC, tel&eacute;fono. Tambi&eacute;n incluye la zona de peligro para restaurar respaldos o restablecer de f&aacute;brica.</div>
+            </div>
+        </div>
+        <div class="tut-card">
+            <div class="tut-card-icon admin"><span class="material-symbols-outlined">cloud_backup</span></div>
+            <div>
+                <div class="tut-card-title">Respaldos</div>
+                <div class="tut-card-desc">Crea copias de seguridad completas o por restaurante. Descarga, restaura o elimina respaldos desde la secci&oacute;n dedicada.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick tips -->
+<div class="tut-step">
+    <div class="tut-step-header">
+        <span class="tut-step-number">
+            <span class="material-symbols-outlined" style="font-size:18px;">lightbulb</span>
+        </span>
+        <span class="tut-step-title">Consejos r&aacute;pidos</span>
+    </div>
+    <ul style="margin:0;padding:0 0 0 20px;line-height:2;color:var(--md-sys-color-on-surface);font-size:14px;">
+        <li>Usa el <strong>men&uacute; lateral</strong> (icono <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">menu</span>) para navegar entre secciones.</li>
+        <li>Los <strong>meseros</strong> pueden usar el sistema desde un celular o tablet sin problemas.</li>
+        <li>La <strong>cocina</strong> funciona mejor en una pantalla grande o tablet fija en la cocina.</li>
+        <li>Los <strong>vouchers</strong> se imprimen &uacute;nicamente desde la PC de facturaci&oacute;n con el agente de impresi&oacute;n activo.</li>
+        <li>Activa el <strong>modo oscuro</strong> desde el icono <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">dark_mode</span> en la barra superior.</li>
+        <li>Revisa la secci&oacute;n <a href="{% url 'core:ayuda_impresion' %}" style="color:var(--md-sys-color-primary);">Ayuda Impresi&oacute;n</a> si tienes problemas para imprimir.</li>
+    </ul>
+</div>
+
+</div>
+{% endblock %}

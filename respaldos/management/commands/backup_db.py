@@ -60,6 +60,17 @@ class Command(BaseCommand):
         with open(backup_path, "rb") as f:
             file_hash = hashlib.md5(f.read()).hexdigest()
 
+        if not options["output"]:
+            from respaldos.models import DatabaseBackup
+            DatabaseBackup.objects.create(
+                nombre=f"Respaldo_Completo_{timestamp}",
+                archivo=f"respaldos/backup_{timestamp}_{unique_id}.sqlite3",
+                estado=DatabaseBackup.Estado.EXITOSO,
+                tamaño_mb=round(size_mb, 2),
+                hash_md5=file_hash,
+                notas="Respaldo desde CLI",
+            )
+
         self.stdout.write(self.style.SUCCESS(f"Respaldo creado exitosamente"))
         self.stdout.write(f"Ruta: {backup_path}")
         self.stdout.write(f"Tamaño: {size_mb:.2f} MB")

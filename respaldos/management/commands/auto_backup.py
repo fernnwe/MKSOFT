@@ -61,6 +61,7 @@ class Command(BaseCommand):
         backup = DatabaseBackup.objects.create(
             nombre=f"Auto_Respaldo_{timestamp}",
             archivo=f"respaldos/auto_backup_{timestamp}_{unique_id}.sqlite3",
+            creado_por=None,
             estado=DatabaseBackup.Estado.EXITOSO,
             tamaño_mb=round(size_mb, 2),
             hash_md5=file_hash,
@@ -72,7 +73,8 @@ class Command(BaseCommand):
 
         old_backups = DatabaseBackup.objects.filter(
             fecha_creacion__lt=cutoff_date,
-            notas="Respaldo automatico",
+            creado_por__isnull=True,
+            nombre__startswith="Auto_",
         )
 
         for old in old_backups:
