@@ -1,6 +1,5 @@
-import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView, FormView
 from django.views.generic.base import View
@@ -95,6 +94,38 @@ class FacturaForm(forms.ModelForm):
         fields = ["comanda", "cliente_nombre", "cliente_rfc", "metodo_pago", "descuento", "notas"]
 
 
+@login_required
+def comanda_data(request, pk):
+    from comandas.models import Comanda
+    if not request.user.has_perm("can_create_facturas"):
+        return JsonResponse({"error": "Sin permiso"}, status=403)
+    cliente = getattr(request.user, "cliente", None)
+    qs = Comanda.objects.all()
+    if cliente:
+        qs = qs.filter(cliente=cliente)
+    comanda = qs.filter(pk=pk).select_related("mesa").prefetch_related("items__producto").first()
+    if not comanda:
+        return JsonResponse({"error": "Comanda no encontrada"}, status=404)
+    items = []
+    for item in comanda.items.all():
+        if not item.cancelado:
+            items.append({
+                "producto": item.producto.nombre,
+                "cantidad": item.cantidad,
+                "precio": float(item.precio_unitario),
+                "subtotal": float(item.subtotal),
+                "notas": item.notas,
+            })
+    subtotal = float(comanda.total)
+    data = {
+        "codigo": comanda.codigo,
+        "mesa": comanda.mesa.numero,
+        "items": items,
+        "subtotal": subtotal,
+        "total": subtotal,
+    }
+    return JsonResponse(data)
+
 class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Factura
     form_class = FacturaForm
@@ -126,34 +157,8 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
         config = ConfigRestaurante.get_config(cliente)
-        tasa_iva = Decimal(str(config.tasa_impuesto))
-        tasa_servicio = Decimal(str(config.porcentaje_servicio))
-        context["tasa_iva"] = tasa_iva
-        context["tasa_servicio"] = tasa_servicio
-        comandas_qs = Comanda.objects.all()
-        if cliente:
-            comandas_qs = comandas_qs.filter(cliente=cliente)
-        comanda_id = self.request.GET.get("comanda")
-        if comanda_id:
-            comanda = comandas_qs.filter(id=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
-            if comanda:
-                subtotal = comanda.total
-                iva = subtotal * tasa_iva
-                servicio = subtotal * tasa_servicio
-                preview = {
-                    "subtotal": float(subtotal),
-                    "iva": float(iva),
-                    "servicio": float(servicio),
-                    "descuento": 0,
-                    "total": float(subtotal + iva + servicio),
-                }
-                context["preview"] = preview
-                context["preview_json"] = json.dumps(preview)
-                context["comanda_obj"] = comanda
-            else:
-                context["preview_json"] = json.dumps(None)
-        else:
-            context["preview_json"] = json.dumps(None)
+        context["tasa_iva"] = Decimal(str(config.tasa_impuesto))
+        context["tasa_servicio"] = Decimal(str(config.porcentaje_servicio))
         return context
 
     def form_valid(self, form):

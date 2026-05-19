@@ -80,40 +80,10 @@
                 </label>
             </div>
 
-            {% if preview %}
-            <div class="md3-card-filled" style="margin:16px;">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                    <span class="material-symbols-outlined">calculate</span>
-                    <strong>Resumen</strong>
-                </div>
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
-                    <span>Subtotal:</span>
-                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}{{ preview.subtotal|currency }}</span>
-                </div>
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;" id="previewIvaRow">
-                    <span>IVA (15%):</span>
-                    <span id="previewIva">{{ CURRENCY_SYMBOL }}{{ preview.iva|currency }}</span>
-                </div>
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);" id="previewServicioRow">
-                    <span>Servicio (10%):</span>
-                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}{{ preview.servicio|currency }}</span>
-                </div>
-                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
-                    <span>Descuento:</span>
-                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|default:0|currency }}</span>
-                </div>
-                <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:8px 0;"></div>
-                <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:20px;">
-                    <span>TOTAL:</span>
-                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|currency }}</span>
-                </div>
-            </div>
-
-            {% if comanda_obj %}
-            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <div id="comandaItemsSection" style="display:none; padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
                     <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">restaurant_menu</span>
-                    <strong>Items de {{ comanda_obj.codigo }} - Mesa {{ comanda_obj.mesa.numero }}</strong>
+                    <strong id="comandaItemsTitle">Items</strong>
                 </div>
                 <table class="md3-table" style="width:100%; font-size:14px;">
                     <thead>
@@ -124,21 +94,42 @@
                             <th style="text-align:right;">Subtotal</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for item in comanda_obj.items.all %}
-                        {% if not item.cancelado %}
-                        <tr>
-                            <td>{{ item.producto.nombre }}{% if item.notas %} <small style="color:var(--md-sys-color-on-surface-variant);">({{ item.notas }})</small>{% endif %}</td>
-                            <td style="text-align:center;">{{ item.cantidad }}</td>
-                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|currency }}</td>
-                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
-                        </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
+                    <tbody id="comandaItemsBody"></tbody>
                 </table>
             </div>
-            {% endif %}
+
+            <div class="md3-card-filled" style="margin:16px; display:none;" id="resumenCard">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                    <span class="material-symbols-outlined">calculate</span>
+                    <strong>Resumen</strong>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
+                    <span>Subtotal:</span>
+                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;" id="previewIvaRow">
+                    <span>IVA (15%):</span>
+                    <span id="previewIva">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);" id="previewServicioRow">
+                    <span>Servicio (10%):</span>
+                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
+                    <span>Descuento:</span>
+                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+                <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:8px 0;"></div>
+                <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:20px;">
+                    <span>TOTAL:</span>
+                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                </div>
+            </div>
+
+            <div id="comandaInfoMsg" style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined">info</span>
+                Selecciona una comanda para ver el resumen.
+            </div>
 
             <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:4px;">
@@ -195,13 +186,6 @@
                     </div>
                 </details>
             </div>
-            {% else %}
-            <div style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
-                <span class="material-symbols-outlined">info</span>
-                Selecciona una comanda para ver el resumen.
-            </div>
-            {% endif %}
-
             <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
                 <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
                 <button type="submit" class="md3-btn md3-btn-filled">
@@ -226,22 +210,67 @@
 
 {% block extra_js %}
 <script>
-var previewData = {{ preview_json|safe }};
+var currentSubtotal = 0;
+
+function loadComandaData(comandaId) {
+    var itemsSection = document.getElementById('comandaItemsSection');
+    var resumenCard = document.getElementById('resumenCard');
+    var infoMsg = document.getElementById('comandaInfoMsg');
+    var itemsBody = document.getElementById('comandaItemsBody');
+    var itemsTitle = document.getElementById('comandaItemsTitle');
+
+    if (!comandaId) {
+        if (itemsSection) itemsSection.style.display = 'none';
+        if (resumenCard) resumenCard.style.display = 'none';
+        if (infoMsg) infoMsg.style.display = 'flex';
+        currentSubtotal = 0;
+        recalcPreview();
+        return;
+    }
+
+    if (infoMsg) infoMsg.style.display = 'none';
+
+    fetch('/facturacion/comanda-data/' + comandaId + '/')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = data.error; }
+                return;
+            }
+            currentSubtotal = data.subtotal || 0;
+            if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
+            if (itemsBody) {
+                itemsBody.innerHTML = '';
+                data.items.forEach(function(item) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
+                    itemsBody.appendChild(tr);
+                });
+            }
+            if (itemsSection) itemsSection.style.display = '';
+            if (resumenCard) resumenCard.style.display = '';
+            recalcPreview();
+        })
+        .catch(function() {
+            if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = 'Error al cargar datos de la comanda.'; }
+        });
+}
 
 function recalcPreview() {
-    if (!previewData) return;
     var aplicarIva = document.getElementById('id_aplicar_iva').checked;
     var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
     var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-    var subtotal = previewData.subtotal;
+    var subtotal = currentSubtotal;
     var iva = aplicarIva ? subtotal * {{ tasa_iva|default:'0.15' }} : 0;
     var servicio = aplicarServicio ? subtotal * {{ tasa_servicio|default:'0.10' }} : 0;
     var total = subtotal + iva + servicio - descuentoVal;
 
+    var previewSubtotal = document.getElementById('previewSubtotal');
     var previewIva = document.getElementById('previewIva');
     var previewServicio = document.getElementById('previewServicio');
     var previewDescuento = document.getElementById('previewDescuento');
     var previewTotal = document.getElementById('previewTotal');
+    if (previewSubtotal) previewSubtotal.textContent = '{{ CURRENCY_SYMBOL }}' + subtotal.toFixed(2);
     if (previewIva) previewIva.textContent = '{{ CURRENCY_SYMBOL }}' + iva.toFixed(2);
     if (previewServicio) previewServicio.textContent = '{{ CURRENCY_SYMBOL }}' + servicio.toFixed(2);
     if (previewDescuento) previewDescuento.textContent = '-{{ CURRENCY_SYMBOL }}' + descuentoVal.toFixed(2);
@@ -290,10 +319,11 @@ function toggleEfectivoFields() {
 var comandaEl = document.getElementById('id_comanda');
 if (comandaEl) {
     comandaEl.addEventListener('change', function() {
-        if (this.value) {
-            window.location.href = '?comanda=' + this.value;
-        }
+        loadComandaData(this.value);
     });
+    if (comandaEl.value) {
+        loadComandaData(comandaEl.value);
+    }
 }
 
 var descuentoEl = document.getElementById('id_descuento');
@@ -316,9 +346,11 @@ if (metodoPago) {
 var montoRecibido = document.getElementById('id_monto_recibido');
 if (montoRecibido) {
     montoRecibido.addEventListener('input', function() {
-        var previewTotal = document.getElementById('previewTotal');
-        if (!previewTotal) return;
-        var total = parseFloat(previewTotal.textContent.replace(/[^0-9.-]/g, '')) || 0;
+        var total = currentSubtotal;
+        var aplicarIva = document.getElementById('id_aplicar_iva').checked;
+        var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
+        var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
+        total = total + (aplicarIva ? total * {{ tasa_iva|default:'0.15' }} : 0) + (aplicarServicio ? total * {{ tasa_servicio|default:'0.10' }} : 0) - descuentoVal;
         recalcCambio(total);
     });
 }

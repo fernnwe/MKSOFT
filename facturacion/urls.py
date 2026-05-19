@@ -6,6 +6,7 @@ app_name = "facturacion"
 urlpatterns = [
     path("", views.FacturaListView.as_view(), name="list"),
     path("crear/", views.FacturaCreateView.as_view(), name="crear"),
+path("comanda-data/<int:pk>/", views.comanda_data, name="comanda_data"),
     path("crear-llevar/", views.FacturaLlevarCreateView.as_view(), name="crear_llevar"),
     path("<int:pk>/", views.FacturaDetailView.as_view(), name="detalle"),
     path("<int:pk>/imprimir/", views.imprimir_factura, name="imprimir"),
