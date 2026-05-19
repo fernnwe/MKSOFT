@@ -167,38 +167,40 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        cliente = self.get_cliente()
-        config = ConfigRestaurante.get_config(cliente)
-        tasa_iva_dec = Decimal(str(config.tasa_impuesto))
-        tasa_servicio_dec = Decimal(str(config.porcentaje_servicio))
-        context["tasa_iva"] = tasa_iva_dec
-        context["tasa_servicio"] = tasa_servicio_dec
-        context["tasa_iva_pct"] = int(tasa_iva_dec * 100)
-        context["tasa_servicio_pct"] = int(tasa_servicio_dec * 100)
+        try:
+            context["tasa_iva"] = Decimal("0.15")
+            context["tasa_servicio"] = Decimal("0.10")
+            context["tasa_iva_pct"] = 15
+            context["tasa_servicio_pct"] = 10
+            cliente = self.get_cliente()
+            config = ConfigRestaurante.get_config(cliente)
+            if config:
+                iva_dec = Decimal(str(config.tasa_impuesto))
+                serv_dec = Decimal(str(config.porcentaje_servicio))
+                context["tasa_iva"] = iva_dec
+                context["tasa_servicio"] = serv_dec
+                context["tasa_iva_pct"] = int(iva_dec * 100)
+                context["tasa_servicio_pct"] = int(serv_dec * 100)
+        except Exception:
+            pass
         context["preview"] = None
         context["comanda_obj"] = None
-        comanda_id = self.request.GET.get("comanda")
-        if comanda_id:
-            from comandas.models import Comanda
-            qs = Comanda.objects.all()
-            if cliente:
-                qs = qs.filter(cliente=cliente)
-            try:
+        try:
+            comanda_id = self.request.GET.get("comanda")
+            if comanda_id:
+                from comandas.models import Comanda
+                qs = Comanda.objects.all()
+                if cliente:
+                    qs = qs.filter(cliente=cliente)
                 comanda = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
                 if comanda:
                     context["comanda_obj"] = comanda
-                    subtotal = float(comanda.total) if comanda.total else 0
-                    iva = subtotal * float(tasa_iva_dec)
-                    servicio = subtotal * float(tasa_servicio_dec)
-                    context["preview"] = {
-                        "subtotal": subtotal,
-                        "iva": iva,
-                        "servicio": servicio,
-                        "descuento": 0,
-                        "total": subtotal + iva + servicio,
-                    }
-            except Exception:
-                pass
+                    st = float(comanda.total) if comanda.total else 0
+                    iva = st * float(context["tasa_iva"])
+                    serv = st * float(context["tasa_servicio"])
+                    context["preview"] = {"subtotal": st, "iva": iva, "servicio": serv, "descuento": 0, "total": st + iva + serv}
+        except Exception:
+            pass
         return context
 
     def form_valid(self, form):
