@@ -135,7 +135,7 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
             comandas_qs = comandas_qs.filter(cliente=cliente)
         comanda_id = self.request.GET.get("comanda")
         if comanda_id:
-            comanda = comandas_qs.filter(id=comanda_id).first()
+            comanda = comandas_qs.filter(id=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
             if comanda:
                 subtotal = comanda.total
                 iva = subtotal * tasa_iva
@@ -149,6 +149,7 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
                 }
                 context["preview"] = preview
                 context["preview_json"] = json.dumps(preview)
+                context["comanda_obj"] = comanda
             else:
                 context["preview_json"] = json.dumps(None)
         else:

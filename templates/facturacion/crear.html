@@ -109,6 +109,37 @@
                 </div>
             </div>
 
+            {% if comanda_obj %}
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+                <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
+                    <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">restaurant_menu</span>
+                    <strong>Items de {{ comanda_obj.codigo }} - Mesa {{ comanda_obj.mesa.numero }}</strong>
+                </div>
+                <table class="md3-table" style="width:100%; font-size:14px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Producto</th>
+                            <th style="text-align:center;">Cant</th>
+                            <th style="text-align:right;">Precio</th>
+                            <th style="text-align:right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in comanda_obj.items.all %}
+                        {% if not item.cancelado %}
+                        <tr>
+                            <td>{{ item.producto.nombre }}{% if item.notas %} <small style="color:var(--md-sys-color-on-surface-variant);">({{ item.notas }})</small>{% endif %}</td>
+                            <td style="text-align:center;">{{ item.cantidad }}</td>
+                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|currency }}</td>
+                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|currency }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
             <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:4px;">
                     <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">payments</span>
