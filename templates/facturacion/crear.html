@@ -21,7 +21,7 @@
                     <select name="comanda" id="id_comanda" class="md3-input" required>
                         <option value="">---------</option>
                         {% for c in form.comanda.field.queryset %}
-                        <option value="{{ c.pk }}" {% if form.comanda.value == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.codigo }} - Mesa {{ c.mesa.numero }}</option>
+                        <option value="{{ c.pk }}" {% if form.comanda.value|stringformat:"s" == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.codigo }} - Mesa {{ c.mesa.numero }}</option>
                         {% endfor %}
                     </select>
                     <label class="md3-label" for="id_comanda">Comanda</label>
@@ -66,7 +66,7 @@
                 <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                     <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" {% if form.aplicar_iva.value %}checked{% endif %}>
                     <span>
-                        <strong>Aplicar IVA (15%)</strong>
+                        <strong>Aplicar IVA ({{ tasa_iva_pct }}%)</strong>
                         <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Impuesto sobre el subtotal</small>
                     </span>
                 </label>
@@ -74,16 +74,17 @@
                 <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px;">
                     <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" {% if form.aplicar_servicio.value %}checked{% endif %}>
                     <span>
-                        <strong>Aplicar servicio (10%)</strong>
+                        <strong>Aplicar servicio ({{ tasa_servicio_pct }}%)</strong>
                         <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Propina opcional</small>
                     </span>
                 </label>
             </div>
 
-            <div id="comandaItemsSection" style="display:none; padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            {% if comanda_obj %}
+            <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:12px;">
                     <span class="material-symbols-outlined" style="color:var(--md-sys-color-primary);">restaurant_menu</span>
-                    <strong id="comandaItemsTitle">Items</strong>
+                    <strong>Items de {{ comanda_obj.codigo }} - Mesa {{ comanda_obj.mesa.numero }}</strong>
                 </div>
                 <table class="md3-table" style="width:100%; font-size:14px;">
                     <thead>
@@ -94,42 +95,56 @@
                             <th style="text-align:right;">Subtotal</th>
                         </tr>
                     </thead>
-                    <tbody id="comandaItemsBody"></tbody>
+                    <tbody>
+                        {% for item in comanda_obj.items.all %}
+                        {% if not item.cancelado %}
+                        <tr>
+                            <td>{{ item.producto.nombre }}{% if item.notas %} <small style="color:var(--md-sys-color-on-surface-variant);">({{ item.notas }})</small>{% endif %}</td>
+                            <td style="text-align:center;">{{ item.cantidad }}</td>
+                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.precio_unitario|floatformat:2 }}</td>
+                            <td style="text-align:right;">{{ CURRENCY_SYMBOL }}{{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
+            {% endif %}
 
-            <div class="md3-card-filled" style="margin:16px; display:none;" id="resumenCard">
+            {% if preview %}
+            <div class="md3-card-filled" style="margin:16px;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                     <span class="material-symbols-outlined">calculate</span>
                     <strong>Resumen</strong>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;">
                     <span>Subtotal:</span>
-                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                    <span id="previewSubtotal">{{ CURRENCY_SYMBOL }}{{ preview.subtotal|floatformat:2 }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px;" id="previewIvaRow">
-                    <span>IVA (15%):</span>
-                    <span id="previewIva">{{ CURRENCY_SYMBOL }}0.00</span>
+                    <span>IVA ({{ tasa_iva_pct }}%):</span>
+                    <span id="previewIva">{{ CURRENCY_SYMBOL }}{{ preview.iva|floatformat:2 }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-success);" id="previewServicioRow">
-                    <span>Servicio (10%):</span>
-                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}0.00</span>
+                    <span>Servicio ({{ tasa_servicio_pct }}%):</span>
+                    <span id="previewServicio">{{ CURRENCY_SYMBOL }}{{ preview.servicio|floatformat:2 }}</span>
                 </div>
                 <div class="md3-flex md3-flex-justify-between" style="margin-bottom:4px; color:var(--md-sys-color-error);" id="previewDescuentoRow">
                     <span>Descuento:</span>
-                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}0.00</span>
+                    <span id="previewDescuento">-{{ CURRENCY_SYMBOL }}{{ form.descuento.value|default:0|floatformat:2 }}</span>
                 </div>
                 <div style="height:1px; background:var(--md-sys-color-outline-variant); margin:8px 0;"></div>
                 <div class="md3-flex md3-flex-justify-between" style="font-weight:700; font-size:20px;">
                     <span>TOTAL:</span>
-                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}0.00</span>
+                    <span id="previewTotal">{{ CURRENCY_SYMBOL }}{{ preview.total|floatformat:2 }}</span>
                 </div>
             </div>
-
-            <div id="comandaInfoMsg" style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
+            {% else %}
+            <div style="padding:12px 16px; margin:16px; border-radius:12px; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); font-size:14px; display:flex; align-items:center; gap:8px;">
                 <span class="material-symbols-outlined">info</span>
                 Selecciona una comanda para ver el resumen.
             </div>
+            {% endif %}
 
             <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-flex md3-flex-align-center" style="gap:8px; margin-bottom:4px;">
@@ -186,6 +201,7 @@
                     </div>
                 </details>
             </div>
+
             <div class="md3-flex md3-flex-justify-end" style="padding:8px 16px 16px; gap:8px;">
                 <a href="{% url 'facturacion:list' %}" class="md3-btn md3-btn-outlined">Cancelar</a>
                 <button type="submit" class="md3-btn md3-btn-filled">
@@ -211,93 +227,27 @@
 {% block extra_js %}
 <script>
 (function() {
-    var currentSubtotal = 0;
-    var apiUrl = '{% url "facturacion:comanda_data" pk=0 %}';
-
-    function showError(msg) {
-        var el = document.getElementById('comandaInfoMsg');
-        if (el) { el.style.display = 'flex'; el.innerHTML = '<span class="material-symbols-outlined">error</span> ' + msg; }
-    }
-
-    function renderComandaData(data) {
-        var itemsSection = document.getElementById('comandaItemsSection');
-        var resumenCard = document.getElementById('resumenCard');
-        var infoMsg = document.getElementById('comandaInfoMsg');
-        var itemsBody = document.getElementById('comandaItemsBody');
-        var itemsTitle = document.getElementById('comandaItemsTitle');
-
-        if (!data) {
-            if (itemsSection) itemsSection.style.display = 'none';
-            if (resumenCard) resumenCard.style.display = 'none';
-            if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.innerHTML = '<span class="material-symbols-outlined">info</span> Selecciona una comanda para ver el resumen.'; }
-            currentSubtotal = 0;
-            recalcPreview();
-            return;
-        }
-
-        if (infoMsg) infoMsg.style.display = 'none';
-        currentSubtotal = data.subtotal || 0;
-        if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
-        if (itemsBody) {
-            itemsBody.innerHTML = '';
-            if (data.items && data.items.length) {
-                data.items.forEach(function(item) {
-                    var tr = document.createElement('tr');
-                    tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
-                    itemsBody.appendChild(tr);
-                });
-            } else {
-                itemsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--md-sys-color-on-surface-variant);">Sin items activos</td></tr>';
-            }
-        }
-        if (itemsSection) itemsSection.style.display = '';
-        if (resumenCard) resumenCard.style.display = '';
-        recalcPreview();
-    }
-
-    function loadComandaData(comandaId) {
-        if (!comandaId) {
-            renderComandaData(null);
-            return;
-        }
-        var infoMsg = document.getElementById('comandaInfoMsg');
-        if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Cargando...'; }
-        fetch(apiUrl.replace('/0/', '/' + comandaId + '/'))
-            .then(function(r) {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            })
-            .then(function(data) {
-                if (data.error) { showError(data.error); return; }
-                renderComandaData(data);
-            })
-            .catch(function(e) {
-                showError('Error al cargar: ' + e.message);
-            });
-    }
-
     function recalcPreview() {
+        var subtotal = parseFloat(document.getElementById('previewSubtotal').textContent.replace(/[^0-9.-]/g, '')) || 0;
         var aplicarIva = document.getElementById('id_aplicar_iva').checked;
         var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
         var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-        var subtotal = currentSubtotal;
-        var iva = aplicarIva ? subtotal * {{ tasa_iva|default:'0.15' }} : 0;
-        var servicio = aplicarServicio ? subtotal * {{ tasa_servicio|default:'0.10' }} : 0;
+        var tasa_iva = {{ tasa_iva }};
+        var tasa_servicio = {{ tasa_servicio }};
+        var iva = aplicarIva ? subtotal * tasa_iva : 0;
+        var servicio = aplicarServicio ? subtotal * tasa_servicio : 0;
         var total = subtotal + iva + servicio - descuentoVal;
 
-        var els = {
-            previewSubtotal: document.getElementById('previewSubtotal'),
-            previewIva: document.getElementById('previewIva'),
-            previewServicio: document.getElementById('previewServicio'),
-            previewDescuento: document.getElementById('previewDescuento'),
-            previewTotal: document.getElementById('previewTotal'),
-        };
         var sym = '{{ CURRENCY_SYMBOL }}';
-        if (els.previewSubtotal) els.previewSubtotal.textContent = sym + subtotal.toFixed(2);
-        if (els.previewIva) els.previewIva.textContent = sym + iva.toFixed(2);
-        if (els.previewServicio) els.previewServicio.textContent = sym + servicio.toFixed(2);
-        if (els.previewDescuento) els.previewDescuento.textContent = '-' + sym + descuentoVal.toFixed(2);
-        if (els.previewTotal) els.previewTotal.textContent = sym + total.toFixed(2);
+        var previewIva = document.getElementById('previewIva');
+        var previewServicio = document.getElementById('previewServicio');
+        var previewDescuento = document.getElementById('previewDescuento');
+        var previewTotal = document.getElementById('previewTotal');
+
+        if (previewIva) previewIva.textContent = sym + iva.toFixed(2);
+        if (previewServicio) previewServicio.textContent = sym + servicio.toFixed(2);
+        if (previewDescuento) previewDescuento.textContent = '-' + sym + descuentoVal.toFixed(2);
+        if (previewTotal) previewTotal.textContent = sym + total.toFixed(2);
 
         var ivaRow = document.getElementById('previewIvaRow');
         var servicioRow = document.getElementById('previewServicioRow');
@@ -329,8 +279,7 @@
     function toggleEfectivoFields() {
         var efectivoFields = document.getElementById('efectivoFields');
         if (!efectivoFields) return;
-        var metodo = document.getElementById('id_metodo_pago').value;
-        if (metodo === 'efectivo') {
+        if (document.getElementById('id_metodo_pago').value === 'efectivo') {
             efectivoFields.style.display = 'block';
         } else {
             efectivoFields.style.display = 'none';
@@ -339,39 +288,31 @@
         }
     }
 
-    try {
-        var initialData = {{ initial_comanda_json|default:'null'|safe }};
-        if (initialData) renderComandaData(initialData);
+    document.getElementById('id_comanda').addEventListener('change', function() {
+        if (this.value) window.location.href = '?comanda=' + this.value;
+    });
 
-        var comandaEl = document.getElementById('id_comanda');
-        if (comandaEl) comandaEl.addEventListener('change', function() { loadComandaData(this.value); });
+    var el = document.getElementById('id_descuento');
+    if (el) el.addEventListener('input', recalcPreview);
 
-        var descuentoEl = document.getElementById('id_descuento');
-        if (descuentoEl) descuentoEl.addEventListener('input', recalcPreview);
+    el = document.getElementById('id_aplicar_iva');
+    if (el) el.addEventListener('change', recalcPreview);
 
-        var ivaCheck = document.getElementById('id_aplicar_iva');
-        if (ivaCheck) ivaCheck.addEventListener('change', recalcPreview);
+    el = document.getElementById('id_aplicar_servicio');
+    if (el) el.addEventListener('change', recalcPreview);
 
-        var servicioCheck = document.getElementById('id_aplicar_servicio');
-        if (servicioCheck) servicioCheck.addEventListener('change', recalcPreview);
+    el = document.getElementById('id_metodo_pago');
+    if (el) el.addEventListener('change', function() { toggleEfectivoFields(); recalcPreview(); });
 
-        var metodoPago = document.getElementById('id_metodo_pago');
-        if (metodoPago) metodoPago.addEventListener('change', function() { toggleEfectivoFields(); recalcPreview(); });
+    el = document.getElementById('id_monto_recibido');
+    if (el) el.addEventListener('input', function() {
+        var previewTotal = document.getElementById('previewTotal');
+        if (!previewTotal) return;
+        var total = parseFloat(previewTotal.textContent.replace(/[^0-9.-]/g, '')) || 0;
+        recalcCambio(total);
+    });
 
-        var montoRecibido = document.getElementById('id_monto_recibido');
-        if (montoRecibido) montoRecibido.addEventListener('input', function() {
-            var total = currentSubtotal;
-            var aplicarIva = document.getElementById('id_aplicar_iva').checked;
-            var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
-            var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-            total = total + (aplicarIva ? total * {{ tasa_iva|default:'0.15' }} : 0) + (aplicarServicio ? total * {{ tasa_servicio|default:'0.10' }} : 0) - descuentoVal;
-            recalcCambio(total);
-        });
-
-        toggleEfectivoFields();
-    } catch (e) {
-        showError('Error JS: ' + e.message);
-    }
+    toggleEfectivoFields();
 })();
 </script>
 {% endblock %}

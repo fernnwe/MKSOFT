@@ -169,49 +169,34 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
         config = ConfigRestaurante.get_config(cliente)
-        context["tasa_iva"] = Decimal(str(config.tasa_impuesto))
-        context["tasa_servicio"] = Decimal(str(config.porcentaje_servicio))
-        context["initial_comanda_json"] = None
-        comanda_id = self.get_initial().get("comanda")
+        tasa_iva_dec = Decimal(str(config.tasa_impuesto))
+        tasa_servicio_dec = Decimal(str(config.porcentaje_servicio))
+        context["tasa_iva"] = tasa_iva_dec
+        context["tasa_servicio"] = tasa_servicio_dec
+        context["tasa_iva_pct"] = int(tasa_iva_dec * 100)
+        context["tasa_servicio_pct"] = int(tasa_servicio_dec * 100)
+        context["preview"] = None
+        context["comanda_obj"] = None
+        comanda_id = self.request.GET.get("comanda")
         if comanda_id:
             from comandas.models import Comanda
             qs = Comanda.objects.all()
             if cliente:
                 qs = qs.filter(cliente=cliente)
             try:
-                c = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
-                if c:
-                    items = []
-                    for item in c.items.all():
-                        if not item.cancelado:
-                            try:
-                                items.append({
-                                    "producto": item.producto.nombre,
-                                    "cantidad": item.cantidad,
-                                    "precio": float(item.precio_unitario),
-                                    "subtotal": float(item.subtotal),
-                                    "notas": item.notas,
-                                })
-                            except Exception:
-                                items.append({
-                                    "producto": str(item.producto),
-                                    "cantidad": 0,
-                                    "precio": 0,
-                                    "subtotal": 0,
-                                    "notas": "",
-                                })
-                    try:
-                        st = float(c.total)
-                    except Exception:
-                        st = 0
-                    from json import dumps
-                    context["initial_comanda_json"] = dumps({
-                        "codigo": c.codigo,
-                        "mesa": c.mesa.numero if c.mesa else 0,
-                        "items": items,
-                        "subtotal": st,
-                        "total": st,
-                    })
+                comanda = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
+                if comanda:
+                    context["comanda_obj"] = comanda
+                    subtotal = float(comanda.total) if comanda.total else 0
+                    iva = subtotal * float(tasa_iva_dec)
+                    servicio = subtotal * float(tasa_servicio_dec)
+                    context["preview"] = {
+                        "subtotal": subtotal,
+                        "iva": iva,
+                        "servicio": servicio,
+                        "descuento": 0,
+                        "total": subtotal + iva + servicio,
+                    }
             except Exception:
                 pass
         return context
