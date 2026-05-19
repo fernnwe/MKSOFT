@@ -8,7 +8,7 @@ from django.db import IntegrityError, models
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
 from .models import Producto, Categoria
 from comandas.models import ComandaItem
-from inventario.models import Receta, Ingrediente, Inventario, MovimientoInventario
+from inventario.models import Receta, Ingrediente
 
 
 def _limpiar_huerfanos(cliente):
@@ -176,6 +176,9 @@ class CategoriaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequi
 
 @login_required
 def productos_pdf(request):
+    if not request.user.has_perm("can_view_productos"):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("No tienes permiso para ver productos")
     from django.http import HttpResponse
     from core.pdf_utils import generate_productos_pdf
     from core.models import ConfigRestaurante
@@ -231,9 +234,10 @@ class RecetaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         cliente = self.get_cliente()
-        form.fields["ingrediente"].queryset = Ingrediente.objects.filter(
-            cliente=cliente, activo=True
-        ).exclude(
+        qs_ing = Ingrediente.objects.filter(activo=True)
+        if cliente:
+            qs_ing = qs_ing.filter(cliente=cliente)
+        form.fields["ingrediente"].queryset = qs_ing.exclude(
             id__in=Receta.objects.filter(producto=self.producto).values("ingrediente_id")
         )
         return form
@@ -277,6 +281,10 @@ class RecetaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
     def dispatch(self, request, *args, **kwargs):
         self.producto = get_object_or_404(Producto, pk=self.kwargs["producto_pk"])
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        messages.error(request, "Para eliminar un ingrediente de la receta usa el boton de eliminar")
+        return redirect(self.get_success_url())
 
     def post(self, request, *args, **kwargs):
         return self.delete(request, *args, **kwargs)

@@ -65,7 +65,8 @@ class MesaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
     permission = "can_view_mesas"
 
     def get(self, request, *args, **kwargs):
-        return self.post(request, *args, **kwargs)
+        messages.error(request, "Para eliminar la mesa usa el boton de eliminar")
+        return redirect(self.success_url)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()

@@ -247,7 +247,7 @@ class UsuarioListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission = "can_manage_users"
 
     def get_queryset(self):
-        qs = User.objects.select_related("cliente").filter(is_superuser=False)
+        qs = User.objects.select_related("cliente").filter(is_superuser=False).exclude(cliente=None)
         if not self.request.user.is_superuser:
             cliente = getattr(self.request.user, "cliente", None)
             if cliente:
@@ -440,6 +440,10 @@ class PermisosMeserosView(PermissionRequiredMixin, LoginRequiredMixin, ListView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        usuarios = context["usuarios"]
+        context["total_admins"] = sum(1 for u in usuarios if u.role == "admin")
+        context["total_meseros"] = sum(1 for u in usuarios if u.role == "waiter")
+        context["total_cajeros"] = sum(1 for u in usuarios if u.role == "cashier")
         context["all_perms"] = [
             ("General", [
                 ("can_view_dashboard", "Dashboard"),
@@ -498,7 +502,7 @@ class ActualizarPermisosView(PermissionRequiredMixin, LoginRequiredMixin, View):
 class ConfigRestauranteForm(forms.ModelForm):
     class Meta:
         model = ConfigRestaurante
-        fields = ["nombre", "rfc", "direccion", "telefono", "email", "simbolo_moneda", "dias_credito_proveedor"]
+        fields = ["nombre", "rfc", "direccion", "telefono", "email", "simbolo_moneda", "tasa_impuesto", "porcentaje_servicio", "dias_credito_proveedor"]
 
 
 class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
@@ -530,7 +534,7 @@ class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
     def post(self, request):
         cliente = request.user.cliente
         config = ConfigRestaurante.get_config(cliente)
-        form = ConfigRestauranteForm(request.POST, request.FILES, instance=config)
+        form = ConfigRestauranteForm(request.POST, instance=config)
         if form.is_valid():
             form.save()
             messages.success(request, "Configuracion del restaurante actualizada")
@@ -875,6 +879,12 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
         context["clientes_por_vencer"] = clientes_por_vencer
         totales_por_cliente = dict(PagoCliente.objects.values("cliente").annotate(total=Sum("monto")).values_list("cliente", "total"))
         context["totales_por_cliente"] = totales_por_cliente
+        context["filter_chips"] = [
+            ("todos", "Todos", "all_inclusive", clientes.count()),
+            ("activos", "Activos", "check_circle", clientes.filter(estado=Cliente.Estado.ACTIVO).count()),
+            ("prueba", "Prueba", "science", clientes.filter(estado=Cliente.Estado.PRUEBA).count()),
+            ("vencidos", "Vencidos", "error", clientes.filter(estado=Cliente.Estado.VENCIDO).count()),
+        ]
         return context
 
 

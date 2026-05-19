@@ -83,7 +83,10 @@ class InventarioListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequir
         context["orden_actual"] = self.request.GET.get("orden", "ingrediente__categoria")
         context["alertas"] = self.request.GET.get("alertas", "")
         context["total_ingredientes"] = self.get_queryset().count()
-        context["bajo_stock_count"] = Inventario.objects.filter(
+        qs_inv = Inventario.objects.all()
+        if cliente:
+            qs_inv = qs_inv.filter(ingrediente__cliente=cliente)
+        context["bajo_stock_count"] = qs_inv.filter(
             Q(cantidad_actual__lte=F("ingrediente__stock_minimo"), ingrediente__stock_minimo__gt=0) |
             Q(cantidad_actual=0)
         ).count()
@@ -98,14 +101,6 @@ class IngredienteCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginReq
     permission = "can_manage_inventario"
 
     def get_form(self, form_class=None):
-        cliente = self.get_cliente()
-        if cliente:
-            Ingrediente.objects.filter(
-                cliente=cliente,
-                inventario__isnull=True
-            ).annotate(
-                has_compras=models.Exists(CompraItem.objects.filter(ingrediente=models.OuterRef('pk')))
-            ).filter(has_compras=False).delete()
         form = super().get_form(form_class)
         return form
 
@@ -348,6 +343,9 @@ class CompraListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
     paginate_by = 20
     permission = "can_manage_inventario"
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("items__ingrediente")
+
 
 class CompraCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     model = Compra
@@ -426,7 +424,8 @@ class CompraCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequired
                     if c > 0 and co >= 0:
                         cliente = self.get_cliente()
                         if cliente and ing.cliente_id != cliente.pk:
-                            raise forms.ValidationError(f"Ingrediente '{ing.nombre}' no pertenece a tu restaurante")
+                            messages.error(self.request, f"Ingrediente '{ing.nombre}' no pertenece a tu restaurante")
+                            return self.form_invalid(form)
                         items_data.append((ing, c, co))
                 except (Ingrediente.DoesNotExist, ValueError):
                     pass
@@ -933,7 +932,9 @@ def inventario_export_excel(request):
     from openpyxl.styles import Font, Alignment, Border, Side
 
     cliente = ClienteScopeMixin.get_cliente_static(request)
-    qs = Inventario.objects.filter(ingrediente__cliente=cliente).select_related("ingrediente")
+    qs = Inventario.objects.select_related("ingrediente")
+    if cliente:
+        qs = qs.filter(ingrediente__cliente=cliente)
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -988,7 +989,9 @@ def compras_export_excel(request):
     from openpyxl.styles import Font, Alignment, Border, Side
 
     cliente = ClienteScopeMixin.get_cliente_static(request)
-    qs = Compra.objects.filter(cliente=cliente).prefetch_related("items__ingrediente")
+    qs = Compra.objects.prefetch_related("items__ingrediente")
+    if cliente:
+        qs = qs.filter(cliente=cliente)
 
     wb = openpyxl.Workbook()
     ws = wb.active

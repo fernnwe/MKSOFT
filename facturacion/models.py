@@ -28,14 +28,16 @@ class CajaApertura(models.Model):
         return f"Caja {self.pk} - {self.fecha_apertura.strftime('%d/%m/%Y %H:%M')} ({self.get_estado_display()})"
 
     def cerrar(self, monto_cierre, usuario):
-        self.fecha_cierre = models.functions.Now()
+        from django.utils import timezone
+        ahora = timezone.now()
+        self.fecha_cierre = ahora
         self.usuario_cierre = usuario
         self.estado = self.Estado.CERRADA
         self.monto_cierre_efectivo = monto_cierre
         from django.db.models import Sum
         facturas_efectivo = Factura.objects.filter(
             fecha_emision__gte=self.fecha_apertura,
-            fecha_emision__lte=self.fecha_cierre,
+            fecha_emision__lte=ahora,
             estado=Factura.Estado.PAGADA,
             metodo_pago=Factura.MetodoPago.EFECTIVO
         ).aggregate(total=Sum("total_con_impuestos"))["total"] or 0

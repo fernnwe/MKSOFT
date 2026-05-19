@@ -29,19 +29,19 @@
         </div>
         <div class="md3-card-elevated">
             <div class="md3-card-body" style="text-align: center;">
-                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'admin' %}1{% endif %}{% endfor %}</div>
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{{ total_admins }}</div>
                 <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Administradores</div>
             </div>
         </div>
         <div class="md3-card-elevated">
             <div class="md3-card-body" style="text-align: center;">
-                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'waiter' %}1{% endif %}{% endfor %}</div>
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{{ total_meseros }}</div>
                 <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Meseros</div>
             </div>
         </div>
         <div class="md3-card-elevated">
             <div class="md3-card-body" style="text-align: center;">
-                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{% for u in usuarios %}{% if u.role == 'cashier' %}1{% endif %}{% endfor %}</div>
+                <div style="font-weight: bold; font-size: 1.5rem; color: var(--md-sys-color-primary);">{{ total_cajeros }}</div>
                 <div style="font-size: 0.875rem; color: var(--md-sys-color-on-surface-variant);">Cajeros</div>
             </div>
         </div>

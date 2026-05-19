@@ -203,8 +203,8 @@ function recalcPreview() {
     var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
     var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
     var subtotal = previewData.subtotal;
-    var iva = aplicarIva ? subtotal * 0.15 : 0;
-    var servicio = aplicarServicio ? subtotal * 0.10 : 0;
+    var iva = aplicarIva ? subtotal * {{ tasa_iva|default:'0.15' }} : 0;
+    var servicio = aplicarServicio ? subtotal * {{ tasa_servicio|default:'0.10' }} : 0;
     var total = subtotal + iva + servicio - descuentoVal;
 
     var previewIva = document.getElementById('previewIva');

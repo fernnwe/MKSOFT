@@ -28,7 +28,7 @@ class ComandaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredM
     permission = "can_view_comandas"
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("mesa", "mesero")
+        qs = super().get_queryset().select_related("mesa", "mesero").prefetch_related("items")
         estado = self.request.GET.get("estado")
         if estado:
             qs = qs.filter(estado=estado)
@@ -82,15 +82,18 @@ class ComandaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         response = super().form_valid(form)
         messages.success(self.request, f"Comanda {form.instance.codigo} creada. Agrega productos y envia a cocina.")
 
-        async_to_sync(get_channel_layer().group_send)(
-            "comandas",
-            {
-                "type": "comanda_new",
-                "comanda_id": form.instance.pk,
-                "codigo": form.instance.codigo,
-                "mesa": str(mesa),
-            },
-        )
+        try:
+            async_to_sync(get_channel_layer().group_send)(
+                "comandas",
+                {
+                    "type": "comanda_new",
+                    "comanda_id": form.instance.pk,
+                    "codigo": form.instance.codigo,
+                    "mesa": str(mesa),
+                },
+            )
+        except Exception:
+            pass
         return response
 
     def get_context_data(self, **kwargs):
@@ -182,15 +185,18 @@ def agregar_item(request, pk):
             notas=notas,
         )
 
-        async_to_sync(get_channel_layer().group_send)(
-            "comandas",
-            {
-                "type": "comanda_update",
-                "comanda_id": comanda.pk,
-                "total": float(comanda.total),
-                "items_count": comanda.items_count,
-            },
-        )
+        try:
+            async_to_sync(get_channel_layer().group_send)(
+                "comandas",
+                {
+                    "type": "comanda_update",
+                    "comanda_id": comanda.pk,
+                    "total": float(comanda.total),
+                    "items_count": comanda.items_count,
+                },
+            )
+        except Exception:
+            pass
         messages.success(request, f"{cantidad}x {producto.nombre} agregado a la comanda")
     return redirect("comandas:detalle", pk=pk)
 

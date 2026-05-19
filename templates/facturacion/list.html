@@ -158,28 +158,28 @@
             <div class="active-filter-chip">
                 <span class="material-symbols-outlined">calendar_today</span>
                 {{ fecha_desde|default:"Inicio" }} → {{ fecha_hasta|default:"Hoy" }}
-                <a href="{% if estado_actual %}estado={{ estado_actual }}{% endif %}{% if search %}{% if estado_actual %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if estado_actual or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+                <a href="?{% if estado_actual %}estado={{ estado_actual }}{% endif %}{% if search %}{% if estado_actual %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if estado_actual or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
             </div>
             {% endif %}
             {% if estado_actual %}
             <div class="active-filter-chip">
                 <span class="material-symbols-outlined">label</span>
                 {{ estado_actual|title }}
-                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+                <a href="?{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta %}&{% endif %}search={{ search }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or search %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
             </div>
             {% endif %}
             {% if search %}
             <div class="active-filter-chip">
                 <span class="material-symbols-outlined">search</span>
                 "{{ search }}"
-                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+                <a href="?{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if orden_actual != '-fecha_emision' %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}orden={{ orden_actual }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
             </div>
             {% endif %}
             {% if orden_actual != '-fecha_emision' %}
             <div class="active-filter-chip">
                 <span class="material-symbols-outlined">sort</span>
                 Orden: {{ orden_actual }}
-                <a href="{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}search={{ search }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
+                <a href="?{% if fecha_desde %}fecha_desde={{ fecha_desde }}{% endif %}{% if fecha_hasta %}{% if fecha_desde %}&{% endif %}fecha_hasta={{ fecha_hasta }}{% endif %}{% if estado_actual %}{% if fecha_desde or fecha_hasta %}&{% endif %}estado={{ estado_actual }}{% endif %}{% if search %}{% if fecha_desde or fecha_hasta or estado_actual %}&{% endif %}search={{ search }}{% endif %}" style="text-decoration:none;"><span class="material-symbols-outlined">close</span></a>
             </div>
             {% endif %}
         </div>

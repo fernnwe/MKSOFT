@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView, FormView
 from django.views.generic.base import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Sum, Exists, OuterRef, Q
@@ -51,9 +51,9 @@ class FacturaListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredM
         search = self.request.GET.get("search")
         if search:
             qs = qs.filter(
-                models.Q(folio__icontains=search) |
-                models.Q(cliente_nombre__icontains=search) |
-                models.Q(comanda__codigo__icontains=search)
+                Q(folio__icontains=search) |
+                Q(cliente_nombre__icontains=search) |
+                Q(comanda__codigo__icontains=search)
             )
 
         orden = self.request.GET.get("orden", "-fecha_emision")
@@ -523,7 +523,7 @@ class CierreCajaConfirmView(ClienteScopeMixin, PermissionRequiredMixin, LoginReq
         self.caja.notas = notas if notas else self.caja.notas
         self.caja.cerrar(monto_cierre, self.request.user)
         messages.success(self.request, f"Caja cerrada. Diferencia: C${self.caja.diferencia:+.2f}")
-        return redirect("facturacion:cierre_exitoso")
+        return redirect(f"{reverse('facturacion:cierre_exitoso')}?caja_id={self.caja.pk}")
 
 
 class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, TemplateView):
@@ -956,7 +956,9 @@ def facturas_export_excel(request):
     from core.views import ClienteScopeMixin
 
     cliente = ClienteScopeMixin.get_cliente_static(request)
-    qs = Factura.objects.filter(cliente=cliente).select_related("comanda__mesa")
+    qs = Factura.objects.select_related("comanda__mesa")
+    if cliente:
+        qs = qs.filter(cliente=cliente)
 
     wb = openpyxl.Workbook()
     ws = wb.active
