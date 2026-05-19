@@ -18,6 +18,9 @@
             .md3-nav-drawer-icon-wrap { width:56px !important; height:56px !important; }
             .md3-top-app-bar-logo { width:42px !important; height:42px !important; }
         }
+        @media (min-width: 1024px) {
+            .md3-top-app-bar-logo { display:none !important; }
+        }
     </style>
     {% block extra_css %}{% endblock %}
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
