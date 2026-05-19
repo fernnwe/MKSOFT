@@ -109,17 +109,29 @@ def comanda_data(request, pk):
     items = []
     for item in comanda.items.all():
         if not item.cancelado:
-            items.append({
-                "producto": item.producto.nombre,
-                "cantidad": item.cantidad,
-                "precio": float(item.precio_unitario),
-                "subtotal": float(item.subtotal),
-                "notas": item.notas,
-            })
-    subtotal = float(comanda.total)
+            try:
+                items.append({
+                    "producto": item.producto.nombre,
+                    "cantidad": item.cantidad,
+                    "precio": float(item.precio_unitario),
+                    "subtotal": float(item.subtotal),
+                    "notas": item.notas,
+                })
+            except Exception:
+                items.append({
+                    "producto": str(item.producto),
+                    "cantidad": 0,
+                    "precio": 0,
+                    "subtotal": 0,
+                    "notas": "",
+                })
+    try:
+        subtotal = float(comanda.total)
+    except Exception:
+        subtotal = 0
     data = {
         "codigo": comanda.codigo,
-        "mesa": comanda.mesa.numero,
+        "mesa": comanda.mesa.numero if comanda.mesa else 0,
         "items": items,
         "subtotal": subtotal,
         "total": subtotal,
@@ -166,26 +178,42 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
             qs = Comanda.objects.all()
             if cliente:
                 qs = qs.filter(cliente=cliente)
-            c = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
-            if c:
-                items = []
-                for item in c.items.all():
-                    if not item.cancelado:
-                        items.append({
-                            "producto": item.producto.nombre,
-                            "cantidad": item.cantidad,
-                            "precio": float(item.precio_unitario),
-                            "subtotal": float(item.subtotal),
-                            "notas": item.notas,
-                        })
-                from json import dumps
-                context["initial_comanda_json"] = dumps({
-                    "codigo": c.codigo,
-                    "mesa": c.mesa.numero,
-                    "items": items,
-                    "subtotal": float(c.total),
-                    "total": float(c.total),
-                })
+            try:
+                c = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
+                if c:
+                    items = []
+                    for item in c.items.all():
+                        if not item.cancelado:
+                            try:
+                                items.append({
+                                    "producto": item.producto.nombre,
+                                    "cantidad": item.cantidad,
+                                    "precio": float(item.precio_unitario),
+                                    "subtotal": float(item.subtotal),
+                                    "notas": item.notas,
+                                })
+                            except Exception:
+                                items.append({
+                                    "producto": str(item.producto),
+                                    "cantidad": 0,
+                                    "precio": 0,
+                                    "subtotal": 0,
+                                    "notas": "",
+                                })
+                    try:
+                        st = float(c.total)
+                    except Exception:
+                        st = 0
+                    from json import dumps
+                    context["initial_comanda_json"] = dumps({
+                        "codigo": c.codigo,
+                        "mesa": c.mesa.numero if c.mesa else 0,
+                        "items": items,
+                        "subtotal": st,
+                        "total": st,
+                    })
+            except Exception:
+                pass
         return context
 
     def form_valid(self, form):

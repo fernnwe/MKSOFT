@@ -210,162 +210,168 @@
 
 {% block extra_js %}
 <script>
-var currentSubtotal = 0;
+(function() {
+    var currentSubtotal = 0;
+    var apiUrl = '{% url "facturacion:comanda_data" pk=0 %}';
 
-function renderComandaData(data) {
-    var itemsSection = document.getElementById('comandaItemsSection');
-    var resumenCard = document.getElementById('resumenCard');
-    var infoMsg = document.getElementById('comandaInfoMsg');
-    var itemsBody = document.getElementById('comandaItemsBody');
-    var itemsTitle = document.getElementById('comandaItemsTitle');
-
-    if (!data) {
-        if (itemsSection) itemsSection.style.display = 'none';
-        if (resumenCard) resumenCard.style.display = 'none';
-        if (infoMsg) infoMsg.style.display = 'flex';
-        currentSubtotal = 0;
-        recalcPreview();
-        return;
+    function showError(msg) {
+        var el = document.getElementById('comandaInfoMsg');
+        if (el) { el.style.display = 'flex'; el.innerHTML = '<span class="material-symbols-outlined">error</span> ' + msg; }
     }
 
-    if (infoMsg) infoMsg.style.display = 'none';
-    currentSubtotal = data.subtotal || 0;
-    if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
-    if (itemsBody) {
-        itemsBody.innerHTML = '';
-        data.items.forEach(function(item) {
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
-            itemsBody.appendChild(tr);
-        });
-    }
-    if (itemsSection) itemsSection.style.display = '';
-    if (resumenCard) resumenCard.style.display = '';
-    recalcPreview();
-}
+    function renderComandaData(data) {
+        var itemsSection = document.getElementById('comandaItemsSection');
+        var resumenCard = document.getElementById('resumenCard');
+        var infoMsg = document.getElementById('comandaInfoMsg');
+        var itemsBody = document.getElementById('comandaItemsBody');
+        var itemsTitle = document.getElementById('comandaItemsTitle');
 
-function loadComandaData(comandaId) {
-    if (!comandaId) {
-        renderComandaData(null);
-        return;
-    }
-    var infoMsg = document.getElementById('comandaInfoMsg');
-    if (infoMsg) infoMsg.textContent = 'Cargando...';
-    fetch('/facturacion/comanda-data/' + comandaId + '/')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (data.error) {
-                if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = data.error; }
-                return;
+        if (!data) {
+            if (itemsSection) itemsSection.style.display = 'none';
+            if (resumenCard) resumenCard.style.display = 'none';
+            if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.innerHTML = '<span class="material-symbols-outlined">info</span> Selecciona una comanda para ver el resumen.'; }
+            currentSubtotal = 0;
+            recalcPreview();
+            return;
+        }
+
+        if (infoMsg) infoMsg.style.display = 'none';
+        currentSubtotal = data.subtotal || 0;
+        if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
+        if (itemsBody) {
+            itemsBody.innerHTML = '';
+            if (data.items && data.items.length) {
+                data.items.forEach(function(item) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
+                    itemsBody.appendChild(tr);
+                });
+            } else {
+                itemsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--md-sys-color-on-surface-variant);">Sin items activos</td></tr>';
             }
-            renderComandaData(data);
-        })
-        .catch(function() {
-            if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = 'Error al cargar datos de la comanda.'; }
-        });
-}
-
-function recalcPreview() {
-    var aplicarIva = document.getElementById('id_aplicar_iva').checked;
-    var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
-    var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-    var subtotal = currentSubtotal;
-    var iva = aplicarIva ? subtotal * {{ tasa_iva|default:'0.15' }} : 0;
-    var servicio = aplicarServicio ? subtotal * {{ tasa_servicio|default:'0.10' }} : 0;
-    var total = subtotal + iva + servicio - descuentoVal;
-
-    var previewSubtotal = document.getElementById('previewSubtotal');
-    var previewIva = document.getElementById('previewIva');
-    var previewServicio = document.getElementById('previewServicio');
-    var previewDescuento = document.getElementById('previewDescuento');
-    var previewTotal = document.getElementById('previewTotal');
-    if (previewSubtotal) previewSubtotal.textContent = '{{ CURRENCY_SYMBOL }}' + subtotal.toFixed(2);
-    if (previewIva) previewIva.textContent = '{{ CURRENCY_SYMBOL }}' + iva.toFixed(2);
-    if (previewServicio) previewServicio.textContent = '{{ CURRENCY_SYMBOL }}' + servicio.toFixed(2);
-    if (previewDescuento) previewDescuento.textContent = '-{{ CURRENCY_SYMBOL }}' + descuentoVal.toFixed(2);
-    if (previewTotal) previewTotal.textContent = '{{ CURRENCY_SYMBOL }}' + total.toFixed(2);
-
-    var ivaRow = document.getElementById('previewIvaRow');
-    var servicioRow = document.getElementById('previewServicioRow');
-    var descuentoRow = document.getElementById('previewDescuentoRow');
-    if (ivaRow) ivaRow.style.display = aplicarIva ? '' : 'none';
-    if (servicioRow) servicioRow.style.display = aplicarServicio ? '' : 'none';
-    if (descuentoRow) descuentoRow.style.display = descuentoVal > 0 ? '' : 'none';
-
-    recalcCambio(total);
-}
-
-function recalcCambio(total) {
-    var montoEl = document.getElementById('id_monto_recibido');
-    if (!montoEl) return;
-    var montoRecibido = parseFloat(montoEl.value) || 0;
-    var cambioBox = document.getElementById('cambioBox');
-    var previewCambio = document.getElementById('previewCambio');
-    if (!cambioBox || !previewCambio) return;
-    var metodo = document.getElementById('id_metodo_pago').value;
-    if (metodo === 'efectivo' && montoRecibido > 0) {
-        var cambio = montoRecibido - total;
-        previewCambio.textContent = '{{ CURRENCY_SYMBOL }}' + Math.abs(cambio).toFixed(2);
-        cambioBox.style.display = cambio >= 0 ? 'block' : 'none';
-    } else {
-        cambioBox.style.display = 'none';
-    }
-}
-
-function toggleEfectivoFields() {
-    var efectivoFields = document.getElementById('efectivoFields');
-    if (!efectivoFields) return;
-    var metodo = document.getElementById('id_metodo_pago').value;
-    if (metodo === 'efectivo') {
-        efectivoFields.style.display = 'block';
-    } else {
-        efectivoFields.style.display = 'none';
-        var cambioBox = document.getElementById('cambioBox');
-        if (cambioBox) cambioBox.style.display = 'none';
-    }
-}
-
-var initialData = {{ initial_comanda_json|default:'null'|safe }};
-if (initialData) {
-    renderComandaData(initialData);
-}
-
-var comandaEl = document.getElementById('id_comanda');
-if (comandaEl) {
-    comandaEl.addEventListener('change', function() {
-        loadComandaData(this.value);
-    });
-}
-
-var descuentoEl = document.getElementById('id_descuento');
-if (descuentoEl) descuentoEl.addEventListener('input', recalcPreview);
-
-var ivaCheck = document.getElementById('id_aplicar_iva');
-if (ivaCheck) ivaCheck.addEventListener('change', recalcPreview);
-
-var servicioCheck = document.getElementById('id_aplicar_servicio');
-if (servicioCheck) servicioCheck.addEventListener('change', recalcPreview);
-
-var metodoPago = document.getElementById('id_metodo_pago');
-if (metodoPago) {
-    metodoPago.addEventListener('change', function() {
-        toggleEfectivoFields();
+        }
+        if (itemsSection) itemsSection.style.display = '';
+        if (resumenCard) resumenCard.style.display = '';
         recalcPreview();
-    });
-}
+    }
 
-var montoRecibido = document.getElementById('id_monto_recibido');
-if (montoRecibido) {
-    montoRecibido.addEventListener('input', function() {
-        var total = currentSubtotal;
+    function loadComandaData(comandaId) {
+        if (!comandaId) {
+            renderComandaData(null);
+            return;
+        }
+        var infoMsg = document.getElementById('comandaInfoMsg');
+        if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Cargando...'; }
+        fetch(apiUrl.replace('/0/', '/' + comandaId + '/'))
+            .then(function(r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                if (data.error) { showError(data.error); return; }
+                renderComandaData(data);
+            })
+            .catch(function(e) {
+                showError('Error al cargar: ' + e.message);
+            });
+    }
+
+    function recalcPreview() {
         var aplicarIva = document.getElementById('id_aplicar_iva').checked;
         var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
         var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-        total = total + (aplicarIva ? total * {{ tasa_iva|default:'0.15' }} : 0) + (aplicarServicio ? total * {{ tasa_servicio|default:'0.10' }} : 0) - descuentoVal;
-        recalcCambio(total);
-    });
-}
+        var subtotal = currentSubtotal;
+        var iva = aplicarIva ? subtotal * {{ tasa_iva|default:'0.15' }} : 0;
+        var servicio = aplicarServicio ? subtotal * {{ tasa_servicio|default:'0.10' }} : 0;
+        var total = subtotal + iva + servicio - descuentoVal;
 
-toggleEfectivoFields();
+        var els = {
+            previewSubtotal: document.getElementById('previewSubtotal'),
+            previewIva: document.getElementById('previewIva'),
+            previewServicio: document.getElementById('previewServicio'),
+            previewDescuento: document.getElementById('previewDescuento'),
+            previewTotal: document.getElementById('previewTotal'),
+        };
+        var sym = '{{ CURRENCY_SYMBOL }}';
+        if (els.previewSubtotal) els.previewSubtotal.textContent = sym + subtotal.toFixed(2);
+        if (els.previewIva) els.previewIva.textContent = sym + iva.toFixed(2);
+        if (els.previewServicio) els.previewServicio.textContent = sym + servicio.toFixed(2);
+        if (els.previewDescuento) els.previewDescuento.textContent = '-' + sym + descuentoVal.toFixed(2);
+        if (els.previewTotal) els.previewTotal.textContent = sym + total.toFixed(2);
+
+        var ivaRow = document.getElementById('previewIvaRow');
+        var servicioRow = document.getElementById('previewServicioRow');
+        var descuentoRow = document.getElementById('previewDescuentoRow');
+        if (ivaRow) ivaRow.style.display = aplicarIva ? '' : 'none';
+        if (servicioRow) servicioRow.style.display = aplicarServicio ? '' : 'none';
+        if (descuentoRow) descuentoRow.style.display = descuentoVal > 0 ? '' : 'none';
+
+        recalcCambio(total);
+    }
+
+    function recalcCambio(total) {
+        var montoEl = document.getElementById('id_monto_recibido');
+        if (!montoEl) return;
+        var montoRecibido = parseFloat(montoEl.value) || 0;
+        var cambioBox = document.getElementById('cambioBox');
+        var previewCambio = document.getElementById('previewCambio');
+        if (!cambioBox || !previewCambio) return;
+        var metodo = document.getElementById('id_metodo_pago').value;
+        if (metodo === 'efectivo' && montoRecibido > 0) {
+            var cambio = montoRecibido - total;
+            previewCambio.textContent = '{{ CURRENCY_SYMBOL }}' + Math.abs(cambio).toFixed(2);
+            cambioBox.style.display = cambio >= 0 ? 'block' : 'none';
+        } else {
+            cambioBox.style.display = 'none';
+        }
+    }
+
+    function toggleEfectivoFields() {
+        var efectivoFields = document.getElementById('efectivoFields');
+        if (!efectivoFields) return;
+        var metodo = document.getElementById('id_metodo_pago').value;
+        if (metodo === 'efectivo') {
+            efectivoFields.style.display = 'block';
+        } else {
+            efectivoFields.style.display = 'none';
+            var cambioBox = document.getElementById('cambioBox');
+            if (cambioBox) cambioBox.style.display = 'none';
+        }
+    }
+
+    try {
+        var initialData = {{ initial_comanda_json|default:'null'|safe }};
+        if (initialData) renderComandaData(initialData);
+
+        var comandaEl = document.getElementById('id_comanda');
+        if (comandaEl) comandaEl.addEventListener('change', function() { loadComandaData(this.value); });
+
+        var descuentoEl = document.getElementById('id_descuento');
+        if (descuentoEl) descuentoEl.addEventListener('input', recalcPreview);
+
+        var ivaCheck = document.getElementById('id_aplicar_iva');
+        if (ivaCheck) ivaCheck.addEventListener('change', recalcPreview);
+
+        var servicioCheck = document.getElementById('id_aplicar_servicio');
+        if (servicioCheck) servicioCheck.addEventListener('change', recalcPreview);
+
+        var metodoPago = document.getElementById('id_metodo_pago');
+        if (metodoPago) metodoPago.addEventListener('change', function() { toggleEfectivoFields(); recalcPreview(); });
+
+        var montoRecibido = document.getElementById('id_monto_recibido');
+        if (montoRecibido) montoRecibido.addEventListener('input', function() {
+            var total = currentSubtotal;
+            var aplicarIva = document.getElementById('id_aplicar_iva').checked;
+            var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
+            var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
+            total = total + (aplicarIva ? total * {{ tasa_iva|default:'0.15' }} : 0) + (aplicarServicio ? total * {{ tasa_servicio|default:'0.10' }} : 0) - descuentoVal;
+            recalcCambio(total);
+        });
+
+        toggleEfectivoFields();
+    } catch (e) {
+        showError('Error JS: ' + e.message);
+    }
+})();
 </script>
 {% endblock %}
