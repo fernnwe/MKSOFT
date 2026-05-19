@@ -875,8 +875,6 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
         context["ingresos_anio"] = ingresos_anio
         pagos_recientes = PagoCliente.objects.select_related("cliente").order_by("-fecha")[:10]
         context["pagos_recientes"] = pagos_recientes
-        clientes_por_vencer = clientes.filter(fecha_pago_proximo__isnull=False).order_by("fecha_pago_proximo")[:5]
-        context["clientes_por_vencer"] = clientes_por_vencer
         totales_por_cliente = dict(PagoCliente.objects.values("cliente").annotate(total=Sum("monto")).values_list("cliente", "total"))
         context["totales_por_cliente"] = totales_por_cliente
         context["filter_chips"] = [
@@ -884,6 +882,7 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
             ("activos", "Activos", "check_circle", clientes.filter(estado=Cliente.Estado.ACTIVO).count()),
             ("prueba", "Prueba", "science", clientes.filter(estado=Cliente.Estado.PRUEBA).count()),
             ("vencidos", "Vencidos", "error", clientes.filter(estado=Cliente.Estado.VENCIDO).count()),
+            ("cancelados", "Cancelados", "block", clientes.filter(estado=Cliente.Estado.CANCELADO).count()),
         ]
         return context
 
@@ -911,15 +910,19 @@ class ClienteCreateView(PermissionRequiredMixin, LoginRequiredMixin, View):
 
         if not nombre or not admin_username:
             messages.error(request, "Nombre del negocio y usuario administrador son obligatorios")
-            return render(request, self.template_name, {"nombre": nombre, "rfc": rfc, "direccion": direccion, "telefono": telefono, "email": email, "admin_username": admin_username, "admin_email": admin_email})
+            return render(request, self.template_name, {"nombre": nombre, "rfc": rfc, "direccion": direccion, "telefono": telefono, "email": email, "admin_username": admin_username, "admin_email": admin_email, "periodo": periodo})
 
         if User.objects.filter(username=admin_username).exists():
             messages.error(request, f"El usuario '{admin_username}' ya existe")
-            return render(request, self.template_name, {"nombre": nombre, "rfc": rfc, "direccion": direccion, "telefono": telefono, "email": email, "admin_username": admin_username, "admin_email": admin_email})
+            return render(request, self.template_name, {"nombre": nombre, "rfc": rfc, "direccion": direccion, "telefono": telefono, "email": email, "admin_username": admin_username, "admin_email": admin_email, "periodo": periodo})
 
         password = _generar_contrasena(10)
         fecha_inicio = timezone.now()
-        periodo_dias = int(periodo)
+        try:
+            periodo_dias = int(periodo)
+        except (ValueError, TypeError):
+            messages.error(request, "Periodo no valido")
+            return render(request, self.template_name, {"nombre": nombre, "rfc": rfc, "direccion": direccion, "telefono": telefono, "email": email, "admin_username": admin_username, "admin_email": admin_email, "periodo": periodo})
         fecha_pago = fecha_inicio + timedelta(days=periodo_dias)
 
         cliente = Cliente.objects.create(
@@ -1067,7 +1070,8 @@ class ClienteUpdateView(PermissionRequiredMixin, LoginRequiredMixin, View):
         if periodo:
             from django.utils import timezone
             from datetime import timedelta
-            cliente.fecha_pago_proximo = timezone.now() + timedelta(days=int(periodo))
+            base = timezone.now() if cliente.fecha_pago_proximo is None or cliente.fecha_pago_proximo < timezone.now() else cliente.fecha_pago_proximo
+            cliente.fecha_pago_proximo = base + timedelta(days=int(periodo))
 
         nueva_password = request.POST.get("nueva_password", "").strip()
         if nueva_password:
@@ -1119,11 +1123,16 @@ class ClienteRegistrarPagoView(PermissionRequiredMixin, LoginRequiredMixin, View
             messages.error(request, "Monto no valido")
             return redirect("core:superadmin_cliente_detalle", pk=pk)
 
+        if monto_dec <= 0:
+            messages.error(request, "El monto debe ser mayor a cero")
+            return redirect("core:superadmin_cliente_detalle", pk=pk)
+
         PagoCliente.objects.create(cliente=cliente, monto=monto_dec, metodo=metodo, notas=notas)
 
         from django.utils import timezone
         from datetime import timedelta
-        cliente.fecha_pago_proximo = timezone.now() + timedelta(days=30)
+        base = timezone.now() if cliente.fecha_pago_proximo is None or cliente.fecha_pago_proximo < timezone.now() else cliente.fecha_pago_proximo
+        cliente.fecha_pago_proximo = base + timedelta(days=30)
 
         if cliente.estado == Cliente.Estado.VENCIDO:
             cliente.estado = Cliente.Estado.ACTIVO

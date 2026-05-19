@@ -182,7 +182,7 @@
 <div style="padding:0 16px; margin-bottom:24px;">
     <div class="clients-grid" id="clientsGrid">
         {% for cliente in clientes %}
-        <div class="client-card" data-estado="{{ cliente.estado }}" data-nombre="{{ cliente.nombre_negocio|lower }}" data-admin="{{ cliente.admin_username|lower }}" onclick="goToDetail('{{ cliente.pk }}')">
+        <div class="client-card" data-estado="{{ cliente.estado }}" data-nombre="{{ cliente.nombre_negocio|lower }}" data-admin="{{ cliente.admin_username|lower }}" data-detail-url="{% url 'core:superadmin_cliente_detalle' cliente.pk %}" onclick="goToDetail(this)">
             <div class="client-header">
                 <div class="client-info">
                     <h3>{{ cliente.nombre_negocio }}</h3>
@@ -297,8 +297,8 @@ function filterClients() {
         card.style.display = matchEstado && matchSearch ? '' : 'none';
     });
 }
-function goToDetail(pk) {
-    window.location.href = `/superadmin/cliente/${pk}/`;
+function goToDetail(card) {
+    window.location.href = card.dataset.detailUrl;
 }
 </script>
 {% endblock %}

@@ -120,23 +120,23 @@
 <!-- Tab Navigation -->
 <div class="px-3 px-md-4">
     <div class="md3-tab-bar">
-        <button class="md3-tab-item active" onclick="switchTab('info')">
+        <button class="md3-tab-item active" data-tab="info" onclick="switchTab('info')">
             <span class="material-symbols-outlined">info</span>
             Informacion
         </button>
-        <button class="md3-tab-item" onclick="switchTab('credenciales')">
+        <button class="md3-tab-item" data-tab="credenciales" onclick="switchTab('credenciales')">
             <span class="material-symbols-outlined">lock</span>
             Credenciales
         </button>
-        <button class="md3-tab-item" onclick="switchTab('acciones')">
+        <button class="md3-tab-item" data-tab="acciones" onclick="switchTab('acciones')">
             <span class="material-symbols-outlined">build</span>
             Acciones
         </button>
-        <button class="md3-tab-item" onclick="switchTab('pagos')">
+        <button class="md3-tab-item" data-tab="pagos" onclick="switchTab('pagos')">
             <span class="material-symbols-outlined">receipt_long</span>
             Historial de Pagos
         </button>
-        <button class="md3-tab-item" onclick="switchTab('usuarios')">
+        <button class="md3-tab-item" data-tab="usuarios" onclick="switchTab('usuarios')">
             <span class="material-symbols-outlined">people</span>
             Usuarios
         </button>
@@ -528,7 +528,7 @@
 <script>
 function switchTab(name) {
     document.querySelectorAll('.md3-tab-item').forEach(tab => {
-        tab.classList.toggle('active', tab.textContent.toLowerCase().includes(name.toLowerCase().substring(0, 4)));
+        tab.classList.toggle('active', tab.dataset.tab === name);
     });
     document.querySelectorAll('.md3-tab-panel').forEach(panel => {
         panel.classList.toggle('active', panel.dataset.tab === name);
@@ -571,7 +571,7 @@ function togglePermCard(header) {
     const card = header.closest('.md3-card-outlined');
     const body = card.querySelector('div[style*="max-height"]');
     const icon = card.querySelector('.material-symbols-outlined');
-    if (body.style.maxHeight === '0px' || body.style.maxHeight === '') {
+    if (body.style.maxHeight === '0px' || body.style.maxHeight === '0' || body.style.maxHeight === '') {
         body.style.maxHeight = '2000px';
         icon.style.transform = 'rotate(180deg)';
     } else {
