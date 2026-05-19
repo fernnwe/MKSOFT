@@ -232,8 +232,8 @@
         var aplicarIva = document.getElementById('id_aplicar_iva').checked;
         var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
         var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
-        var tasa_iva = {{ tasa_iva }};
-        var tasa_servicio = {{ tasa_servicio }};
+        var tasa_iva = {{ tasa_iva|unlocalize }};
+        var tasa_servicio = {{ tasa_servicio|unlocalize }};
         var iva = aplicarIva ? subtotal * tasa_iva : 0;
         var servicio = aplicarServicio ? subtotal * tasa_servicio : 0;
         var total = subtotal + iva + servicio - descuentoVal;
