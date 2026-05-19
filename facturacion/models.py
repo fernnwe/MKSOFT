@@ -14,7 +14,7 @@ class CajaApertura(models.Model):
     monto_inicial = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     usuario_apertura = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="cajas_abiertas")
     usuario_cierre = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="cajas_cerradas")
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ABIERTA)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ABIERTA, db_index=True)
     notas = models.TextField(blank=True)
     monto_cierre_efectivo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     diferencia = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -83,8 +83,8 @@ class Factura(models.Model):
     total_sin_impuestos = models.DecimalField(max_digits=10, decimal_places=2)
     total_con_impuestos = models.DecimalField(max_digits=10, decimal_places=2)
 
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
-    metodo_pago = models.CharField(max_length=20, choices=MetodoPago.choices, blank=True)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE, db_index=True)
+    metodo_pago = models.CharField(max_length=20, choices=MetodoPago.choices, blank=True, db_index=True)
     notas = models.TextField(blank=True)
 
     monto_recibido = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Monto recibido del cliente en efectivo")
@@ -94,7 +94,7 @@ class Factura(models.Model):
     divisa_monto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Equivalente en otra moneda")
     divisa_tasa = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True, help_text="Tasa de cambio usada")
 
-    fecha_emision = models.DateTimeField(auto_now_add=True)
+    fecha_emision = models.DateTimeField(auto_now_add=True, db_index=True)
     fecha_pago = models.DateTimeField(null=True, blank=True)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
@@ -102,6 +102,10 @@ class Factura(models.Model):
         ordering = ["-fecha_emision"]
         verbose_name = "Factura"
         verbose_name_plural = "Facturas"
+        indexes = [
+            models.Index(fields=["cliente", "estado", "fecha_emision"], name="factura_cliente_estado_fecha"),
+            models.Index(fields=["cliente", "metodo_pago", "estado"], name="factura_cliente_metodo_estado"),
+        ]
         constraints = [
             models.UniqueConstraint(fields=["cliente", "folio"], name="unique_factura_folio_per_cliente"),
         ]

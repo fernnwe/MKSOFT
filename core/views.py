@@ -181,49 +181,46 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             factura_qs = factura_qs.filter(cliente=cliente)
             inventario_qs = inventario_qs.filter(ingrediente__cliente=cliente)
 
-        context["mesas_ocupadas"] = mesa_qs.filter(estado=Mesa.Estado.OCUPADA).count()
-        context["mesas_libres"] = mesa_qs.filter(estado=Mesa.Estado.LIBRE).count()
-        context["mesas_reservadas"] = mesa_qs.filter(estado=Mesa.Estado.RESERVADA).count()
-        context["mesas_total"] = mesa_qs.count()
+        mesa_counts = mesa_qs.aggregate(
+            ocupadas=Count("pk", filter=Q(estado=Mesa.Estado.OCUPADA)),
+            libres=Count("pk", filter=Q(estado=Mesa.Estado.LIBRE)),
+            reservadas=Count("pk", filter=Q(estado=Mesa.Estado.RESERVADA)),
+            total=Count("pk"),
+        )
+        context["mesas_ocupadas"] = mesa_counts["ocupadas"]
+        context["mesas_libres"] = mesa_counts["libres"]
+        context["mesas_reservadas"] = mesa_counts["reservadas"]
+        context["mesas_total"] = mesa_counts["total"]
 
         ahora = localtime(now())
         hoy_inicio = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
         hoy_fin = ahora.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-        context["comandas_abiertas"] = comanda_qs.filter(estado=Comanda.Estado.ABIERTA).count()
-        context["comandas_en_cocina"] = comanda_qs.filter(estado=Comanda.Estado.EN_COCINA).count()
-        context["comandas_cerradas"] = comanda_qs.filter(estado=Comanda.Estado.CERRADA).count()
-        context["comandas_hoy"] = comanda_qs.filter(
-            fecha_creacion__gte=hoy_inicio,
-            fecha_creacion__lte=hoy_fin
-        ).count()
+        comanda_counts = comanda_qs.aggregate(
+            abiertas=Count("pk", filter=Q(estado=Comanda.Estado.ABIERTA)),
+            en_cocina=Count("pk", filter=Q(estado=Comanda.Estado.EN_COCINA)),
+            cerradas=Count("pk", filter=Q(estado=Comanda.Estado.CERRADA)),
+            hoy=Count("pk", filter=Q(fecha_creacion__gte=hoy_inicio, fecha_creacion__lte=hoy_fin)),
+        )
+        context["comandas_abiertas"] = comanda_counts["abiertas"]
+        context["comandas_en_cocina"] = comanda_counts["en_cocina"]
+        context["comandas_cerradas"] = comanda_counts["cerradas"]
+        context["comandas_hoy"] = comanda_counts["hoy"]
 
         facturas_pagadas = factura_qs.filter(estado=Factura.Estado.PAGADA)
 
-        facturas_hoy = facturas_pagadas.filter(
-            fecha_emision__gte=hoy_inicio,
-            fecha_emision__lte=hoy_fin
-        )
-        hoy_stats = facturas_hoy.aggregate(
+        venta_stats = facturas_pagadas.aggregate(
+            hoy_total=Sum("total_con_impuestos", filter=Q(fecha_emision__gte=hoy_inicio, fecha_emision__lte=hoy_fin)),
+            hoy_count=Count("pk", filter=Q(fecha_emision__gte=hoy_inicio, fecha_emision__lte=hoy_fin)),
+            mes_total=Sum("total_con_impuestos", filter=Q(fecha_emision__month=ahora.month, fecha_emision__year=ahora.year)),
             total=Sum("total_con_impuestos"),
-            count=Count("id")
+            total_count=Count("pk"),
         )
-        context["ventas_hoy"] = hoy_stats["total"] or 0
-        context["facturas_hoy"] = hoy_stats["count"] or 0
-
-        facturas_mes = facturas_pagadas.filter(
-            fecha_emision__month=ahora.month,
-            fecha_emision__year=ahora.year
-        )
-        mes_stats = facturas_mes.aggregate(total=Sum("total_con_impuestos"))
-        context["ventas_mes"] = mes_stats["total"] or 0
-
-        total_stats = facturas_pagadas.aggregate(
-            total=Sum("total_con_impuestos"),
-            count=Count("id")
-        )
-        context["ventas_total"] = total_stats["total"] or 0
-        context["facturas_total"] = total_stats["count"] or 0
+        context["ventas_hoy"] = venta_stats["hoy_total"] or 0
+        context["facturas_hoy"] = venta_stats["hoy_count"] or 0
+        context["ventas_mes"] = venta_stats["mes_total"] or 0
+        context["ventas_total"] = venta_stats["total"] or 0
+        context["facturas_total"] = venta_stats["total_count"] or 0
 
         context["productos_bajo_stock"] = inventario_qs.filter(
             cantidad_actual__lte=F("ingrediente__stock_minimo")
@@ -244,6 +241,7 @@ class UsuarioListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = User
     template_name = "core/usuarios/list.html"
     context_object_name = "usuarios"
+    paginate_by = 30
     permission = "can_manage_users"
 
     def get_queryset(self):
@@ -861,29 +859,41 @@ class SuperAdminListView(PermissionRequiredMixin, LoginRequiredMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from django.utils import timezone
-        from django.db.models import Sum, OuterRef, Subquery
+        from django.db.models import Sum
         clientes = Cliente.objects.all()
         context["clientes"] = clientes
-        context["total_clientes"] = clientes.count()
-        context["clientes_activos"] = clientes.filter(estado=Cliente.Estado.ACTIVO).count()
-        context["clientes_prueba"] = clientes.filter(estado=Cliente.Estado.PRUEBA).count()
-        context["clientes_vencidos"] = clientes.filter(estado=Cliente.Estado.VENCIDO).count()
-        total_ingresos = PagoCliente.objects.aggregate(total=Sum("monto"))["total"] or 0
-        context["total_ingresos"] = total_ingresos
-        ingresos_mes = PagoCliente.objects.filter(fecha__month=timezone.now().month, fecha__year=timezone.now().year).aggregate(total=Sum("monto"))["total"] or 0
-        context["ingresos_mes"] = ingresos_mes
-        ingresos_anio = PagoCliente.objects.filter(fecha__year=timezone.now().year).aggregate(total=Sum("monto"))["total"] or 0
-        context["ingresos_anio"] = ingresos_anio
+
+        cliente_stats = clientes.aggregate(
+            total=Count("pk"),
+            activos=Count("pk", filter=Q(estado=Cliente.Estado.ACTIVO)),
+            prueba=Count("pk", filter=Q(estado=Cliente.Estado.PRUEBA)),
+            vencidos=Count("pk", filter=Q(estado=Cliente.Estado.VENCIDO)),
+            cancelados=Count("pk", filter=Q(estado=Cliente.Estado.CANCELADO)),
+        )
+        context["total_clientes"] = cliente_stats["total"]
+        context["clientes_activos"] = cliente_stats["activos"]
+        context["clientes_prueba"] = cliente_stats["prueba"]
+        context["clientes_vencidos"] = cliente_stats["vencidos"]
+
+        ingreso_stats = PagoCliente.objects.aggregate(
+            total=Sum("monto"),
+            mes=Sum("monto", filter=Q(fecha__month=timezone.now().month, fecha__year=timezone.now().year)),
+            anio=Sum("monto", filter=Q(fecha__year=timezone.now().year)),
+        )
+        context["total_ingresos"] = ingreso_stats["total"] or 0
+        context["ingresos_mes"] = ingreso_stats["mes"] or 0
+        context["ingresos_anio"] = ingreso_stats["anio"] or 0
+
         pagos_recientes = PagoCliente.objects.select_related("cliente").order_by("-fecha")[:10]
         context["pagos_recientes"] = pagos_recientes
         totales_por_cliente = dict(PagoCliente.objects.values("cliente").annotate(total=Sum("monto")).values_list("cliente", "total"))
         context["totales_por_cliente"] = totales_por_cliente
         context["filter_chips"] = [
-            ("todos", "Todos", "all_inclusive", clientes.count()),
-            ("activos", "Activos", "check_circle", clientes.filter(estado=Cliente.Estado.ACTIVO).count()),
-            ("prueba", "Prueba", "science", clientes.filter(estado=Cliente.Estado.PRUEBA).count()),
-            ("vencidos", "Vencidos", "error", clientes.filter(estado=Cliente.Estado.VENCIDO).count()),
-            ("cancelados", "Cancelados", "block", clientes.filter(estado=Cliente.Estado.CANCELADO).count()),
+            ("todos", "Todos", "all_inclusive", cliente_stats["total"]),
+            ("activos", "Activos", "check_circle", cliente_stats["activos"]),
+            ("prueba", "Prueba", "science", cliente_stats["prueba"]),
+            ("vencidos", "Vencidos", "error", cliente_stats["vencidos"]),
+            ("cancelados", "Cancelados", "block", cliente_stats["cancelados"]),
         ]
         return context
 
@@ -997,17 +1007,28 @@ class ClienteDetailView(PermissionRequiredMixin, LoginRequiredMixin, DetailView)
         from productos.models import Producto
         from django.db.models import F, Count
 
-        context["total_mesas"] = Mesa.objects.filter(cliente=cliente).count()
-        context["mesas_ocupadas"] = Mesa.objects.filter(cliente=cliente, estado=Mesa.Estado.OCUPADA).count()
-        context["mesas_libres"] = Mesa.objects.filter(cliente=cliente, estado=Mesa.Estado.LIBRE).count()
+        mesa_stats = Mesa.objects.filter(cliente=cliente).aggregate(
+            total=Count("pk"),
+            ocupadas=Count("pk", filter=Q(estado=Mesa.Estado.OCUPADA)),
+            libres=Count("pk", filter=Q(estado=Mesa.Estado.LIBRE)),
+        )
+        context["total_mesas"] = mesa_stats["total"]
+        context["mesas_ocupadas"] = mesa_stats["ocupadas"]
+        context["mesas_libres"] = mesa_stats["libres"]
 
-        context["total_comandas"] = Comanda.objects.filter(cliente=cliente).count()
-        context["comandas_abiertas"] = Comanda.objects.filter(cliente=cliente, estado=Comanda.Estado.ABIERTA).count()
-        context["comandas_en_cocina"] = Comanda.objects.filter(cliente=cliente, estado=Comanda.Estado.EN_COCINA).count()
-        context["comandas_cerradas"] = Comanda.objects.filter(cliente=cliente, estado=Comanda.Estado.CERRADA).count()
+        comanda_stats = Comanda.objects.filter(cliente=cliente).aggregate(
+            total=Count("pk"),
+            abiertas=Count("pk", filter=Q(estado=Comanda.Estado.ABIERTA)),
+            en_cocina=Count("pk", filter=Q(estado=Comanda.Estado.EN_COCINA)),
+            cerradas=Count("pk", filter=Q(estado=Comanda.Estado.CERRADA)),
+        )
+        context["total_comandas"] = comanda_stats["total"]
+        context["comandas_abiertas"] = comanda_stats["abiertas"]
+        context["comandas_en_cocina"] = comanda_stats["en_cocina"]
+        context["comandas_cerradas"] = comanda_stats["cerradas"]
 
-        facturas_pagadas = Factura.objects.filter(cliente=cliente, estado=Factura.Estado.PAGADA)
         context["total_facturas"] = Factura.objects.filter(cliente=cliente).count()
+        facturas_pagadas = Factura.objects.filter(cliente=cliente, estado=Factura.Estado.PAGADA)
         context["ventas_total"] = facturas_pagadas.aggregate(total=Sum("total_con_impuestos"))["total"] or 0
 
         context["total_productos"] = Producto.objects.filter(cliente=cliente, activo=True).count()

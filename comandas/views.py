@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from core.views import ClienteScopeMixin, PermissionRequiredMixin
@@ -152,6 +152,11 @@ def agregar_item(request, pk):
             messages.error(request, "Selecciona un producto")
             return redirect("comandas:detalle", pk=pk)
 
+        cliente = getattr(request.user, 'cliente', None)
+        qs = Comanda.objects.all()
+        if cliente:
+            qs = qs.filter(cliente=cliente)
+        comanda = get_object_or_404(qs, pk=pk)
         producto_qs = Producto.objects.filter(cliente=cliente)
         producto = get_object_or_404(producto_qs, pk=producto_id)
 
@@ -188,7 +193,7 @@ def enviar_cocina(request, pk):
     qs = Comanda.objects.all()
     if cliente:
         qs = qs.filter(cliente=cliente)
-    comanda = get_object_or_404(qs, pk=pk)
+    comanda = get_object_or_404(qs.select_related("mesa"), pk=pk)
 
     if comanda.estado != Comanda.Estado.ABIERTA:
         messages.error(request, "La comanda ya fue enviada a cocina o esta cerrada")
@@ -301,7 +306,7 @@ def cerrar_comanda(request, pk):
     qs = Comanda.objects.all()
     if cliente:
         qs = qs.filter(cliente=cliente)
-    comanda = get_object_or_404(qs, pk=pk)
+    comanda = get_object_or_404(qs.select_related("mesa"), pk=pk)
 
     if comanda.estado in [Comanda.Estado.CERRADA, Comanda.Estado.CANCELADA]:
         messages.error(request, "La comanda ya esta cerrada")
@@ -311,7 +316,8 @@ def cerrar_comanda(request, pk):
     comanda.fecha_cierre = timezone.now()
     comanda.save()
 
-    mesas_ocupadas = comanda.mesa.comandas.filter(
+    mesa = comanda.mesa
+    mesas_ocupadas = mesa.comandas.filter(
         estado__in=[Comanda.Estado.ABIERTA, Comanda.Estado.EN_COCINA]
     )
     if not mesas_ocupadas.exists():
@@ -360,7 +366,7 @@ def eliminar_comanda(request, pk):
     qs = Comanda.objects.all()
     if cliente:
         qs = qs.filter(cliente=cliente)
-    comanda = get_object_or_404(qs, pk=pk)
+    comanda = get_object_or_404(qs.select_related("mesa").prefetch_related("facturas"), pk=pk)
 
     facturas = list(comanda.facturas.all())
     if facturas:
@@ -387,7 +393,7 @@ def imprimir_cocina(request, pk):
     qs = Comanda.objects.all()
     if cliente:
         qs = qs.filter(cliente=cliente)
-    comanda = get_object_or_404(qs, pk=pk)
+    comanda = get_object_or_404(qs.prefetch_related("items__producto"), pk=pk)
     return render(request, "comandas/imprimir_cocina.html", {"comanda": comanda})
 
 
@@ -455,7 +461,9 @@ class VistaCocina(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         qs = ctx["comandas"]
-        ctx["urgentes"] = qs.filter(prioridad="urgente").count()
-        ctx["vips"] = qs.filter(prioridad="vip").count()
-        ctx["normales"] = qs.filter(prioridad="normal").count()
+        counts = qs.values("prioridad").annotate(cnt=Count("pk"))
+        count_map = {c["prioridad"]: c["cnt"] for c in counts}
+        ctx["urgentes"] = count_map.get("urgente", 0)
+        ctx["vips"] = count_map.get("vip", 0)
+        ctx["normales"] = count_map.get("normal", 0)
         return ctx

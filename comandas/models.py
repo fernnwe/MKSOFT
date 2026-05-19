@@ -25,10 +25,10 @@ class Comanda(models.Model):
     mesero = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="comandas"
     )
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ABIERTA)
-    prioridad = models.CharField(max_length=20, choices=Prioridad.choices, default=Prioridad.NORMAL)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ABIERTA, db_index=True)
+    prioridad = models.CharField(max_length=20, choices=Prioridad.choices, default=Prioridad.NORMAL, db_index=True)
     notas = models.TextField(blank=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True, db_index=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     fecha_cierre = models.DateTimeField(null=True, blank=True)
 
@@ -36,6 +36,11 @@ class Comanda(models.Model):
         ordering = ["-fecha_creacion"]
         verbose_name = "Comanda"
         verbose_name_plural = "Comandas"
+        indexes = [
+            models.Index(fields=["estado", "prioridad", "fecha_creacion"], name="comanda_estado_prioridad_fecha"),
+            models.Index(fields=["cliente", "estado"], name="comanda_cliente_estado"),
+            models.Index(fields=["cliente", "fecha_creacion"], name="comanda_cliente_fecha"),
+        ]
         constraints = [
             models.UniqueConstraint(fields=["cliente", "codigo"], name="unique_comanda_codigo_per_cliente"),
         ]

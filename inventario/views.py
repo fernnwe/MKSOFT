@@ -513,7 +513,7 @@ class CompraRecibirView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
         cliente = self.get_cliente()
         if cliente:
             qs = qs.filter(cliente=cliente)
-        return qs
+        return qs.prefetch_related("items__ingrediente")
 
     def post(self, request, *args, **kwargs):
         compra = self.get_object()
@@ -866,6 +866,7 @@ class ProveedorListView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
     model = Proveedor
     template_name = "inventario/proveedor_list.html"
     context_object_name = "proveedores"
+    paginate_by = 30
     permission = "can_view_inventario"
 
     def get_queryset(self):

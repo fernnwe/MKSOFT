@@ -67,6 +67,9 @@ class Inventario(models.Model):
     class Meta:
         verbose_name = "Inventario"
         verbose_name_plural = "Inventario"
+        indexes = [
+            models.Index(fields=["ingrediente", "cantidad_actual"], name="inv_ingrediente_cantidad"),
+        ]
 
     def __str__(self):
         return f"{self.ingrediente.nombre}: {self.cantidad_actual} {self.unidad}"
@@ -95,7 +98,7 @@ class MovimientoInventario(models.Model):
         DEVOLUCION = "devolucion", "Devolucion"
 
     inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE, related_name="movimientos")
-    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    tipo = models.CharField(max_length=20, choices=Tipo.choices, db_index=True)
     cantidad = models.DecimalField(max_digits=10, decimal_places=3)
     costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     motivo = models.CharField(max_length=200, blank=True)
@@ -125,8 +128,8 @@ class Compra(models.Model):
     proveedor = models.CharField(max_length=200)
     proveedor_fk = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True, blank=True, related_name="compras")
     folio = models.CharField(max_length=50, blank=True)
-    fecha = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE)
+    fecha = models.DateTimeField(auto_now_add=True, db_index=True)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PENDIENTE, db_index=True)
     notas = models.TextField(blank=True)
     usuario = models.ForeignKey("core.User", on_delete=models.SET_NULL, null=True)
 
@@ -134,6 +137,9 @@ class Compra(models.Model):
         ordering = ["-fecha"]
         verbose_name = "Compra"
         verbose_name_plural = "Compras"
+        indexes = [
+            models.Index(fields=["cliente", "estado", "fecha"], name="compra_cliente_estado_fecha"),
+        ]
 
     def __str__(self):
         return f"Compra {self.folio} - {self.proveedor}"

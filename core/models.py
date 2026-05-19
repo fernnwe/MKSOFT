@@ -23,7 +23,7 @@ class Cliente(models.Model):
     admin_password_visible = models.CharField(max_length=255)
 
     periodo_dias = models.PositiveIntegerField(default=30, help_text="Dias del periodo contratado")
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PRUEBA)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.PRUEBA, db_index=True)
     fecha_inicio = models.DateTimeField(auto_now_add=True)
     fecha_pago_proximo = models.DateTimeField(null=True, blank=True)
     fecha_cancelacion = models.DateTimeField(null=True, blank=True)
@@ -36,6 +36,9 @@ class Cliente(models.Model):
         verbose_name = "Cliente"
         verbose_name_plural = "Clientes"
         ordering = ["-fecha_creacion"]
+        indexes = [
+            models.Index(fields=["estado", "fecha_pago_proximo"], name="cliente_estado_pago"),
+        ]
 
     def __str__(self):
         return f"{self.nombre_negocio} (Plan Unico)"

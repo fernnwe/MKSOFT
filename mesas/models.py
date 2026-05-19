@@ -19,7 +19,7 @@ class Mesa(models.Model):
     numero = models.CharField(max_length=10)
     zona = models.CharField(max_length=20, choices=Zona.choices, default=Zona.INTERIOR)
     capacidad = models.PositiveIntegerField(help_text="Número de personas")
-    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.LIBRE)
+    estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.LIBRE, db_index=True)
     descripcion = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
@@ -27,6 +27,9 @@ class Mesa(models.Model):
         ordering = ["numero"]
         verbose_name = "Mesa"
         verbose_name_plural = "Mesas"
+        indexes = [
+            models.Index(fields=["cliente", "estado"], name="mesa_cliente_estado"),
+        ]
         constraints = [
             models.UniqueConstraint(fields=["cliente", "numero"], name="unique_mesa_per_cliente"),
         ]

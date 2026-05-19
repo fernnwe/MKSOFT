@@ -646,13 +646,14 @@ class CierreCajaView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
             total_gastos = movimientos.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
             total_retiros = movimientos.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
         else:
-            cajas_dia = cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end)
-            for caja in cajas_dia:
-                movs = caja.movimientos.select_related("usuario").all()
-                movimientos = movimientos | movs
-                total_gastos += movs.filter(tipo=CajaMovimiento.Tipo.GASTO).aggregate(total=Sum("monto"))["total"] or 0
-                total_retiros += movs.filter(tipo=CajaMovimiento.Tipo.RETIRO).aggregate(total=Sum("monto"))["total"] or 0
-            movimientos = movimientos.order_by("-fecha")
+            cajas_ids = list(cajas_qs.filter(fecha_apertura__gte=start, fecha_apertura__lte=end).values_list("pk", flat=True))
+            movimientos = CajaMovimiento.objects.filter(caja_id__in=cajas_ids).select_related("usuario").order_by("-fecha")
+            totals = movimientos.aggregate(
+                gastos=Sum("monto", filter=Q(tipo=CajaMovimiento.Tipo.GASTO)),
+                retiros=Sum("monto", filter=Q(tipo=CajaMovimiento.Tipo.RETIRO)),
+            )
+            total_gastos = totals["gastos"] or 0
+            total_retiros = totals["retiros"] or 0
         context["movimientos"] = movimientos
         context["total_gastos_mov"] = total_gastos
         context["total_retiros_mov"] = total_retiros
