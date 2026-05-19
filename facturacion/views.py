@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Sum, Exists, OuterRef, Q
+from django.db.models import Sum, Q
 from django import forms
 import json as json_lib
 from decimal import Decimal
@@ -154,24 +154,26 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        comandas_con_factura = Factura.objects.filter(comanda=OuterRef("pk"))
         cliente = self.get_cliente()
         comandas_qs = Comanda.objects.all()
         if cliente:
             comandas_qs = comandas_qs.filter(cliente=cliente)
+        ids_con_factura = Factura.objects.filter(comanda__isnull=False).values_list("comanda_id", flat=True)
         form.fields["comanda"].queryset = comandas_qs.filter(
             estado__in=[Comanda.Estado.ABIERTA, Comanda.Estado.EN_COCINA, Comanda.Estado.EN_PREPARACION,
                         Comanda.Estado.LISTA, Comanda.Estado.SERVING, Comanda.Estado.CERRADA]
-        ).exclude(Exists(comandas_con_factura)).order_by("-fecha_creacion")
+        ).exclude(pk__in=ids_con_factura).order_by("-fecha_creacion")
         return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["tasa_iva"] = Decimal("0.15")
+        context["tasa_servicio"] = Decimal("0.10")
+        context["tasa_iva_pct"] = 15
+        context["tasa_servicio_pct"] = 10
+        context["preview"] = None
+        context["comanda_obj"] = None
         try:
-            context["tasa_iva"] = Decimal("0.15")
-            context["tasa_servicio"] = Decimal("0.10")
-            context["tasa_iva_pct"] = 15
-            context["tasa_servicio_pct"] = 10
             cliente = self.get_cliente()
             config = ConfigRestaurante.get_config(cliente)
             if config:
@@ -183,22 +185,19 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
                 context["tasa_servicio_pct"] = int(serv_dec * 100)
         except Exception:
             pass
-        context["preview"] = None
-        context["comanda_obj"] = None
         try:
             comanda_id = self.request.GET.get("comanda")
             if comanda_id:
-                from comandas.models import Comanda
                 qs = Comanda.objects.all()
-                if cliente:
-                    qs = qs.filter(cliente=cliente)
+                if self.get_cliente():
+                    qs = qs.filter(cliente=self.get_cliente())
                 comanda = qs.filter(pk=comanda_id).select_related("mesa").prefetch_related("items__producto").first()
                 if comanda:
                     context["comanda_obj"] = comanda
                     st = float(comanda.total) if comanda.total else 0
-                    iva = st * float(context["tasa_iva"])
-                    serv = st * float(context["tasa_servicio"])
-                    context["preview"] = {"subtotal": st, "iva": iva, "servicio": serv, "descuento": 0, "total": st + iva + serv}
+                    iva_val = st * float(context["tasa_iva"])
+                    serv_val = st * float(context["tasa_servicio"])
+                    context["preview"] = {"subtotal": st, "iva": iva_val, "servicio": serv_val, "descuento": 0, "total": st + iva_val + serv_val}
         except Exception:
             pass
         return context
