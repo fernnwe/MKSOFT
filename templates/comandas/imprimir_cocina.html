@@ -83,7 +83,7 @@
         </tbody>
     </table>
 
-    <div class="total-items">{{ comanda.items.all|length }} item{{ comanda.items.all|length|pluralize:"es" }}</div>
+    <div class="total-items">{{ comanda.items.count }} item{{ comanda.items.count|pluralize:"es" }}</div>
 
     {% if comanda.notas %}
     <hr class="div-dashed">

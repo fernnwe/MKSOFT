@@ -136,6 +136,7 @@ class User(AbstractUser):
         "admin": {
             "can_view_dashboard": True,
             "can_view_mesas": True,
+            "can_manage_mesas": True,
             "can_view_comandas": True,
             "can_create_comandas": True,
             "can_manage_comandas": True,
@@ -153,6 +154,7 @@ class User(AbstractUser):
         "manager": {
             "can_view_dashboard": True,
             "can_view_mesas": True,
+            "can_manage_mesas": True,
             "can_view_comandas": True,
             "can_create_comandas": True,
             "can_manage_comandas": True,
@@ -170,6 +172,7 @@ class User(AbstractUser):
         "waiter": {
             "can_view_dashboard": True,
             "can_view_mesas": True,
+            "can_manage_mesas": False,
             "can_view_comandas": True,
             "can_create_comandas": True,
             "can_manage_comandas": False,
@@ -187,6 +190,7 @@ class User(AbstractUser):
         "cashier": {
             "can_view_dashboard": True,
             "can_view_mesas": True,
+            "can_manage_mesas": False,
             "can_view_comandas": True,
             "can_create_comandas": False,
             "can_manage_comandas": False,
@@ -204,6 +208,7 @@ class User(AbstractUser):
         "kitchen": {
             "can_view_dashboard": False,
             "can_view_mesas": False,
+            "can_manage_mesas": False,
             "can_view_comandas": False,
             "can_create_comandas": False,
             "can_manage_comandas": False,
@@ -223,6 +228,7 @@ class User(AbstractUser):
     PERMISSION_LABELS = {
         "can_view_dashboard": "Dashboard",
         "can_view_mesas": "Mesas",
+        "can_manage_mesas": "Gestionar Mesas",
         "can_view_comandas": "Ver Comandas",
         "can_create_comandas": "Crear Comandas",
         "can_manage_comandas": "Gestionar Comandas",

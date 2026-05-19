@@ -32,7 +32,7 @@ class MesaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
     template_name = "mesas/form.html"
     fields = ["numero", "zona", "capacidad", "estado", "descripcion"]
     success_url = reverse_lazy("mesas:list")
-    permission = "can_view_mesas"
+    permission = "can_manage_mesas"
 
     def form_valid(self, form):
         try:
@@ -48,7 +48,7 @@ class MesaUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
     template_name = "mesas/form.html"
     fields = ["numero", "zona", "capacidad", "estado", "descripcion"]
     success_url = reverse_lazy("mesas:list")
-    permission = "can_view_mesas"
+    permission = "can_manage_mesas"
 
     def form_valid(self, form):
         try:
@@ -62,7 +62,7 @@ class MesaUpdateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMi
 class MesaDeleteView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Mesa
     success_url = reverse_lazy("mesas:list")
-    permission = "can_view_mesas"
+    permission = "can_manage_mesas"
 
     def get(self, request, *args, **kwargs):
         messages.error(request, "Para eliminar la mesa usa el boton de eliminar")
@@ -107,7 +107,7 @@ def cambiar_estado_mesa(request, pk, estado):
     if cliente:
         qs = qs.filter(cliente=cliente)
     mesa = get_object_or_404(qs, pk=pk)
-    if not request.user.has_perm("can_view_mesas"):
+    if not request.user.has_perm("can_manage_mesas"):
         messages.error(request, "No tienes permiso")
         return redirect("core:dashboard")
     validos = [e[0] for e in Mesa.Estado.choices]

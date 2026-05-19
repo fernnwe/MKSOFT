@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.conf import settings
 from mesas.models import Mesa
@@ -44,7 +45,6 @@ class Comanda(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.codigo:
-            import uuid
             self.codigo = f"CMD-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 

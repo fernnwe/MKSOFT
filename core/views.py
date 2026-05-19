@@ -546,7 +546,7 @@ class ConfigRestauranteView(PermissionRequiredMixin, LoginRequiredMixin, View):
         return render(request, self.template_name, {"object": config, "form": form})
 
 
-class AyudaImpresionView(LoginRequiredMixin, TemplateView):
+class AyudaImpresionView(TemplateView):
     template_name = "core/ayuda_impresion.html"
 
 

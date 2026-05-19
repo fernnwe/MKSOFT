@@ -99,14 +99,6 @@ class ComandaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
-        if cliente:
-            # Limpiar productos huerfanos sin categoria y sin comanda items
-            Producto.objects.filter(
-                cliente=cliente,
-                categoria__isnull=True
-            ).annotate(
-                has_items=models.Exists(ComandaItem.objects.filter(producto=models.OuterRef('pk')))
-            ).filter(has_items=False).delete()
         mesas_qs = Mesa.objects.all()
         productos_qs = Producto.objects.all()
         users_qs = User.objects.all()
@@ -133,14 +125,6 @@ class ComandaDetailView(ClienteScopeMixin, LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         cliente = self.get_cliente()
-        if cliente:
-            # Limpiar productos huerfanos sin categoria y sin comanda items
-            Producto.objects.filter(
-                cliente=cliente,
-                categoria__isnull=True
-            ).annotate(
-                has_items=models.Exists(ComandaItem.objects.filter(producto=models.OuterRef('pk')))
-            ).filter(has_items=False).delete()
         productos_qs = Producto.objects.filter(cliente=cliente)
         context["productos"] = productos_qs.filter(activo=True, disponible=True).select_related("categoria")
         context["categorias"] = productos_qs.filter(
@@ -151,15 +135,9 @@ class ComandaDetailView(ClienteScopeMixin, LoginRequiredMixin, DetailView):
 
 @login_required
 def agregar_item(request, pk):
-    cliente = getattr(request.user, 'cliente', None)
-    qs = Comanda.objects.all()
-    if cliente:
-        qs = qs.filter(cliente=cliente)
-    comanda = get_object_or_404(qs, pk=pk)
-    if comanda.estado not in [Comanda.Estado.ABIERTA, Comanda.Estado.EN_COCINA]:
-        messages.error(request, "No se pueden agregar items a una comanda cerrada o cancelada")
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso para modificar comandas")
         return redirect("comandas:detalle", pk=pk)
-
     if request.method == "POST":
         producto_id = request.POST.get("producto")
         cantidad_str = request.POST.get("cantidad", "1")
@@ -203,6 +181,9 @@ def agregar_item(request, pk):
 
 @login_required
 def enviar_cocina(request, pk):
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:detalle", pk=pk)
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
@@ -243,6 +224,9 @@ def enviar_cocina(request, pk):
 
 @login_required
 def marcar_listo_item(request, item_pk):
+    if not request.user.has_perm("can_view_cocina"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:cocina")
     cliente = getattr(request.user, 'cliente', None)
     qs = ComandaItem.objects.all()
     if cliente:
@@ -267,6 +251,9 @@ def marcar_listo_item(request, item_pk):
 
 @login_required
 def marcar_lista(request, pk):
+    if not request.user.has_perm("can_view_cocina"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:cocina")
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
@@ -287,6 +274,9 @@ def marcar_lista(request, pk):
 
 @login_required
 def cancelar_item(request, item_pk):
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:detalle", pk=item_pk)
     cliente = getattr(request.user, 'cliente', None)
     qs = ComandaItem.objects.all()
     if cliente:
@@ -304,6 +294,9 @@ def cancelar_item(request, item_pk):
 
 @login_required
 def cerrar_comanda(request, pk):
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:list")
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
@@ -344,6 +337,9 @@ def cerrar_comanda(request, pk):
 
 @login_required
 def reabrir_comanda(request, pk):
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:list")
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
@@ -357,15 +353,14 @@ def reabrir_comanda(request, pk):
 
 @login_required
 def eliminar_comanda(request, pk):
+    if not request.user.has_perm("can_manage_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:list")
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
         qs = qs.filter(cliente=cliente)
     comanda = get_object_or_404(qs, pk=pk)
-
-    if not request.user.is_superuser and not request.user.can_manage_comandas:
-        messages.error(request, "No tienes permiso para eliminar comandas")
-        return redirect("comandas:detalle", pk=pk)
 
     facturas = list(comanda.facturas.all())
     if facturas:
@@ -385,6 +380,9 @@ def eliminar_comanda(request, pk):
 
 @login_required
 def imprimir_cocina(request, pk):
+    if not request.user.has_perm("can_view_cocina") and not request.user.has_perm("can_view_comandas"):
+        messages.error(request, "No tienes permiso")
+        return redirect("comandas:list")
     cliente = getattr(request.user, 'cliente', None)
     qs = Comanda.objects.all()
     if cliente:
