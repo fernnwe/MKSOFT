@@ -212,14 +212,14 @@
 <script>
 var currentSubtotal = 0;
 
-function loadComandaData(comandaId) {
+function renderComandaData(data) {
     var itemsSection = document.getElementById('comandaItemsSection');
     var resumenCard = document.getElementById('resumenCard');
     var infoMsg = document.getElementById('comandaInfoMsg');
     var itemsBody = document.getElementById('comandaItemsBody');
     var itemsTitle = document.getElementById('comandaItemsTitle');
 
-    if (!comandaId) {
+    if (!data) {
         if (itemsSection) itemsSection.style.display = 'none';
         if (resumenCard) resumenCard.style.display = 'none';
         if (infoMsg) infoMsg.style.display = 'flex';
@@ -229,7 +229,28 @@ function loadComandaData(comandaId) {
     }
 
     if (infoMsg) infoMsg.style.display = 'none';
+    currentSubtotal = data.subtotal || 0;
+    if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
+    if (itemsBody) {
+        itemsBody.innerHTML = '';
+        data.items.forEach(function(item) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
+            itemsBody.appendChild(tr);
+        });
+    }
+    if (itemsSection) itemsSection.style.display = '';
+    if (resumenCard) resumenCard.style.display = '';
+    recalcPreview();
+}
 
+function loadComandaData(comandaId) {
+    if (!comandaId) {
+        renderComandaData(null);
+        return;
+    }
+    var infoMsg = document.getElementById('comandaInfoMsg');
+    if (infoMsg) infoMsg.textContent = 'Cargando...';
     fetch('/facturacion/comanda-data/' + comandaId + '/')
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -237,19 +258,7 @@ function loadComandaData(comandaId) {
                 if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = data.error; }
                 return;
             }
-            currentSubtotal = data.subtotal || 0;
-            if (itemsTitle) itemsTitle.textContent = 'Items de ' + data.codigo + ' - Mesa ' + data.mesa;
-            if (itemsBody) {
-                itemsBody.innerHTML = '';
-                data.items.forEach(function(item) {
-                    var tr = document.createElement('tr');
-                    tr.innerHTML = '<td>' + item.producto + (item.notas ? ' <small style="color:var(--md-sys-color-on-surface-variant);">(' + item.notas + ')</small>' : '') + '</td><td style="text-align:center;">' + item.cantidad + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.precio.toFixed(2) + '</td><td style="text-align:right;">{{ CURRENCY_SYMBOL }}' + item.subtotal.toFixed(2) + '</td>';
-                    itemsBody.appendChild(tr);
-                });
-            }
-            if (itemsSection) itemsSection.style.display = '';
-            if (resumenCard) resumenCard.style.display = '';
-            recalcPreview();
+            renderComandaData(data);
         })
         .catch(function() {
             if (infoMsg) { infoMsg.style.display = 'flex'; infoMsg.textContent = 'Error al cargar datos de la comanda.'; }
@@ -316,14 +325,16 @@ function toggleEfectivoFields() {
     }
 }
 
+var initialData = {{ initial_comanda_json|default:'null'|safe }};
+if (initialData) {
+    renderComandaData(initialData);
+}
+
 var comandaEl = document.getElementById('id_comanda');
 if (comandaEl) {
     comandaEl.addEventListener('change', function() {
         loadComandaData(this.value);
     });
-    if (comandaEl.value) {
-        loadComandaData(comandaEl.value);
-    }
 }
 
 var descuentoEl = document.getElementById('id_descuento');
