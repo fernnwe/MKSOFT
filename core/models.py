@@ -291,6 +291,8 @@ class User(AbstractUser):
     @property
     def can_view_mesas(self): return self._get_perm("can_view_mesas")
     @property
+    def can_manage_mesas(self): return self._get_perm("can_manage_mesas")
+    @property
     def can_view_comandas(self): return self._get_perm("can_view_comandas")
     @property
     def can_create_comandas(self): return self._get_perm("can_create_comandas")

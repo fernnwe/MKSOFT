@@ -447,7 +447,8 @@ class PermisosMeserosView(PermissionRequiredMixin, LoginRequiredMixin, ListView)
         context["all_perms"] = [
             ("General", [
                 ("can_view_dashboard", "Dashboard"),
-                ("can_view_mesas", "Mesas"),
+                ("can_view_mesas", "Ver Mesas"),
+                ("can_manage_mesas", "Gestionar Mesas"),
                 ("can_view_comandas", "Ver Comandas"),
                 ("can_create_comandas", "Crear Comandas"),
                 ("can_manage_comandas", "Gestionar Comandas"),
@@ -1020,7 +1021,8 @@ class ClienteDetailView(PermissionRequiredMixin, LoginRequiredMixin, DetailView)
         context["all_perms"] = [
             ("General", [
                 ("can_view_dashboard", "Dashboard"),
-                ("can_view_mesas", "Mesas"),
+                ("can_view_mesas", "Ver Mesas"),
+                ("can_manage_mesas", "Gestionar Mesas"),
                 ("can_view_comandas", "Ver Comandas"),
                 ("can_create_comandas", "Crear Comandas"),
                 ("can_manage_comandas", "Gestionar Comandas"),
