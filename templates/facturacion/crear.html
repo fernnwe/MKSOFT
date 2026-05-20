@@ -39,7 +39,7 @@
 
                 <div class="md3-grid md3-grid-2">
                     <div class="md3-field {% if form.metodo_pago.errors %}md3-field-error{% endif %}">
-                        <select name="metodo_pago" id="id_metodo_pago" class="md3-input" required>
+                        <select name="metodo_pago" id="id_metodo_pago" class="md3-input" required onchange="toggleEfectivoFields();recalcPreview();">
                             <option value="">---------</option>
                             <option value="efectivo" {% if form.metodo_pago.value == "efectivo" %}selected{% endif %}>Efectivo</option>
                             <option value="tarjeta" {% if form.metodo_pago.value == "tarjeta" %}selected{% endif %}>Tarjeta</option>
@@ -226,8 +226,7 @@
 
 {% block extra_js %}
 <script>
-(function() {
-    function recalcPreview() {
+function recalcPreview() {
         var subtotal = parseFloat(document.getElementById('previewSubtotal').textContent.replace(/[^0-9.-]/g, '')) || 0;
         var aplicarIva = document.getElementById('id_aplicar_iva').checked;
         var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
@@ -297,9 +296,6 @@
     el = document.getElementById('id_aplicar_servicio');
     if (el) el.addEventListener('change', recalcPreview);
 
-    el = document.getElementById('id_metodo_pago');
-    if (el) el.addEventListener('change', function() { toggleEfectivoFields(); recalcPreview(); });
-
     el = document.getElementById('id_monto_recibido');
     if (el) el.addEventListener('input', function() {
         var previewTotal = document.getElementById('previewTotal');
@@ -309,6 +305,5 @@
     });
 
     toggleEfectivoFields();
-})();
 </script>
 {% endblock %}
