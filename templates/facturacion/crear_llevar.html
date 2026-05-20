@@ -38,7 +38,7 @@
                     </div>
                     <div id="productList" class="ll-product-list">
                         {% for p in productos %}
-                        <div class="ll-product-item" data-pid="{{ p.pk }}" data-name="{{ p.nombre|lower }}" data-price="{{ p.precio|unlocalize }}">
+                        <div class="ll-product-item" data-pid="{{ p.pk }}" data-name="{{ p.nombre|lower }}" data-price="{{ p.precio }}">
                             <div class="ll-product-check">
                                 <div class="ll-checkbox"></div>
                             </div>
@@ -239,8 +239,8 @@ select.ll-input { appearance:none;background-image:url("data:image/svg+xml,%3Csv
 {% block extra_js %}
 <script>
 var cart = {};
-var tasaIVA = {{ tasa_iva|default:"0.15"|unlocalize }};
-var tasaservicio = {{ tasa_servicio|default:"0.10"|unlocalize }};
+var tasaIVA = {{ tasa_iva|default:"0.15" }};
+var tasaservicio = {{ tasa_servicio|default:"0.10" }};
 var CURRENCY = '{{ CURRENCY_SYMBOL }}';
 
 document.addEventListener('DOMContentLoaded', function() {
