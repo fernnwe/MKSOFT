@@ -64,7 +64,7 @@
                 </div>
 
                 <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                    <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" {% if form.aplicar_iva.value %}checked{% endif %}>
+                    <input type="checkbox" name="aplicar_iva" id="id_aplicar_iva" {% if form.aplicar_iva.value %}checked{% endif %} onchange="recalcPreview()">
                     <span>
                         <strong>Aplicar IVA ({{ tasa_iva_pct }}%)</strong>
                         <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Impuesto sobre el subtotal</small>
@@ -72,7 +72,7 @@
                 </label>
 
                 <label class="md3-checkbox-field" style="display:flex; align-items:center; gap:12px;">
-                    <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" {% if form.aplicar_servicio.value %}checked{% endif %}>
+                    <input type="checkbox" name="aplicar_servicio" id="id_aplicar_servicio" {% if form.aplicar_servicio.value %}checked{% endif %} onchange="recalcPreview()">
                     <span>
                         <strong>Aplicar servicio ({{ tasa_servicio_pct }}%)</strong>
                         <small style="display:block; color:var(--md-sys-color-on-surface-variant);">Propina opcional</small>
@@ -227,7 +227,9 @@
 {% block extra_js %}
 <script>
 function recalcPreview() {
-        var subtotal = parseFloat(document.getElementById('previewSubtotal').textContent.replace(/[^0-9.-]/g, '')) || 0;
+        var subEl = document.getElementById('previewSubtotal');
+        if (!subEl) return;
+        var subtotal = parseFloat(subEl.textContent.replace(/[^0-9.-]/g, '')) || 0;
         var aplicarIva = document.getElementById('id_aplicar_iva').checked;
         var aplicarServicio = document.getElementById('id_aplicar_servicio').checked;
         var descuentoVal = parseFloat(document.getElementById('id_descuento').value) || 0;
