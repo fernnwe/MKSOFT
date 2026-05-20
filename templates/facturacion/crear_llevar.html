@@ -44,7 +44,7 @@
                             </div>
                             <div class="ll-product-info">
                                 <div class="ll-product-name">{{ p.nombre }}</div>
-                                <div class="ll-product-price">{{ CURRENCY_SYMBOL }}{{ p.precio|floatformat:2u }}</div>
+                                <div class="ll-product-price">{{ CURRENCY_SYMBOL }}{{ p.precio|floatformat:"2u" }}</div>
                             </div>
                         </div>
                         {% empty %}
