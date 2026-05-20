@@ -39,7 +39,7 @@
 
                 <div class="md3-grid md3-grid-2">
                     <div class="md3-field {% if form.metodo_pago.errors %}md3-field-error{% endif %}">
-                        <select name="metodo_pago" id="id_metodo_pago" class="md3-input" required onchange="toggleEfectivoFields();recalcPreview();">
+                        <select name="metodo_pago" id="id_metodo_pago" class="md3-input" required onchange="var ef=document.getElementById('efectivoFields');if(ef)ef.hidden=this.value!='efectivo';var cb=document.getElementById('cambioBox');if(cb)cb.hidden=true;recalcPreview();">
                             <option value="">---------</option>
                             <option value="efectivo" {% if form.metodo_pago.value == "efectivo" %}selected{% endif %}>Efectivo</option>
                             <option value="tarjeta" {% if form.metodo_pago.value == "tarjeta" %}selected{% endif %}>Tarjeta</option>
@@ -155,7 +155,7 @@
                     Si el cliente paga en efectivo, ingresa con cu&aacute;nto pag&oacute; para calcular el cambio.
                 </p>
 
-                <div id="efectivoFields" style="display:none;">
+                <div id="efectivoFields" hidden>
                     <div class="md3-field {% if form.monto_recibido.errors %}md3-field-error{% endif %}">
                         <input type="number" name="monto_recibido" id="id_monto_recibido" class="md3-input" placeholder=" " value="{{ form.monto_recibido.value|default:'' }}" step="0.01" min="0" oninput="var pt=document.getElementById('previewTotal');if(pt)recalcCambio(parseFloat(pt.textContent.replace(/[^0-9.-]/g,''))||0);">
                         <label class="md3-label" for="id_monto_recibido">Con cu&aacute;nto pag&oacute; ({{ CURRENCY_SYMBOL }})</label>
@@ -163,7 +163,7 @@
                         <small style="font-size:12px; color:var(--md-sys-color-on-surface-variant); display:block; margin-top:4px;">Ej: Si debe C$250 y paga con C$500, escribe 500</small>
                     </div>
 
-                    <div id="cambioBox" style="display:none; padding:12px; border-radius:12px; background:var(--md-sys-color-secondary-container); margin-bottom:12px;">
+                    <div id="cambioBox" hidden style="padding:12px; border-radius:12px; background:var(--md-sys-color-secondary-container); margin-bottom:12px;">
                         <div class="md3-flex md3-flex-justify-between" style="align-items:center;">
                             <span style="font-weight:500;">Cambio a devolver:</span>
                             <span id="previewCambio" style="font-weight:900; font-size:18px; color:var(--md-sys-color-on-secondary-container);">{{ CURRENCY_SYMBOL }}0.00</span>
@@ -269,21 +269,9 @@ function recalcPreview() {
         if (metodo === 'efectivo' && montoRecibido > 0) {
             var cambio = montoRecibido - total;
             previewCambio.textContent = '{{ CURRENCY_SYMBOL }}' + Math.abs(cambio).toFixed(2);
-            cambioBox.style.display = cambio >= 0 ? 'block' : 'none';
+            cambioBox.hidden = cambio < 0;
         } else {
-            cambioBox.style.display = 'none';
-        }
-    }
-
-    function toggleEfectivoFields() {
-        var efectivoFields = document.getElementById('efectivoFields');
-        if (!efectivoFields) return;
-        if (document.getElementById('id_metodo_pago').value === 'efectivo') {
-            efectivoFields.style.display = 'block';
-        } else {
-            efectivoFields.style.display = 'none';
-            var cambioBox = document.getElementById('cambioBox');
-            if (cambioBox) cambioBox.style.display = 'none';
+            cambioBox.hidden = true;
         }
     }
 
@@ -296,6 +284,7 @@ function recalcPreview() {
     el = document.getElementById('id_aplicar_servicio');
     if (el) el.addEventListener('change', recalcPreview);
 
-    toggleEfectivoFields();
+    var ef = document.getElementById('efectivoFields');
+    if (ef) ef.hidden = document.getElementById('id_metodo_pago').value !== 'efectivo';
 </script>
 {% endblock %}
