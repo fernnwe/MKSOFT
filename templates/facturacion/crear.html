@@ -18,7 +18,7 @@
 
             <div style="padding:16px; border-bottom:1px solid var(--md-sys-color-outline-variant);">
                 <div class="md3-field {% if form.comanda.errors %}md3-field-error{% endif %}">
-                    <select name="comanda" id="id_comanda" class="md3-input" required>
+                    <select name="comanda" id="id_comanda" class="md3-input" required onchange="if(this.value)window.location.href='?comanda='+this.value">
                         <option value="">---------</option>
                         {% for c in form.comanda.field.queryset %}
                         <option value="{{ c.pk }}" {% if form.comanda.value|stringformat:"s" == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.codigo }} - Mesa {{ c.mesa.numero }}</option>
@@ -287,10 +287,6 @@
             if (cambioBox) cambioBox.style.display = 'none';
         }
     }
-
-    document.getElementById('id_comanda').addEventListener('change', function() {
-        if (this.value) window.location.href = '?comanda=' + this.value;
-    });
 
     var el = document.getElementById('id_descuento');
     if (el) el.addEventListener('input', recalcPreview);

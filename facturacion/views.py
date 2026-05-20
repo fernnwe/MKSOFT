@@ -145,15 +145,6 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
     success_url = reverse_lazy("facturacion:list")
     permission = "can_create_facturas"
 
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            return super().dispatch(request, *args, **kwargs)
-        except Exception as e:
-            import sys, traceback
-            traceback.print_exc(file=sys.stderr)
-            sys.stderr.flush()
-            raise
-
     def get_initial(self):
         initial = super().get_initial()
         comanda_id = self.request.GET.get("comanda")
