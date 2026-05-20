@@ -155,7 +155,7 @@
                     Si el cliente paga en efectivo, ingresa con cu&aacute;nto pag&oacute; para calcular el cambio.
                 </p>
 
-                <div id="efectivoFields" style="display:none;">
+                <div id="efectivoFields">
                     <div class="md3-field {% if form.monto_recibido.errors %}md3-field-error{% endif %}">
                         <input type="number" name="monto_recibido" id="id_monto_recibido" class="md3-input" placeholder=" " value="{{ form.monto_recibido.value|default:'' }}" step="0.01" min="0">
                         <label class="md3-label" for="id_monto_recibido">Con cu&aacute;nto pag&oacute; ({{ CURRENCY_SYMBOL }})</label>
