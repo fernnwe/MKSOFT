@@ -207,8 +207,10 @@ class FacturaCreateView(ClienteScopeMixin, PermissionRequiredMixin, LoginRequire
                     iva_val = st * float(context["tasa_iva"])
                     serv_val = st * float(context["tasa_servicio"])
                     context["preview"] = {"subtotal": st, "iva": iva_val, "servicio": serv_val, "descuento": 0, "total": st + iva_val + serv_val}
-        except Exception:
-            pass
+        except Exception as e:
+            import sys, traceback
+            traceback.print_exc(file=sys.stderr)
+            sys.stderr.flush()
         return context
 
     def form_valid(self, form):
